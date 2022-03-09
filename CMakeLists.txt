@@ -1,0 +1,55 @@
+# Versión mínima requerida de CMake:
+cmake_minimum_required(VERSION 3.22)
+
+# Nombre del proyecto, y lenguaje usado (C, en este caso):
+project(Compiler C)
+
+# Compilar el parser con Bison:
+add_custom_command(
+	OUTPUT ../src/frontend/syntactic-analysis/bison-parser.c ../src/frontend/syntactic-analysis/bison-parser.h
+	COMMAND bison -d ../src/frontend/syntactic-analysis/bison-grammar.y -o ../src/frontend/syntactic-analysis/bison-parser.c)
+
+# Seleccionar estrategia según el compilador de C disponible en el sistema:
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+	message(NOTICE "El compilador de C es GCC.")
+
+	# Opciones para GCC:
+	add_compile_options(-static-libgcc)
+	add_compile_options(-std=gnu99)
+	add_compile_options(-O3)
+
+	# Compilar el scanner con Flex:
+	add_custom_command(
+		OUTPUT ../src/frontend/lexical-analysis/flex-scanner.c
+		COMMAND flex -o ../src/frontend/lexical-analysis/flex-scanner.c ../src/frontend/lexical-analysis/flex-patterns.l
+		DEPENDS ../src/frontend/syntactic-analysis/bison-parser.c ../src/frontend/syntactic-analysis/bison-parser.h)
+
+elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+	message(NOTICE "El compilador de C es Microsoft Visual Studio.")
+
+	# Opciones para MSVC:
+	# add_compile_options(...)
+
+	# Compilar el scanner con Flex, usando compatibilidad con Microsoft Windows:
+	add_custom_command(
+		OUTPUT ../src/frontend/lexical-analysis/flex-scanner.c
+		COMMAND flex --wincompat -o ../src/frontend/lexical-analysis/flex-scanner.c ../src/frontend/lexical-analysis/flex-patterns.l
+		DEPENDS ../src/frontend/syntactic-analysis/bison-parser.c ../src/frontend/syntactic-analysis/bison-parser.h)
+
+else ()
+	message(NOTICE "El compilador de C es desconocido.")
+	message(NOTICE "No se generará el scanner con Flex.")
+
+endif ()
+
+# Especificar punto de entrada del proyecto y códigos fuente (extensión *.c):
+add_executable(Compiler
+	src/main.c
+	src/backend/domain-specific/calculator.c
+	src/frontend/lexical-analysis/flex-actions.c
+	src/frontend/lexical-analysis/flex-scanner.c
+	src/frontend/syntactic-analysis/bison-actions.c
+	src/frontend/syntactic-analysis/bison-parser.c)
+
+# Linkear el proyecto y sus librerías:
+target_link_libraries(Compiler)

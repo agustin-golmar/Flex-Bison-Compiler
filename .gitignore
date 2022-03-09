@@ -10,3 +10,8 @@ node_modules/
 # Files:
 *.csproj.user
 *~
+
+# Project specific:
+bison-parser.c
+bison-parser.h
+flex-scanner.c

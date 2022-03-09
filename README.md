@@ -12,25 +12,34 @@ Para construir el compilador, se requieren las siguientes dependencias:
 * [CMake v3.22.2](https://cmake.org/)
 * [Flex v2.6.4](https://github.com/westes/flex)
 * [GCC v11.1.0](https://gcc.gnu.org/)
+* [Make v4.3](https://www.gnu.org/software/make/)
+
+Si en lugar de trabajar con un entorno _Linux_, se está construyendo el proyecto sobre un entorno _Microsoft Windows_, se debe instalar _Microsoft Visual Studio 2022_ con las extensiones para desarrollar aplicaciones en _C/C++_, así como también las herramientas requeridas, con excepción del compilador _GCC_ y la herramienta _Make_.
 
 ## Construcción
 
 Para construir el proyecto por completo, ejecute en la raíz del repositorio el siguiente comando:
 
 ```bash
-user@machine:path/ $ cmake
+user@machine:path/ $ cmake -S . -B bin
+user@machine:path/ $ cd bin
+user@machine:path/ $ make
 ```
+
+En un entorno _Microsoft Windows_, en lugar de ejecutar el comando `make`, se deberá abrir la solución generada `bin/Compiler.sln` con el IDE _Microsoft Visual Studio 2022_. Los ejecutables que este sistema construye se depositan dentro del directorio `bin/Debug` y `bin/Release` según corresponda.
 
 ## Ejecución
 
 Para compilar un programa, primero cree un archivo vacío denominado `program` con el siguiente contenido:
 
 ```
-1 + 7 - 8
+123123 + 123 - 2 * (454 + 890 / 89)
 ```
 
 Luego, ejecute el compilador indicando la ruta hacia este archivo como parámetro:
 
 ```bash
-user@machine:path/ $ ./compiler program
+user@machine:path/ $ ./bin/Compiler program
 ```
+
+Deberia obtener el resultado correcto de evaluar el programa anterior: `122318`.
