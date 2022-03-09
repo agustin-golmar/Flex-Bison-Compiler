@@ -36,10 +36,10 @@ Para compilar un programa, primero cree un archivo vacío denominado `program` c
 123123 + 123 - 2 * (454 + 890 / 89)
 ```
 
-Luego, ejecute el compilador indicando la ruta hacia este archivo como parámetro:
+Luego, ejecute el compilador desde el directorio raíz del proyecto, inyectando el programa desde la entrada estándard:
 
 ```bash
-user@machine:path/ $ ./bin/Compiler program
+user@machine:path/ $ cat program | bin/Compiler
 ```
 
 Deberia obtener el resultado correcto de evaluar el programa anterior: `122318`.

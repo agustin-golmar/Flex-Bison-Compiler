@@ -1,4 +1,5 @@
 #include "../../backend/domain-specific/calculator.h"
+#include "../../backend/support/logger.h"
 #include "bison-actions.h"
 #include <stdio.h>
 #include <string.h>
@@ -8,57 +9,59 @@
  */
 
 void yyerror(const char * string) {
-	//fprintf(stderr, "FPRINTF ERROR: '%s'.\n", string);
-	printf("\nError: [%s] en [%s], linea %d.\n", string, yytext, yylineno);
-	printf("Los codigos ASCII son:\n\t");
+	LogError("Mensaje: '%s' debido a '%s' (linea %d).", string, yytext, yylineno);
+	LogError("En ASCII es:");
+	LogErrorRaw("\t");
 	const int length = strlen(yytext);
 	for (int i = 0; i < length; ++i) {
-		printf("<%d>", yytext[i]);
+		LogErrorRaw("[%d]", yytext[i]);
 	}
-	printf("\n\n");
+	LogErrorRaw("\n\n");
 }
 
 int ProgramGrammarAction(const int value) {
-	printf("ProgramGrammarAction(%d)\n", value);
+	LogDebug("ProgramGrammarAction(%d)", value);
+	state.succeed = true;
+	state.result = value;
 	return value;
 }
 
 int AdditionExpressionGrammarAction(const int leftValue, const int rightValue) {
-	printf("AdditionExpressionGrammarAction(%d, %d)\n", leftValue, rightValue);
+	LogDebug("AdditionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
 	return Add(leftValue, rightValue);
 }
 
 int SubtractionExpressionGrammarAction(const int leftValue, const int rightValue) {
-	printf("SubtractionExpressionGrammarAction(%d, %d)\n", leftValue, rightValue);
+	LogDebug("SubtractionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
 	return Subtract(leftValue, rightValue);
 }
 
 int MultiplicationExpressionGrammarAction(const int leftValue, const int rightValue) {
-	printf("MultiplicationExpressionGrammarAction(%d, %d)\n", leftValue, rightValue);
+	LogDebug("MultiplicationExpressionGrammarAction(%d, %d)", leftValue, rightValue);
 	return Multiply(leftValue, rightValue);
 }
 
 int DivisionExpressionGrammarAction(const int leftValue, const int rightValue) {
-	printf("DivisionExpressionGrammarAction(%d, %d)\n", leftValue, rightValue);
+	LogDebug("DivisionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
 	return Divide(leftValue, rightValue);
 }
 
 int FactorExpressionGrammarAction(const int value) {
-	printf("FactorExpressionGrammarAction(%d)\n", value);
+	LogDebug("FactorExpressionGrammarAction(%d)", value);
 	return value;
 }
 
 int ExpressionFactorGrammarAction(const int value) {
-	printf("ExpressionFactorGrammarAction(%d)\n", value);
+	LogDebug("ExpressionFactorGrammarAction(%d)", value);
 	return value;
 }
 
 int ConstantFactorGrammarAction(const int value) {
-	printf("ConstantFactorGrammarAction(%d)\n", value);
+	LogDebug("ConstantFactorGrammarAction(%d)", value);
 	return value;
 }
 
 int IntegerConstantGrammarAction(const int value) {
-	printf("IntegerConstantGrammarAction(%d)\n", value);
+	LogDebug("IntegerConstantGrammarAction(%d)", value);
 	return value;
 }
