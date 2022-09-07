@@ -9,7 +9,7 @@ Un compilador vacío construido con Flex y Bison.
 Para construir el compilador, se requieren las siguientes dependencias:
 
 * [Bison v3.8.2](https://www.gnu.org/software/bison/)
-* [CMake v3.22.2](https://cmake.org/)
+* [CMake v3.24.1](https://cmake.org/)
 * [Flex v2.6.4](https://github.com/westes/flex)
 * [GCC v11.1.0](https://gcc.gnu.org/)
 * [Make v4.3](https://www.gnu.org/software/make/)

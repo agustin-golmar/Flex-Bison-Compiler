@@ -4,12 +4,13 @@
 #include "frontend/syntactic-analysis/bison-parser.h"
 #include <stdio.h>
 
-//Estado de la aplicación.
+// Estado de la aplicación.
 CompilerState state;
 
 // Punto de entrada principal del compilador.
 const int main(const int argumentCount, const char ** arguments) {
 	// Inicializar estado de la aplicación.
+	state.program = NULL;
 	state.result = 0;
 	state.succeed = false;
 

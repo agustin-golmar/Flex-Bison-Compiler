@@ -2,6 +2,7 @@
 #define BISON_ACTIONS_HEADER
 
 #include "../../backend/support/shared.h"
+#include "../../backend/semantic-analysis/abstract-syntax-tree.h"
 
 /**
  * Se definen las acciones a ejecutar sobre cada regla de producción de la

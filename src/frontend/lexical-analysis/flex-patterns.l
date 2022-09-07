@@ -13,26 +13,33 @@
 /* Dispone una variable global "yylineno" con el número de línea actual. */
 %option yylineno
 
+/* Contextos de Flex. */
+%x COMMENT
+
 /* Patrones reutilizables. */
-crlf			\r\n
 digit			[0-9]
-endline			\n
+endline			[\n]
 whitespace		[ \f\n\r\t\v]
 
 %%
 
-"+"											{ return ADD; }
-"-"											{ return SUB; }
-"*"											{ return MUL; }
-"/"											{ return DIV; }
+"/*"										{ BEGIN(COMMENT); BeginCommentPatternAction(); }
+<COMMENT>.									{ ; }
+<COMMENT>{endline}							{ ; }
+<COMMENT>"*/"								{ EndCommentPatternAction(); BEGIN(INITIAL); }
 
-"("											{ return OPEN_PARENTHESIS; }
-")"											{ return CLOSE_PARENTHESIS; }
+"+"											{ return AdditionOperatorPatternAction(yytext); }
+"-"											{ return SubtractionOperatorPatternAction(yytext); }
+"*"											{ return MultiplicationOperatorPatternAction(yytext); }
+"/"											{ return DivisionOperatorPatternAction(yytext); }
 
-{digit}+									{ return IntegerPatternAction(yytext); }
+"("											{ return OpenParenthesisPatternAction(yytext); }
+")"											{ return CloseParenthesisPatternAction(yytext); }
 
-{whitespace}								{ IgnoredPatternAction(yytext); }
+{digit}+									{ return IntegerPatternAction(yytext, yyleng); }
 
-.											{ return UnknownPatternAction(yytext); }
+{whitespace}								{ IgnoredPatternAction(yytext, yyleng); }
+
+.											{ return UnknownPatternAction(yytext, yyleng); }
 
 %%
