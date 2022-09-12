@@ -4,12 +4,13 @@
 #include "frontend/syntactic-analysis/bison-parser.h"
 #include <stdio.h>
 
-//Estado de la aplicación.
+// Estado de la aplicación.
 CompilerState state;
 
 // Punto de entrada principal del compilador.
 const int main(const int argumentCount, const char ** arguments) {
 	// Inicializar estado de la aplicación.
+	state.program = NULL;
 	state.result = 0;
 	state.succeed = false;
 
@@ -23,6 +24,8 @@ const int main(const int argumentCount, const char ** arguments) {
 	const int result = yyparse();
 	switch (result) {
 		case 0:
+			// La variable "succeed" es la que setea Bison al identificar el símbolo
+			// inicial de la gramática satisfactoriamente.
 			if (state.succeed) {
 				LogInfo("La compilacion fue exitosa.");
 				Generator(state.result);
