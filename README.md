@@ -1,8 +1,8 @@
-[![✗](https://img.shields.io/badge/Release-v0.1.0-ffb600.svg?style=for-the-badge)](https://github.com/agustin-golmar/Flex-Bison-Compiler/releases)
+[![✗](https://img.shields.io/badge/Release-v0.2.0-ffb600.svg?style=for-the-badge)](https://github.com/agustin-golmar/Flex-Bison-Compiler/releases)
 
 # Compilador Flex/Bison
 
-Un compilador vacío construido con Flex y Bison.
+Un compilador vacío de ejemplo construido con Flex y Bison.
 
 ## Requerimientos
 
@@ -18,28 +18,55 @@ Si en lugar de trabajar con un entorno _Linux_, se está construyendo el proyect
 
 ## Construcción
 
-Para construir el proyecto por completo, ejecute en la raíz del repositorio el siguiente comando:
+Para construir el proyecto por completo, ejecute en la raíz del repositorio los siguientes comandos (en _Linux_):
 
 ```bash
-user@machine:path/ $ cmake -S . -B bin
-user@machine:path/ $ cd bin
-user@machine:path/ $ make
+user@machine:path/ $ chmod u+x --recursive script
+user@machine:path/ $ script/build.sh
 ```
 
-En un entorno _Microsoft Windows_, en lugar de ejecutar el comando `make`, se deberá abrir la solución generada `bin/Compiler.sln` con el IDE _Microsoft Visual Studio 2022_. Los ejecutables que este sistema construye se depositan dentro del directorio `bin/Debug` y `bin/Release` según corresponda.
+En un entorno _Microsoft Windows_, en cambio, se debe ejecutar:
+
+```bash
+user@machine:path/ $ script\build.bat
+```
+
+Luego se deberá abrir la solución generada `bin\Compiler.sln` con el IDE _Microsoft Visual Studio 2022_. Los ejecutables que este sistema construye se depositan dentro del directorio `bin\Debug` y `bin\Release`, según corresponda.
 
 ## Ejecución
 
-Para compilar un programa, primero cree un archivo vacío denominado `program` con el siguiente contenido:
+Para compilar un programa, primero cree un archivo vacío denominado `program` (o el nombre que desee), con el siguiente contenido:
 
 ```
 123123 + 123 - 2 * (454 + 890 / 89)
 ```
 
-Luego, ejecute el compilador desde el directorio raíz del proyecto, inyectando el programa desde la entrada estándard:
+Luego, ejecute el compilador desde el directorio raíz del proyecto, o desde cualquier otro lugar indicando el path hacia el script `start.sh` y pasando por parámetro el path hacia el programa a compilar:
 
 ```bash
-user@machine:path/ $ cat program | bin/Compiler
+user@machine:path/ $ script/start.sh program
 ```
 
-Deberia obtener el resultado correcto de evaluar el programa anterior: `122318`.
+En Windows:
+
+```bash
+user@machine:path/ $ script\start.bat program
+```
+
+Debería obtener el resultado correcto de evaluar el programa anterior: `122318`.
+
+## Testing
+
+En Linux:
+
+```bash
+user@machine:path/ $ script/test.sh
+```
+
+En Windows:
+
+```bash
+user@machine:path/ $ script\test.bat
+```
+
+Si desea agregar nuevos casos de uso, deberá crear un archivo por cada uno, que contenga el programa a testear dentro de las carpetas `test/accept` o `test/reject` según corresponda (es decir, si el mismo debe ser aceptado o rechazado por el compilador).
