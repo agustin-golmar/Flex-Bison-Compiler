@@ -5,10 +5,12 @@
 *.hpp text eol=lf
 *.js text eol=lf
 *.json text eol=lf
+*.l text eol=lf
 *.md text eol=lf
 *.mjs text eol=lf
 *.sh text eol=lf
 *.sql text eol=lf
 *.ts text eol=lf
 *.txt text eol=lf
+*.y text eol=lf
 *.yml text eol=lf

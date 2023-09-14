@@ -41,3 +41,31 @@ void LogInfo(const char * const format, ...) {
 	Log(stdout, "[INFO ] ", format, "\n", arguments);
 	va_end(arguments);
 }
+
+void LogRaw(const char * const format, ...) {
+	va_list arguments;
+	va_start(arguments, format);
+	Log(stdout, "", format, "", arguments);
+	va_end(arguments);
+}
+
+void LogText(const char * text, const int length) {
+	for (int i = 0; i < length; ++i) {
+		switch (text[i]) {
+			case '\0':
+				LogRaw("\\0");
+				break;
+			case '\n':
+				LogRaw("\\n");
+				break;
+			case '\r':
+				LogRaw("\\r");
+				break;
+			case '\t':
+				LogRaw("\\t");
+				break;
+			default:
+				LogRaw("%c", text[i]);
+		}
+	}
+}

@@ -26,6 +26,9 @@
 	int integer;
 }
 
+// Un token que jamás debe ser usado en la gramática.
+%token <token> ERROR
+
 // IDs y tipos de los tokens terminales generados desde Flex.
 %token <token> ADD
 %token <token> SUB

@@ -24,8 +24,8 @@ whitespace		[ \f\n\r\t\v]
 %%
 
 "/*"										{ BEGIN(COMMENT); BeginCommentPatternAction(); }
-<COMMENT>.									{ ; }
-<COMMENT>{endline}							{ ; }
+<COMMENT>.									{ IgnoredPatternAction(yytext, yyleng); }
+<COMMENT>{endline}+							{ IgnoredPatternAction(yytext, yyleng); }
 <COMMENT>"*/"								{ EndCommentPatternAction(); BEGIN(INITIAL); }
 
 "+"											{ return AdditionOperatorPatternAction(yytext); }
@@ -38,7 +38,7 @@ whitespace		[ \f\n\r\t\v]
 
 {digit}+									{ return IntegerPatternAction(yytext, yyleng); }
 
-{whitespace}								{ IgnoredPatternAction(yytext, yyleng); }
+{whitespace}+								{ IgnoredPatternAction(yytext, yyleng); }
 
 .											{ return UnknownPatternAction(yytext, yyleng); }
 

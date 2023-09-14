@@ -5,21 +5,23 @@
 #include <string.h>
 
 /**
- * Implementación de "bison-grammar.h".
+ * Implementación de "bison-actions.h".
  */
 
 /**
 * Esta función se ejecuta cada vez que se emite un error de sintaxis.
 */
 void yyerror(const char * string) {
-	LogError("Mensaje: '%s' debido a '%s' (linea %d).", string, yytext, yylineno);
-	LogError("En ASCII es:");
-	LogErrorRaw("\t");
-	const int length = strlen(yytext);
-	for (int i = 0; i < length; ++i) {
-		LogErrorRaw("[%d]", yytext[i]);
+	LogErrorRaw("[ERROR] Mensaje: '%s', debido a '", string);
+	for (int i = 0; i < yyleng; ++i) {
+		switch (yytext[i]) {
+			case '\n':
+				LogErrorRaw("\\n");
+			default:
+				LogErrorRaw("%c", yytext[i]);
+		}
 	}
-	LogErrorRaw("\n\n");
+	LogErrorRaw("' (length = %d, linea %d).\n\n", yyleng, yylineno);
 }
 
 /**
@@ -29,7 +31,7 @@ void yyerror(const char * string) {
 * gramática, o lo que es lo mismo, que el programa pertenece al lenguaje.
 */
 int ProgramGrammarAction(const int value) {
-	LogDebug("\tProgramGrammarAction(%d)", value);
+	LogDebug("[Bison] ProgramGrammarAction(%d)", value);
 	/*
 	* "state" es una variable global que almacena el estado del compilador,
 	* cuyo campo "succeed" indica si la compilación fue o no exitosa, la cual
@@ -48,41 +50,41 @@ int ProgramGrammarAction(const int value) {
 }
 
 int AdditionExpressionGrammarAction(const int leftValue, const int rightValue) {
-	LogDebug("\tAdditionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
+	LogDebug("[Bison] AdditionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
 	return Add(leftValue, rightValue);
 }
 
 int SubtractionExpressionGrammarAction(const int leftValue, const int rightValue) {
-	LogDebug("\tSubtractionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
+	LogDebug("[Bison] SubtractionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
 	return Subtract(leftValue, rightValue);
 }
 
 int MultiplicationExpressionGrammarAction(const int leftValue, const int rightValue) {
-	LogDebug("\tMultiplicationExpressionGrammarAction(%d, %d)", leftValue, rightValue);
+	LogDebug("[Bison] MultiplicationExpressionGrammarAction(%d, %d)", leftValue, rightValue);
 	return Multiply(leftValue, rightValue);
 }
 
 int DivisionExpressionGrammarAction(const int leftValue, const int rightValue) {
-	LogDebug("\tDivisionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
+	LogDebug("[Bison] DivisionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
 	return Divide(leftValue, rightValue);
 }
 
 int FactorExpressionGrammarAction(const int value) {
-	LogDebug("\tFactorExpressionGrammarAction(%d)", value);
+	LogDebug("[Bison] FactorExpressionGrammarAction(%d)", value);
 	return value;
 }
 
 int ExpressionFactorGrammarAction(const int value) {
-	LogDebug("\tExpressionFactorGrammarAction(%d)", value);
+	LogDebug("[Bison] ExpressionFactorGrammarAction(%d)", value);
 	return value;
 }
 
 int ConstantFactorGrammarAction(const int value) {
-	LogDebug("\tConstantFactorGrammarAction(%d)", value);
+	LogDebug("[Bison] ConstantFactorGrammarAction(%d)", value);
 	return value;
 }
 
 int IntegerConstantGrammarAction(const int value) {
-	LogDebug("\tIntegerConstantGrammarAction(%d)", value);
+	LogDebug("[Bison] IntegerConstantGrammarAction(%d)", value);
 	return value;
 }

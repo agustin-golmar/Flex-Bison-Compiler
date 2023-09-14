@@ -3,8 +3,8 @@
 
 #include <stdio.h>
 
-// Descomentar para loguear en modo DEBUG (con m·s detalle).
-// #define DEBUG true
+// Descomentar para loguear en modo DEBUG (con m√°s detalle).
+#define DEBUG true
 
 void Log(FILE * const stream, const char * prefix, const char * const format, const char * suffix, va_list arguments);
 
@@ -15,5 +15,9 @@ void LogError(const char * const format, ...);
 void LogErrorRaw(const char * const format, ...);
 
 void LogInfo(const char * const format, ...);
+
+void LogRaw(const char * const format, ...);
+
+void LogText(const char * text, const int length);
 
 #endif
