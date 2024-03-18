@@ -38,21 +38,15 @@ elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
 		COMMAND flex --wincompat -o ../src/frontend/lexical-analysis/flex-scanner.c ../src/frontend/lexical-analysis/flex-patterns.l
 		DEPENDS ../src/frontend/syntactic-analysis/bison-parser.c ../src/frontend/syntactic-analysis/bison-parser.h)
 
-elseif (CMAKE_C_COMPILER_ID STREQUAL "Clang")
-	message(NOTICE "El compilador de C es LLVM Clang.")
-
-	# Opciones para Clang.
-	# add_compile_options(...)
+else ()
+	message(NOTICE "El compilador de C es desconocido.")
+	message(NOTICE "Incluya un 'elseif' adicional para manejar su compilador de forma específica.")
 
 	# Compilar el scanner con Flex.
 	add_custom_command(
 		OUTPUT ../src/frontend/lexical-analysis/flex-scanner.c
 		COMMAND flex -o ../src/frontend/lexical-analysis/flex-scanner.c ../src/frontend/lexical-analysis/flex-patterns.l
 		DEPENDS ../src/frontend/syntactic-analysis/bison-parser.c ../src/frontend/syntactic-analysis/bison-parser.h)
-else ()
-	message(NOTICE "El compilador de C es desconocido.")
-	message(NOTICE "No se generará el scanner con Flex.")
-	message(NOTICE "Incluya un 'elseif' adicional para manejar su compilador.")
 
 endif ()
 

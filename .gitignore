@@ -1,4 +1,4 @@
-# Folders:
+# Folders.
 .DS_Store/
 .vs/
 .vscode/
@@ -6,14 +6,15 @@ bin/
 build/
 cache/
 log/
-obj/
 node_modules/
+obj/
 
-# Files:
+# Files.
+.DS_Store
 *.csproj.user
 *~
 
-# Project specific:
+# Application specific.
 bison-parser.c
 bison-parser.h
 flex-scanner.c

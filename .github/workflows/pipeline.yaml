@@ -1,0 +1,42 @@
+# @see https://docs.github.com/en/actions
+jobs:
+  Integration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Pull repository."
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: "Install dependencies."
+        run: |
+          set -exo pipefail
+          sudo apt-get update
+          sudo apt-get install bison --yes
+          sudo apt-get install cmake --yes
+          sudo apt-get install flex --yes
+          sudo apt-get install gcc --yes
+          sudo apt-get install make --yes
+          echo "Available versions:"
+          echo "    Bison: $(bison --version)"
+          echo "    CMake: $(cmake --version)"
+          echo "    Flex:  $(flex --version)"
+          echo "    GCC:   $(gcc --version)"
+          echo "    Make:  $(make --version)"
+      - name: "Build solution."
+        run: |
+          set -exo pipefail
+          ls -halt
+          cmake -S . -B bin
+          cd bin
+          make
+
+name: "Continuous Integration Pipeline"
+
+# @see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
+on:
+  pull_request:
+    types:
+      - closed
+      - opened
+      - reopened
+  push
