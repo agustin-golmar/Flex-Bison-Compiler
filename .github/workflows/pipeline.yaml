@@ -39,4 +39,4 @@ on:
       - closed
       - opened
       - reopened
-  push
+  push:
