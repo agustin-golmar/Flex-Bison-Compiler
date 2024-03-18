@@ -10,14 +10,14 @@ jobs:
       - name: "Install dependencies."
         run: |
           sudo apt-get update --yes
-          chmod u+x --recursive script/linux
-          script/linux/install.sh
+          chmod u+x --recursive script/ubuntu
+          script/ubuntu/install.sh
       - name: "Build solution."
         run: |
-          script/linux/build.sh
+          script/ubuntu/build.sh
       - name: "Test solution."
         run: |
-          script/linux/test.sh
+          script/ubuntu/test.sh
 
 name: "CI"
 

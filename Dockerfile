@@ -14,13 +14,13 @@ USER ubuntu:ubuntu
 WORKDIR /home/ubuntu
 RUN sudo chown ubuntu:ubuntu /home/ubuntu
 
-# Copy only the Linux scripts inside image.
-COPY script/linux/ script/linux/
+# Copy only the Ubuntu scripts inside image.
+COPY script/ubuntu/ script/ubuntu/
 RUN sudo chown ubuntu:ubuntu --recursive /home/ubuntu
 
 # Install dependencies.
-RUN chmod u+x --recursive script/linux
-RUN script/linux/install.sh
+RUN chmod u+x --recursive script/ubuntu
+RUN script/ubuntu/install.sh
 
 # Cleaning image.
 RUN rm --force --recursive script
