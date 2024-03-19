@@ -1,6 +1,6 @@
 #! /bin/bash
 
-set -uo pipefail
+set -u
 
 BASE_PATH="$(dirname "$0")/../.."
 cd "$BASE_PATH"
