@@ -8,6 +8,7 @@ cd "$BASE_PATH"
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 OFF='\033[0m'
+STATUS=0
 
 echo "Compiler should accept..."
 echo ""
@@ -18,6 +19,7 @@ for test in $(ls test/accept/); do
 	if [ "$RESULT" == "0" ]; then
 		echo -e "    $test, ${GREEN}and it does${OFF} (status $RESULT)"
 	else
+		STATUS=1
 		echo -e "    $test, ${RED}but it rejects${OFF} (status $RESULT)"
 	fi
 done
@@ -32,9 +34,11 @@ for test in $(ls test/reject/); do
 	if [ "$RESULT" != "0" ]; then
 		echo -e "    $test, ${GREEN}and it does${OFF} (status $RESULT)"
 	else
+		STATUS=1
 		echo -e "    $test, ${RED}but it accepts${OFF} (status $RESULT)"
 	fi
 done
 echo ""
 
 echo "All done."
+exit $STATUS

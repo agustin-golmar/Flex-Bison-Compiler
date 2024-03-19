@@ -1,10 +1,10 @@
-#include "../../backend/support/logger.h"
-#include "flex-actions.h"
+#include "../../backend/support/Logger.h"
+#include "FlexActions.h"
 #include <stdlib.h>
 #include <string.h>
 
 /**
- * Implementación de "flex-actions.h".
+ * Implementación de "FlexActions.h".
  *
  * Cada función debe realizar 2 operaciones básicas para lograr el streaming
  * de tokens hacia Bison:

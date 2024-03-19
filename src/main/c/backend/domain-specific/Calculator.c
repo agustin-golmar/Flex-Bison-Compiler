@@ -1,7 +1,7 @@
-#include "calculator.h"
+#include "Calculator.h"
 
 /**
- * Implementación de "calculator.h".
+ * Implementación de "Calculator.h".
  */
 
 int Add(const int leftAddend, const int rightAddend) {

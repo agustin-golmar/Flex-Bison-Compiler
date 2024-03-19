@@ -1,6 +1,6 @@
 %{
 
-#include "flex-actions.h"
+#include "FlexActions.h"
 
 %}
 

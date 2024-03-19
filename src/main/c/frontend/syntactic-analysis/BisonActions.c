@@ -1,6 +1,6 @@
-#include "../../backend/domain-specific/calculator.h"
-#include "../../backend/support/logger.h"
-#include "bison-actions.h"
+#include "../../backend/domain-specific/Calculator.h"
+#include "../../backend/support/Logger.h"
+#include "BisonActions.h"
 #include <stdio.h>
 #include <string.h>
 

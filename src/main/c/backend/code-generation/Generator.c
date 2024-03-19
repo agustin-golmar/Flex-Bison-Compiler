@@ -1,8 +1,8 @@
-#include "../support/logger.h"
-#include "generator.h"
+#include "../support/Logger.h"
+#include "Generator.h"
 
 /**
- * Implementación de "generator.h".
+ * Implementación de "Generator.h".
  */
 
 void Generator(int result) {
