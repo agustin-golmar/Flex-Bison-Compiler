@@ -1,90 +1,61 @@
-#include "../../backend/domain-specific/Calculator.h"
-#include "../../backend/support/Logger.h"
 #include "BisonActions.h"
-#include <stdio.h>
-#include <string.h>
 
-/**
- * Implementación de "bison-actions.h".
- */
+/* MODULE INTERNAL STATE */
 
-/**
-* Esta función se ejecuta cada vez que se emite un error de sintaxis.
-*/
-void yyerror(const char * string) {
-	LogErrorRaw("[ERROR] Mensaje: '%s', debido a '", string);
-	for (int i = 0; i < yyleng; ++i) {
-		switch (yytext[i]) {
-			case '\n':
-				LogErrorRaw("\\n");
-			default:
-				LogErrorRaw("%c", yytext[i]);
-		}
+static Logger * _logger = NULL;
+
+void initializeBisonActionsModule() {
+	_logger = createLogger("BisonActions");
+}
+
+void shutdownBisonActionsModule() {
+	if (_logger != NULL) {
+		destroyLogger(_logger);
 	}
-	LogErrorRaw("' (length = %d, linea %d).\n\n", yyleng, yylineno);
 }
 
-/**
-* Esta acción se corresponde con el no-terminal que representa el símbolo
-* inicial de la gramática, y por ende, es el último en ser ejecutado, lo que
-* indica que efectivamente el programa de entrada se pudo generar con esta
-* gramática, o lo que es lo mismo, que el programa pertenece al lenguaje.
-*/
-int ProgramGrammarAction(const int value) {
-	LogDebug("[Bison] ProgramGrammarAction(%d)", value);
-	/*
-	* "state" es una variable global que almacena el estado del compilador,
-	* cuyo campo "succeed" indica si la compilación fue o no exitosa, la cual
-	* es utilizada en la función "main".
-	*/
-	state.succeed = true;
-	/*
-	* Por otro lado, "result" contiene el resultado de aplicar el análisis
-	* sintáctico mediante Bison, y almacenar el nood raíz del AST construido
-	* en esta variable. Para el ejemplo de la calculadora, no hay AST porque
-	* la expresión se computa on-the-fly, y es la razón por la cual esta
-	* variable es un simple entero, en lugar de un nodo.
-	*/
-	state.result = value;
-	return value;
+/* PRIVATE FUNCTIONS */
+
+
+
+/* PUBLIC FUNCTIONS */
+
+Constant * IntegerConstantSemanticAction(const int integer) {
+	return NULL;
 }
 
-int AdditionExpressionGrammarAction(const int leftValue, const int rightValue) {
-	LogDebug("[Bison] AdditionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
-	return Add(leftValue, rightValue);
+Expression * AdditionExpressionSemanticAction(Expression * left, Expression * right) {
+	return NULL;
 }
 
-int SubtractionExpressionGrammarAction(const int leftValue, const int rightValue) {
-	LogDebug("[Bison] SubtractionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
-	return Subtract(leftValue, rightValue);
+Expression * DivisionExpressionSemanticAction(Expression * left, Expression * right) {
+	return NULL;
 }
 
-int MultiplicationExpressionGrammarAction(const int leftValue, const int rightValue) {
-	LogDebug("[Bison] MultiplicationExpressionGrammarAction(%d, %d)", leftValue, rightValue);
-	return Multiply(leftValue, rightValue);
+Expression * FactorExpressionSemanticAction(Factor * factor) {
+	return NULL;
 }
 
-int DivisionExpressionGrammarAction(const int leftValue, const int rightValue) {
-	LogDebug("[Bison] DivisionExpressionGrammarAction(%d, %d)", leftValue, rightValue);
-	return Divide(leftValue, rightValue);
+Expression * MultiplicationExpressionSemanticAction(Expression * left, Expression * right) {
+	return NULL;
 }
 
-int FactorExpressionGrammarAction(const int value) {
-	LogDebug("[Bison] FactorExpressionGrammarAction(%d)", value);
-	return value;
+Expression * SubtractionExpressionSemanticAction(Expression * left, Expression * right) {
+	return NULL;
 }
 
-int ExpressionFactorGrammarAction(const int value) {
-	LogDebug("[Bison] ExpressionFactorGrammarAction(%d)", value);
-	return value;
+Factor * ConstantFactorSemanticAction(Constant * constant) {
+	return NULL;
 }
 
-int ConstantFactorGrammarAction(const int value) {
-	LogDebug("[Bison] ConstantFactorGrammarAction(%d)", value);
-	return value;
+Factor * ExpressionFactorSemanticAction(Expression * expression) {
+	return NULL;
 }
 
-int IntegerConstantGrammarAction(const int value) {
-	LogDebug("[Bison] IntegerConstantGrammarAction(%d)", value);
-	return value;
+Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Expression * expression) {
+	Program * program = calloc(1, sizeof(Program));
+	program->expression = expression;
+	compilerState->abstractSyntaxtTree = program;
+	compilerState->succeed = true;
+	return program;
 }

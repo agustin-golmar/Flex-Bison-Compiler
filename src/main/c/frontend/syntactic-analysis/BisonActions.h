@@ -1,31 +1,30 @@
 #ifndef BISON_ACTIONS_HEADER
 #define BISON_ACTIONS_HEADER
 
-#include "../../backend/semantic-analysis/AbstractSyntaxTree.h"
-#include "../../backend/support/Shared.h"
+#include "../../shared/CompilerState.h"
+#include "../../shared/support/Logger.h"
+#include "../../shared/Type.h"
+#include "AbstractSyntaxTree.h"
+#include "SyntacticAnalyzer.h"
+
+/** Initialize module's internal state. */
+void initializeBisonActionsModule();
+
+/** Shutdown module's internal state. */
+void shutdownBisonActionsModule();
 
 /**
- * Se definen las acciones a ejecutar sobre cada regla de producción de la
- * gramática. El objetivo de cada acción debe ser el de construir el nodo
- * adecuado que almacene la información requerida en el árbol de sintaxis
- * abstracta (i.e., el AST).
+ * Bison semantic actions.
  */
 
-// Programa.
-int ProgramGrammarAction(const int value);
-
-// Expresión.
-int AdditionExpressionGrammarAction(const int leftValue, const int rightValue);
-int SubtractionExpressionGrammarAction(const int leftValue, const int rightValue);
-int MultiplicationExpressionGrammarAction(const int leftValue, const int rightValue);
-int DivisionExpressionGrammarAction(const int leftValue, const int rightValue);
-int FactorExpressionGrammarAction(const int value);
-
-// Factores.
-int ExpressionFactorGrammarAction(const int value);
-int ConstantFactorGrammarAction(const int value);
-
-// Constantes.
-int IntegerConstantGrammarAction(const int value);
+Constant * IntegerConstantSemanticAction(const int integer);
+Expression * AdditionExpressionSemanticAction(Expression * left, Expression * right);
+Expression * DivisionExpressionSemanticAction(Expression * left, Expression * right);
+Expression * FactorExpressionSemanticAction(Factor * factor);
+Expression * MultiplicationExpressionSemanticAction(Expression * left, Expression * right);
+Expression * SubtractionExpressionSemanticAction(Expression * left, Expression * right);
+Factor * ConstantFactorSemanticAction(Constant * constant);
+Factor * ExpressionFactorSemanticAction(Expression * expression);
+Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Expression * expression);
 
 #endif

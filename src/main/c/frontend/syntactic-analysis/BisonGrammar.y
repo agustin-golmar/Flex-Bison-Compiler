@@ -4,72 +4,64 @@
 
 %}
 
-// Tipos de dato utilizados en las variables semánticas ($$, $1, $2, etc.).
+%define api.value.union.name SemanticValue
+
 %union {
-	// No-terminales (backend).
-	/*
-	Program program;
-	Expression expression;
-	Factor factor;
-	Constant constant;
-	...
-	*/
+	/** Terminals. */
 
-	// No-terminales (frontend).
-	int program;
-	int expression;
-	int factor;
-	int constant;
-
-	// Terminales.
-	token token;
 	int integer;
+	Token token;
+
+	/** Non-terminals. */
+
+	Constant * constant;
+	Expression * expression;
+	Factor * factor;
+	Program * program;
 }
 
-// Un token que jamás debe ser usado en la gramática.
-%token <token> ERROR
-
-// IDs y tipos de los tokens terminales generados desde Flex.
-%token <token> ADD
-%token <token> SUB
-%token <token> MUL
-%token <token> DIV
-
-%token <token> OPEN_PARENTHESIS
-%token <token> CLOSE_PARENTHESIS
-
+/** Terminals. */
 %token <integer> INTEGER
+%token <token> ADD
+%token <token> CLOSE_PARENTHESIS
+%token <token> DIV
+%token <token> MUL
+%token <token> OPEN_PARENTHESIS
+%token <token> SUB
 
-// Tipos de dato para los no-terminales generados desde Bison.
-%type <program> program
+%token <token> UNKNOWN
+
+/** Non-terminals. */
+%type <constant> constant
 %type <expression> expression
 %type <factor> factor
-%type <constant> constant
+%type <program> program
 
-// Reglas de asociatividad y precedencia (de menor a mayor).
+/**
+ * Precedence and associativity.
+ *
+ * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
+ */
 %left ADD SUB
 %left MUL DIV
 
-// El símbolo inicial de la gramatica.
-%start program
-
 %%
 
-program: expression													{ $$ = ProgramGrammarAction($1); }
+program: expression													{ $$ = ExpressionProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
-expression: expression[left] ADD expression[right]					{ $$ = AdditionExpressionGrammarAction($left, $right); }
-	| expression[left] SUB expression[right]						{ $$ = SubtractionExpressionGrammarAction($left, $right); }
-	| expression[left] MUL expression[right]						{ $$ = MultiplicationExpressionGrammarAction($left, $right); }
-	| expression[left] DIV expression[right]						{ $$ = DivisionExpressionGrammarAction($left, $right); }
-	| factor														{ $$ = FactorExpressionGrammarAction($1); }
+expression: expression[left] ADD expression[right]					{ $$ = AdditionExpressionSemanticAction($left, $right); }
+	| expression[left] DIV expression[right]						{ $$ = DivisionExpressionSemanticAction($left, $right); }
+	| expression[left] MUL expression[right]						{ $$ = MultiplicationExpressionSemanticAction($left, $right); }
+	| expression[left] SUB expression[right]						{ $$ = SubtractionExpressionSemanticAction($left, $right); }
+	| factor														{ $$ = FactorExpressionSemanticAction($1); }
 	;
 
-factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS				{ $$ = ExpressionFactorGrammarAction($2); }
-	| constant														{ $$ = ConstantFactorGrammarAction($1); }
+factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS				{ $$ = ExpressionFactorSemanticAction($2); }
+	| constant														{ $$ = ConstantFactorSemanticAction($1); }
 	;
 
-constant: INTEGER													{ $$ = IntegerConstantGrammarAction($1); }
+constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
 	;
 
 %%

@@ -4,42 +4,46 @@
 
 %}
 
-/* Obliga a crear una regla explícita para manejar lexemas desconocidos. */
-%option nodefault
+/**
+ * Enable start condition manipulation functions.
+ */
+%option stack
 
-/* Escanea un único archivo y se detiene. */
-%option noyywrap
+/**
+ * Flex contexts (a.k.a. start conditions).
+ *
+ * @see https://westes.github.io/flex/manual/Start-Conditions.html
+ */
+%x MULTILINE_COMMENT
 
-/* Dispone una variable global "yylineno" con el número de línea actual. */
-%option yylineno
+/**
+ * Reusable patterns.
+ *
+ * @see https://westes.github.io/flex/manual/Matching.html
+ * @see https://westes.github.io/flex/manual/Patterns.html
+ */
 
-/* Contextos de Flex. */
-%x COMMENT
+%%
 
-/* Patrones reutilizables. */
-digit			[0-9]
-endline			[\n]
-whitespace		[ \f\n\r\t\v]
+"/*"								{ BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
+<MULTILINE_COMMENT>"*/"				{ EndMultilineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+<MULTILINE_COMMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+
+"-"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext()); }
+"*"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext()); }
+"/"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext()); }
+"+"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext()); }
+
+"("									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext()); }
+")"									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext()); }
+
+[[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
+
+[[:space:]]+						{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+.									{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 
 %%
 
-"/*"										{ BEGIN(COMMENT); BeginCommentPatternAction(); }
-<COMMENT>.									{ IgnoredPatternAction(yytext, yyleng); }
-<COMMENT>{endline}+							{ IgnoredPatternAction(yytext, yyleng); }
-<COMMENT>"*/"								{ EndCommentPatternAction(); BEGIN(INITIAL); }
-
-"+"											{ return AdditionOperatorPatternAction(yytext); }
-"-"											{ return SubtractionOperatorPatternAction(yytext); }
-"*"											{ return MultiplicationOperatorPatternAction(yytext); }
-"/"											{ return DivisionOperatorPatternAction(yytext); }
-
-"("											{ return OpenParenthesisPatternAction(yytext); }
-")"											{ return CloseParenthesisPatternAction(yytext); }
-
-{digit}+									{ return IntegerPatternAction(yytext, yyleng); }
-
-{whitespace}+								{ IgnoredPatternAction(yytext, yyleng); }
-
-.											{ return UnknownPatternAction(yytext, yyleng); }
-
-%%
+#include "FlexExport.h"

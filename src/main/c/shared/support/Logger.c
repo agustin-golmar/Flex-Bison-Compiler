@@ -77,8 +77,12 @@ Logger * createLogger(char * name) {
 }
 
 void destroyLogger(Logger * logger) {
-	free(logger->name);
-	free(logger);
+	if (logger != NULL) {
+		if (logger->name != NULL) {
+			free(logger->name);
+		}
+		free(logger);
+	}
 }
 
 void logCritical(const Logger * logger, const char * const format, ...) {

@@ -1,4 +1,4 @@
-#include "../support/Logger.h"
+#include "../../shared/support/Logger.h"
 #include "Generator.h"
 
 /**
@@ -6,5 +6,5 @@
  */
 
 void Generator(int result) {
-	LogInfo("El resultado de la expresion computada es: '%d'.", result);
+	//LogInfo("El resultado de la expresion computada es: '%d'.", result);
 }

@@ -1,97 +1,90 @@
-#include "../../backend/support/Logger.h"
 #include "FlexActions.h"
-#include <stdlib.h>
-#include <string.h>
+
+/* MODULE INTERNAL STATE */
+
+static Logger * _logger = NULL;
+static boolean _logIgnoredLexemes = true;
+
+void initializeFlexActionsModule() {
+	_logIgnoredLexemes = getBooleanOrDefault("LOG_IGNORED_LEXEMES", _logIgnoredLexemes);
+	_logger = createLogger("FlexActions");
+}
+
+void shutdownFlexActionsModule() {
+	if (_logger != NULL) {
+		destroyLogger(_logger);
+	}
+}
+
+/* PRIVATE FUNCTIONS */
+
+static void _logLexicalAnalyzerContext(const char * functionName, LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 /**
- * Implementación de "FlexActions.h".
- *
- * Cada función debe realizar 2 operaciones básicas para lograr el streaming
- * de tokens hacia Bison:
- *
- *	1) Computar los atributos del token y almacenarlos donde sea conveniente
- *		(en la tabla de símbolos, en "yylval", o en ambos).
- *	2) Retornar el token que identifica el terminal identificado.
- *
- * Bison utilizará el token retornado en el punto (2) para matchear dicho
- * terminal en la gramática. Por otro lado, el valor almacenado en "yylval" es
- * el que Bison proveerá como valor semántico al realizar una reducción
- * (mediante $1, $2, $3, etc.).
+ * Logs a lexical-analyzer context in DEBUGGING level.
  */
-
-char * copyLexeme(const char * lexeme, const int length) {
-	char * lexemeCopy = (char *) calloc(length + 1, sizeof(char));
-	strncpy(lexemeCopy, lexeme, length);
-	return lexemeCopy;
+static void _logLexicalAnalyzerContext(const char * functionName, LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	char * escapedLexeme = escape(lexicalAnalyzerContext->lexeme);
+	logDebugging(_logger, "%s: %s (context = %d, length = %d, line = %d)",
+		functionName,
+		escapedLexeme,
+		lexicalAnalyzerContext->currentContext,
+		lexicalAnalyzerContext->length,
+		lexicalAnalyzerContext->line);
+	free(escapedLexeme);
 }
 
-void BeginCommentPatternAction() {
-	LogDebug("[Flex] [COMMENT] BeginCommentPatternAction............................");
+/* PUBLIC FUNCTIONS */
+
+void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	if (_logIgnoredLexemes) {
+		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	}
 }
 
-void EndCommentPatternAction() {
-	LogDebug("[Flex] [COMMENT] EndCommentPatternAction..............................");
+void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	if (_logIgnoredLexemes) {
+		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	}
 }
 
-token AdditionOperatorPatternAction() {
-	LogDebug("[Flex] AdditionOperatorPatternAction: '+'.");
-	yylval.token = ADD;
-	return ADD;
+void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	if (_logIgnoredLexemes) {
+		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	}
 }
 
-token CloseParenthesisPatternAction() {
-	LogDebug("[Flex] CloseParenthesisPatternAction: ')'.");
-	yylval.token = CLOSE_PARENTHESIS;
-	return CLOSE_PARENTHESIS;
+Token ArithmeticOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	Token token;
+	switch (lexicalAnalyzerContext->lexeme[0]) {
+		case '-': token = SUB; break;
+		case '*': token = MUL; break;
+		case '/': token = DIV; break;
+		case '+': token = ADD; break;
+	}
+	lexicalAnalyzerContext->semanticValue->token = token;
+	return token;
 }
 
-token DivisionOperatorPatternAction() {
-	LogDebug("[Flex] DivisionOperatorPatternAction: '/'.");
-	yylval.token = DIV;
-	return DIV;
-}
-
-token IntegerPatternAction(const char * lexeme, const int length) {
-	LogDebug("[Flex] IntegerPatternAction: '%s' (length = %d).", lexeme, length);
-	char * lexemeCopy = copyLexeme(lexeme, length);
-	yylval.integer = atoi(lexemeCopy);
-	free(lexemeCopy);
+Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->integer = atoi(lexicalAnalyzerContext->lexeme);
 	return INTEGER;
 }
 
-token MultiplicationOperatorPatternAction() {
-	LogDebug("[Flex] MultiplicationOperatorPatternAction: '*'.");
-	yylval.token = MUL;
-	return MUL;
+Token ParenthesisLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	Token token;
+	switch (lexicalAnalyzerContext->lexeme[0]) {
+		case '(': token = OPEN_PARENTHESIS; break;
+		case ')': token = CLOSE_PARENTHESIS; break;
+	}
+	lexicalAnalyzerContext->semanticValue->token = token;
+	return token;
 }
 
-token OpenParenthesisPatternAction() {
-	LogDebug("[Flex] OpenParenthesisPatternAction: '('.");
-	yylval.token = OPEN_PARENTHESIS;
-	return OPEN_PARENTHESIS;
-}
-
-token SubtractionOperatorPatternAction() {
-	LogDebug("[Flex] SubtractionOperatorPatternAction: '-'.");
-	yylval.token = SUB;
-	return SUB;
-}
-
-token UnknownPatternAction(const char * lexeme, const int length) {
-	char * lexemeCopy = copyLexeme(lexeme, length);
-	LogDebug("[Flex] UnknownPatternAction: '%s' (length = %d).", lexemeCopy, length);
-	free(lexemeCopy);
-	yylval.token = ERROR;
-	// Al emitir este token, el compilador aborta la ejecución.
-	return ERROR;
-}
-
-void IgnoredPatternAction(const char * lexeme, const int length) {
-	char * lexemeCopy = copyLexeme(lexeme, length);
-	LogRaw("[DEBUG] [Flex] IgnoredPatternAction: '");
-	LogText(lexemeCopy, length);
-	LogRaw("' (length = %d).\n", length);
-	free(lexemeCopy);
-	// Como no debe hacer nada con el patrón, solo se loguea en consola.
-	// No se emite ningún token.
+Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	return UNKNOWN;
 }
