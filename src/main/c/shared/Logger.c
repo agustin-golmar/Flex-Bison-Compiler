@@ -54,15 +54,15 @@ static const char * _toContextString(const LoggingLevel loggingLevel) {
 		case ALL:
 			return "[ALL  ]";
 		case DEBUGGING:
-			return "[DEBUG]";
+			return "[" DEBUGGING_COLOR "DEBUG" DEFAULT_COLOR "]";
 		case INFORMATION:
-			return "[INFO ]";
+			return "[" INFORMATION_COLOR "INFO " DEFAULT_COLOR "]";
 		case WARNING:
-			return "[WARN ]";
+			return "[" WARNING_COLOR "WARN " DEFAULT_COLOR "]";
 		case ERROR:
-			return "[ERROR]";
+			return "[" ERROR_COLOR "ERROR" DEFAULT_COLOR "]";
 		default:
-			return "[FATAL]";
+			return "[" CRITICAL_COLOR "FATAL" DEFAULT_COLOR "]";
 	}
 }
 

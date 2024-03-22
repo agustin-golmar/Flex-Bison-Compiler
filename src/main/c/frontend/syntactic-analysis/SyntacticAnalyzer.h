@@ -2,7 +2,12 @@
 #define SYNTACTIC_ANALYZER_HEADER
 
 #include "../../shared/CompilerState.h"
-#include "../../shared/support/Logger.h"
+#include "../../shared/Logger.h"
+
+/** Bison imported functions. */
+
+int yylex(void);
+void yyerror(const char * string);
 
 /** Initialize module's internal state. */
 void initializeSyntacticAnalyzerModule();

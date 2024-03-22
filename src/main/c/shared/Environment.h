@@ -1,7 +1,7 @@
 #ifndef ENVIRONMENT_HEADER
 #define ENVIRONMENT_HEADER
 
-#include "../Type.h"
+#include "Type.h"
 #include <stdlib.h>
 #include <string.h>
 

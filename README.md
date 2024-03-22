@@ -6,12 +6,22 @@
 
 A base compiler example, developed with Flex and Bison.
 
+* [Environment](#environment)
 * [CI/CD](#cicd)
 * [Recommended Extensions](#recommended-extensions)
 * Installation
   * [Docker](doc/readme/Docker.md)
   * [Microsoft Windows](doc/readme/Windows.md)
   * [Ubuntu](doc/readme/Ubuntu.md)
+
+## Environment
+
+Set the following environment variables to control and configure the behaviour of the application:
+
+|Name|Default|Description|
+|-|:-:|-|
+|`LOG_IGNORED_LEXEMES`|`true`|When `true`, logs all of the ignored lexemes found with Flex at DEBUGGING level. To remove those logs from the console output set it to `false`.|
+|`LOGGING_LEVEL`|`INFORMATION`|The minimum level to log in the console output. From lower to higher, the available levels are: `ALL`, `DEBUGGING`, `INFORMATION`, `WARNING`, `ERROR` and `CRITICAL`.|
 
 ## CI/CD
 

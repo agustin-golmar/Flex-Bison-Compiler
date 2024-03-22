@@ -1,6 +1,15 @@
 #ifndef ABSTRACT_SYNTAX_TREE_HEADER
 #define ABSTRACT_SYNTAX_TREE_HEADER
 
+#include "../../shared/Logger.h"
+#include <stdlib.h>
+
+/** Initialize module's internal state. */
+void initializeAbstractSyntaxTreeModule();
+
+/** Shutdown module's internal state. */
+void shutdownAbstractSyntaxTreeModule();
+
 /**
  * This typedefs allows self-referencing types.
  */
@@ -35,18 +44,34 @@ struct Constant {
 };
 
 struct Factor {
-	Expression * expression;
+	union {
+		Constant * constant;
+		Expression * expression;
+	};
 	FactorType type;
 };
 
 struct Expression {
-	Expression * leftExpression;
-	Expression * rightExpression;
+	union {
+		Factor * factor;
+		struct {
+			Expression * leftExpression;
+			Expression * rightExpression;
+		};
+	};
 	ExpressionType type;
 };
 
 struct Program {
 	Expression * expression;
 };
+
+/**
+ * Node recursive destructors.
+ */
+void releaseConstant(Constant * constant);
+void releaseExpression(Expression * expression);
+void releaseFactor(Factor * factor);
+void releaseProgram(Program * program);
 
 #endif

@@ -2,9 +2,9 @@
 #include "frontend/syntactic-analysis/BisonActions.h"
 #include "frontend/syntactic-analysis/SyntacticAnalyzer.h"
 #include "shared/CompilerState.h"
-#include "shared/support/Environment.h"
-#include "shared/support/Logger.h"
-#include "shared/support/String.h"
+#include "shared/Environment.h"
+#include "shared/Logger.h"
+#include "shared/String.h"
 
 /**
  * The main entry-point of the entire application.
@@ -14,6 +14,7 @@ const int main(const int count, const char ** arguments) {
 	initializeFlexActionsModule();
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
+	initializeAbstractSyntaxTreeModule();
 
 	// Logs the arguments of the application.
 	for (int k = 0; k < count; ++k) {
@@ -33,6 +34,7 @@ const int main(const int count, const char ** arguments) {
 		// ...
 	}
 
+	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();
 	shutdownFlexActionsModule();

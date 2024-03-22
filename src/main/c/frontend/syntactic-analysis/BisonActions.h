@@ -2,10 +2,11 @@
 #define BISON_ACTIONS_HEADER
 
 #include "../../shared/CompilerState.h"
-#include "../../shared/support/Logger.h"
+#include "../../shared/Logger.h"
 #include "../../shared/Type.h"
 #include "AbstractSyntaxTree.h"
 #include "SyntacticAnalyzer.h"
+#include <stdlib.h>
 
 /** Initialize module's internal state. */
 void initializeBisonActionsModule();
@@ -17,12 +18,9 @@ void shutdownBisonActionsModule();
  * Bison semantic actions.
  */
 
-Constant * IntegerConstantSemanticAction(const int integer);
-Expression * AdditionExpressionSemanticAction(Expression * left, Expression * right);
-Expression * DivisionExpressionSemanticAction(Expression * left, Expression * right);
+Constant * IntegerConstantSemanticAction(const int value);
+Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
 Expression * FactorExpressionSemanticAction(Factor * factor);
-Expression * MultiplicationExpressionSemanticAction(Expression * left, Expression * right);
-Expression * SubtractionExpressionSemanticAction(Expression * left, Expression * right);
 Factor * ConstantFactorSemanticAction(Constant * constant);
 Factor * ExpressionFactorSemanticAction(Expression * expression);
 Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Expression * expression);

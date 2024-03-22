@@ -8,6 +8,52 @@
 #include <stdlib.h>
 
 /**
+ * Platform dependent macros.
+ *
+ * @see https://sourceforge.net/p/predef/wiki/OperatingSystems/
+ */
+#if (defined (__APPLE__) && defined (__MACH__)) \
+	|| defined (Macintosh) \
+	|| defined (macintosh)
+#define CRITICAL_COLOR "\033[0;31m"
+#define DEBUGGING_COLOR "\033[0;35m"
+#define DEFAULT_COLOR "\033[0m"
+#define ERROR_COLOR "\033[1;31m"
+#define INFORMATION_COLOR "\033[0;32m"
+#define WARNING_COLOR "\033[0;33m"
+#elif defined (__GNU__) \
+	|| defined (__gnu_linux__) \
+	|| defined (__linux__) \
+	|| defined (__linux) \
+	|| defined (linux)
+#define CRITICAL_COLOR "\033[0;31m"
+#define DEBUGGING_COLOR "\033[0;35m"
+#define DEFAULT_COLOR "\033[0m"
+#define ERROR_COLOR "\033[1;31m"
+#define INFORMATION_COLOR "\033[0;32m"
+#define WARNING_COLOR "\033[0;33m"
+#elif defined (__TOS_WIN__) \
+	|| defined (__WIN32__) \
+	|| defined (__WINDOWS__) \
+	|| defined (_WIN16) \
+	|| defined (_WIN32) \
+	|| defined (_WIN64)
+#define CRITICAL_COLOR "\x1B[31m"
+#define DEBUGGING_COLOR "\x1B[35m"
+#define DEFAULT_COLOR "\x1B[0m"
+#define ERROR_COLOR "\x1B[91m"
+#define INFORMATION_COLOR "\x1B[92m"
+#define WARNING_COLOR "\x1B[33m"
+#else
+#define CRITICAL_COLOR ""
+#define DEBUGGING_COLOR ""
+#define DEFAULT_COLOR ""
+#define ERROR_COLOR ""
+#define INFORMATION_COLOR ""
+#define WARNING_COLOR ""
+#endif
+
+/**
  * The available logging levels. Highest levels represents worst failures;
  * lower levels provides greater traceability.
  */

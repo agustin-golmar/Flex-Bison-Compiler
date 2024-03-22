@@ -20,6 +20,16 @@
 	Program * program;
 }
 
+/**
+ * Destructors.
+ *
+ * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
+ */
+%destructor { releaseConstant($$); } <constant>
+%destructor { releaseExpression($$); } <expression>
+%destructor { releaseFactor($$); } <factor>
+%destructor { releaseProgram($$); } <program>
+
 /** Terminals. */
 %token <integer> INTEGER
 %token <token> ADD
@@ -50,10 +60,10 @@
 program: expression													{ $$ = ExpressionProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
-expression: expression[left] ADD expression[right]					{ $$ = AdditionExpressionSemanticAction($left, $right); }
-	| expression[left] DIV expression[right]						{ $$ = DivisionExpressionSemanticAction($left, $right); }
-	| expression[left] MUL expression[right]						{ $$ = MultiplicationExpressionSemanticAction($left, $right); }
-	| expression[left] SUB expression[right]						{ $$ = SubtractionExpressionSemanticAction($left, $right); }
+expression: expression[left] ADD expression[right]					{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
+	| expression[left] DIV expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
+	| expression[left] MUL expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
+	| expression[left] SUB expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
 	| factor														{ $$ = FactorExpressionSemanticAction($1); }
 	;
 

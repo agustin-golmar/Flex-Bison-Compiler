@@ -1,21 +1,17 @@
 #include "Calculator.h"
 
-/**
- * Implementación de "Calculator.h".
- */
-
-int Add(const int leftAddend, const int rightAddend) {
+int add(const int leftAddend, const int rightAddend) {
 	return leftAddend + rightAddend;
 }
 
-int Subtract(const int minuend, const int subtract) {
-	return minuend - subtract;
+int divide(const int dividend, const int divisor) {
+	return dividend / divisor;
 }
 
-int Multiply(const int multiplicand, const int multiplier) {
+int multiply(const int multiplicand, const int multiplier) {
 	return multiplicand * multiplier;
 }
 
-int Divide(const int dividend, const int divisor) {
-	return dividend / divisor;
+int subtract(const int minuend, const int subtract) {
+	return minuend - subtract;
 }

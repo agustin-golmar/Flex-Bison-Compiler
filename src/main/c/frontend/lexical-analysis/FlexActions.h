@@ -1,9 +1,9 @@
 #ifndef FLEX_ACTIONS_HEADER
 #define FLEX_ACTIONS_HEADER
 
-#include "../../shared/support/Environment.h"
-#include "../../shared/support/Logger.h"
-#include "../../shared/support/String.h"
+#include "../../shared/Environment.h"
+#include "../../shared/Logger.h"
+#include "../../shared/String.h"
 #include "../../shared/Type.h"
 #include "../syntactic-analysis/AbstractSyntaxTree.h"
 #include "../syntactic-analysis/BisonParser.h"

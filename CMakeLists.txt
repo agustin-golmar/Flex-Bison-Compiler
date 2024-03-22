@@ -59,12 +59,13 @@ add_executable(Compiler
 	src/main/c/frontend/lexical-analysis/FlexActions.c
 	src/main/c/frontend/lexical-analysis/FlexScanner.c
 	src/main/c/frontend/lexical-analysis/LexicalAnalyzerContext.c
+	src/main/c/frontend/syntactic-analysis/AbstractSyntaxTree.c
 	src/main/c/frontend/syntactic-analysis/BisonActions.c
 	src/main/c/frontend/syntactic-analysis/BisonParser.c
 	src/main/c/frontend/syntactic-analysis/SyntacticAnalyzer.c
-	src/main/c/shared/support/Environment.c
-	src/main/c/shared/support/Logger.c
-	src/main/c/shared/support/String.c
+	src/main/c/shared/Environment.c
+	src/main/c/shared/Logger.c
+	src/main/c/shared/String.c
 	# Add more *.c files if needed (otherwise, they won't be compiled).
 	# ...
 )
