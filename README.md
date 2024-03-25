@@ -6,47 +6,39 @@
 
 A base compiler example, developed with Flex and Bison.
 
-## Requirements
+* [Environment](#environment)
+* [CI/CD](#cicd)
+* [Recommended Extensions](#recommended-extensions)
+* Installation
+  * [Docker](doc/readme/Docker.md)
+  * [Microsoft Windows](doc/readme/Windows.md)
+  * [Ubuntu](doc/readme/Ubuntu.md)
 
-* [Bison v3.8.2](https://www.gnu.org/software/bison/)
-* [CMake v3.24.1](https://cmake.org/)
-* [Docker v24.0.6](https://docs.docker.com/get-docker/)
-* [Flex v2.6.4](https://github.com/westes/flex)
-* [GCC v11.1.0](https://gcc.gnu.org/)
-* [Make v4.3](https://www.gnu.org/software/make/)
-* [Microsoft Visual Studio 2022](https://visualstudio.microsoft.com/vs/community/)
+## Environment
 
-## Install
+Set the following environment variables to control and configure the behaviour of the application:
 
-```bash
-user@machine:path/ $ chmod u+x --recursive script/linux
-user@machine:path/ $ script/linux/install.sh
-```
+|Name|Default|Description|
+|-|:-:|-|
+|`LOG_IGNORED_LEXEMES`|`true`|When `true`, logs all of the ignored lexemes found with Flex at DEBUGGING level. To remove those logs from the console output set it to `false`.|
+|`LOGGING_LEVEL`|`INFORMATION`|The minimum level to log in the console output. From lower to higher, the available levels are: `ALL`, `DEBUGGING`, `INFORMATION`, `WARNING`, `ERROR` and `CRITICAL`.|
 
-To build an image (only the first time you clone the repository), and deploy a container:
+## CI/CD
 
-```bash
-user@machine:path/ $ script/linux/docker-build.sh
-user@machine:path/ $ script/linux/docker-run.sh
-```
+To trigger an automatic integration on every push or PR (_Pull Request_), you must activate _GitHub Actions_ in the _Settings_ tab. Use the following configuration:
 
-## Build
+|Key|Value|
+|-|-|
+|Actions permissions|Allow all actions and reusable workflows|
+|Artifact and log retention|`30 days`|
+|Fork pull request workflows from outside collaborators|Require approval for all outside collaborators|
+|Workflow permissions|Read repository contents and packages permissions|
+|Allow GitHub Actions to create and approve pull requests|`false`|
 
-```bash
-user@machine:path/ $ script/linux/build.sh
-```
+After integration is done, change the badges of this `README.md` to point to the new repository.
 
-## Test
+## Recommended Extensions
 
-```bash
-user@machine:path/ $ script/linux/test.sh
-```
-
-## Start
-
-```bash
-user@machine:path/ $ chmod u+x --recursive script
-user@machine:path/ $ script/linux/start.sh <program>
-```
-
-Replace `<program>` with a path to the program file.
+* [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
+* [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
+* [Yash](https://marketplace.visualstudio.com/items?itemName=daohong-emilio.yash)

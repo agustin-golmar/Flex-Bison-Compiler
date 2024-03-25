@@ -1,69 +1,74 @@
-# Versión mínima requerida de CMake. Se puede reducir o incrementar a riesgo del desarrollador.
+# Minimum required version fo CMake. Can be modified at your own risk.
 # @see https://cmake.org/download/
 cmake_minimum_required(VERSION 3.22)
 
-# Nombre del proyecto, y lenguaje utilizado (C, en este caso).
+# Name of the project and language to use (C, in this case).
 project(Compiler C)
 
-# Compilar el parser con Bison, generando contra-ejemplos en caso de que se presenten conflictos.
+# Compiles the parser with Bison, generating counter-examples in case S/R or R/R conflicts exists.
 add_custom_command(
-	OUTPUT ../src/frontend/syntactic-analysis/bison-parser.c ../src/frontend/syntactic-analysis/bison-parser.h
-	COMMAND bison -Wcounterexamples -d ../src/frontend/syntactic-analysis/bison-grammar.y -o ../src/frontend/syntactic-analysis/bison-parser.c)
+	OUTPUT ../src/main/c/frontend/syntactic-analysis/BisonParser.c ../src/main/c/frontend/syntactic-analysis/BisonParser.h
+	COMMAND bison -Wcounterexamples -d ../src/main/c/frontend/syntactic-analysis/BisonGrammar.y --output=../src/main/c/frontend/syntactic-analysis/BisonParser.c)
 
-# Seleccionar estrategia según el compilador de C disponible en el sistema.
+# Selects the best strategy according to the available compiler in the system.
 # @see https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_COMPILER_ID.html
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-	message(NOTICE "El compilador de C es GCC.")
+	message(NOTICE "The C compiler is GCC.")
 
-	# Opciones para GCC.
+	# Options for GCC.
 	add_compile_options(-static-libgcc)
 	add_compile_options(-std=gnu99)
 	add_compile_options(-O3)
 
-	# Compilar el scanner con Flex.
+	# Compiles the scanner with Flex.
 	add_custom_command(
-		OUTPUT ../src/frontend/lexical-analysis/flex-scanner.c
-		COMMAND flex -o ../src/frontend/lexical-analysis/flex-scanner.c ../src/frontend/lexical-analysis/flex-patterns.l
-		DEPENDS ../src/frontend/syntactic-analysis/bison-parser.c ../src/frontend/syntactic-analysis/bison-parser.h)
+		OUTPUT ../src/main/c/frontend/lexical-analysis/FlexScanner.c
+		COMMAND flex --noyywrap --outfile=../src/main/c/frontend/lexical-analysis/FlexScanner.c --yylineno ../src/main/c/frontend/lexical-analysis/FlexPatterns.l
+		DEPENDS ../src/main/c/frontend/syntactic-analysis/BisonParser.c ../src/main/c/frontend/syntactic-analysis/BisonParser.h)
 
 elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-	message(NOTICE "El compilador de C es Microsoft Visual Studio.")
+	message(NOTICE "The C compiler is Microsoft Visual Studio.")
 
-	# Opciones para MSVC.
+	# Options for MSVC.
 	# add_compile_options(...)
 
-	# Compilar el scanner con Flex, usando compatibilidad con Microsoft Windows.
+	# Compiles the scanner with Flex (Microsoft Windows compatible).
 	add_custom_command(
-		OUTPUT ../src/frontend/lexical-analysis/flex-scanner.c
-		COMMAND flex --wincompat -o ../src/frontend/lexical-analysis/flex-scanner.c ../src/frontend/lexical-analysis/flex-patterns.l
-		DEPENDS ../src/frontend/syntactic-analysis/bison-parser.c ../src/frontend/syntactic-analysis/bison-parser.h)
+		OUTPUT ../src/main/c/frontend/lexical-analysis/FlexScanner.c
+		COMMAND flex --noyywrap --outfile=../src/main/c/frontend/lexical-analysis/FlexScanner.c --wincompat --yylineno ../src/main/c/frontend/lexical-analysis/FlexPatterns.l
+		DEPENDS ../src/main/c/frontend/syntactic-analysis/BisonParser.c ../src/main/c/frontend/syntactic-analysis/BisonParser.h)
 
 else ()
-	message(NOTICE "El compilador de C es desconocido.")
-	message(NOTICE "Incluya un 'elseif' adicional para manejar su compilador de forma específica.")
+	message(NOTICE "The C compiler is unknown.")
+	message(NOTICE "Add an 'elseif' statement to handle this compiler in a more specific way.")
 
-	# Compilar el scanner con Flex.
+	# Compiles the scanner with Flex.
 	add_custom_command(
-		OUTPUT ../src/frontend/lexical-analysis/flex-scanner.c
-		COMMAND flex -o ../src/frontend/lexical-analysis/flex-scanner.c ../src/frontend/lexical-analysis/flex-patterns.l
-		DEPENDS ../src/frontend/syntactic-analysis/bison-parser.c ../src/frontend/syntactic-analysis/bison-parser.h)
+		OUTPUT ../src/main/c/frontend/lexical-analysis/FlexScanner.c
+		COMMAND flex --noyywrap --outfile=../src/main/c/frontend/lexical-analysis/FlexScanner.c --yylineno ../src/main/c/frontend/lexical-analysis/FlexPatterns.l
+		DEPENDS ../src/main/c/frontend/syntactic-analysis/BisonParser.c ../src/main/c/frontend/syntactic-analysis/BisonParser.h)
 
 endif ()
 
-# Especificar punto de entrada del proyecto y códigos fuente (extensión *.c).
-# Los *.h se incluyen automáticamente desde estos fuentes.
+# Defines the entry-point of the application, and the source-codes (*.c extension).
+# The header files (*.h extension), are automatically included from the source-codes.
 add_executable(Compiler
-	src/main.c
-	src/backend/code-generation/generator.c
-	src/backend/domain-specific/calculator.c
-	src/backend/support/logger.c
-	src/frontend/lexical-analysis/flex-actions.c
-	src/frontend/lexical-analysis/flex-scanner.c
-	src/frontend/syntactic-analysis/bison-actions.c
-	src/frontend/syntactic-analysis/bison-parser.c
-	# Agregar otros archivos *.c (si no se incluyen, no se compilan).
+	src/main/c/backend/code-generation/Generator.c
+	src/main/c/backend/domain-specific/Calculator.c
+	src/main/c/EntryPoint.c
+	src/main/c/frontend/lexical-analysis/FlexActions.c
+	src/main/c/frontend/lexical-analysis/FlexScanner.c
+	src/main/c/frontend/lexical-analysis/LexicalAnalyzerContext.c
+	src/main/c/frontend/syntactic-analysis/AbstractSyntaxTree.c
+	src/main/c/frontend/syntactic-analysis/BisonActions.c
+	src/main/c/frontend/syntactic-analysis/BisonParser.c
+	src/main/c/frontend/syntactic-analysis/SyntacticAnalyzer.c
+	src/main/c/shared/Environment.c
+	src/main/c/shared/Logger.c
+	src/main/c/shared/String.c
+	# Add more *.c files if needed (otherwise, they won't be compiled).
 	# ...
 )
 
-# Linkear el proyecto y sus librerías.
+# Link final project and libraries.
 target_link_libraries(Compiler)
