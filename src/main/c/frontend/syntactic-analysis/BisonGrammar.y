@@ -21,14 +21,18 @@
 }
 
 /**
- * Destructors.
+ * Destructors. This functions are executed after the parsing ends, so if the
+ * AST must be used in the following phases of the compiler you shouldn't used
+ * this approach.
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
+/*
 %destructor { releaseConstant($$); } <constant>
 %destructor { releaseExpression($$); } <expression>
 %destructor { releaseFactor($$); } <factor>
 %destructor { releaseProgram($$); } <program>
+*/
 
 /** Terminals. */
 %token <integer> INTEGER

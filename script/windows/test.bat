@@ -8,8 +8,8 @@
 @echo:
 
 @set STATUS=0
-@for /f %%f in ('dir /b !BASE_PATH!\test\accept') do @(
-	@type !BASE_PATH!\test\accept\%%f | !BASE_PATH!\build\Debug\Compiler.exe >nul 2>&1
+@for /f %%f in ('dir /b !BASE_PATH!\src\test\c\accept') do @(
+	@type !BASE_PATH!\src\test\c\accept\%%f | !BASE_PATH!\build\Debug\Compiler.exe >nul 2>&1
 	@set RESULT=!ERRORLEVEL!
 	if !RESULT! equ 0 (
 		@echo     "%%f", [92mand it does[0m ^(status !RESULT!^)
@@ -23,8 +23,8 @@
 @echo Compiler should reject...
 @echo:
 
-@for /f %%f in ('dir /b !BASE_PATH!\test\reject') do @(
-	@type !BASE_PATH!\test\reject\%%f | !BASE_PATH!\build\Debug\Compiler.exe >nul 2>&1
+@for /f %%f in ('dir /b !BASE_PATH!\src\test\c\reject') do @(
+	@type !BASE_PATH!\src\test\c\reject\%%f | !BASE_PATH!\build\Debug\Compiler.exe >nul 2>&1
 	@set RESULT=!ERRORLEVEL!
 	if !RESULT! neq 0 (
 		@echo     "%%f", [92mand it does[0m ^(status !RESULT!^)

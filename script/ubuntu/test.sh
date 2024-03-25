@@ -13,8 +13,8 @@ STATUS=0
 echo "Compiler should accept..."
 echo ""
 
-for test in $(ls test/accept/); do
-	cat "test/accept/$test" | build/Compiler >/dev/null 2>&1
+for test in $(ls src/test/c/accept/); do
+	cat "src/test/c/accept/$test" | build/Compiler >/dev/null 2>&1
 	RESULT="$?"
 	if [ "$RESULT" == "0" ]; then
 		echo -e "    $test, ${GREEN}and it does${OFF} (status $RESULT)"
@@ -28,8 +28,8 @@ echo ""
 echo "Compiler should reject..."
 echo ""
 
-for test in $(ls test/reject/); do
-	cat "test/reject/$test" | build/Compiler >/dev/null 2>&1
+for test in $(ls src/test/c/reject/); do
+	cat "src/test/c/reject/$test" | build/Compiler >/dev/null 2>&1
 	RESULT="$?"
 	if [ "$RESULT" != "0" ]; then
 		echo -e "    $test, ${GREEN}and it does${OFF} (status $RESULT)"

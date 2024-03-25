@@ -22,4 +22,17 @@ char * concatenate(const unsigned int count, ...);
  */
 char * escape(const char * string);
 
+/**
+ * Generates an indentation string for the specified level, using heap-memory.
+ *
+ * @param character
+ *	The character to use for spacing, for example ' ' or '\t'.
+ * @param level
+ *	The depth level to indent. Zero (0) means no-indentation.
+ * @param size
+ *	The size of every indentation level, thus, level N as a length of N*size
+ *	characters.
+ */
+char * indentation(const char character, const unsigned int level, const unsigned int size);
+
 #endif

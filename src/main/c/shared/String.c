@@ -92,3 +92,12 @@ char * escape(const char * string) {
 	}
 	return escapedString;
 }
+
+char * indentation(const char character, const unsigned int level, const unsigned int size) {
+	const unsigned int indentationLength = level * size;
+	char * indentation = calloc(1 + indentationLength, sizeof(char));
+	for (int k = 0; k < indentationLength; ++k) {
+		indentation[k] = character;
+	}
+	return indentation;
+}

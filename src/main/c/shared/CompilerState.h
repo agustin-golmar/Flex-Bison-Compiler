@@ -4,6 +4,14 @@
 #include "Type.h"
 
 /**
+ * The general status of a compilation.
+*/
+typedef enum {
+	SUCCEED = 0,
+	FAILED = 1
+} CompilationStatus;
+
+/**
  * The global state of the compiler. Should transport every data structure
  * needed across the different phases of a compilation.
  */
@@ -18,6 +26,9 @@ typedef struct {
 	// TODO: Add a symbol table.
 	// TODO: Add configuration.
 	// TODO: ...
+
+	// The computed value of the entire program.
+	int value;
 } CompilerState;
 
 #endif

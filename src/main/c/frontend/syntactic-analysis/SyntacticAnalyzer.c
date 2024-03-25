@@ -1,4 +1,5 @@
 #include "SyntacticAnalyzer.h"
+#include "../lexical-analysis/LexicalAnalyzerContext.h"
 
 /* MODULE INTERNAL STATE */
 
@@ -15,6 +16,10 @@ void shutdownSyntacticAnalyzerModule() {
 	}
 }
 
+/** IMPORTED FUNCTIONS */
+
+extern LexicalAnalyzerContext * createLexicalAnalyzerContext();
+
 /**
  * Bison exported functions.
  *
@@ -30,7 +35,8 @@ extern int yyparse(void);
 
 // Bison error-reporting function.
 void yyerror(const char * string) {
-	logError(_logger, "Syntax error.");
+	LexicalAnalyzerContext * lexicalAnalyzerContext = createLexicalAnalyzerContext();
+	logError(_logger, "Syntax error (on line %d).", lexicalAnalyzerContext->line);
 }
 
 /* PUBLIC FUNCTIONS */
@@ -48,8 +54,12 @@ SyntacticAnalysisStatus parse(CompilerState * compilerState) {
 	logDebugging(_logger, "Parsing is done.");
 	switch (code) {
 		case 0:
-			compilerState->succeed = true;
-			return ACCEPT;
+			if (compilerState->succeed == true) {
+				return ACCEPT;
+			}
+			else {
+				syntacticAnalysisStatus = REJECT;
+			}
 		case 1:
 			syntacticAnalysisStatus = REJECT;
 			break;

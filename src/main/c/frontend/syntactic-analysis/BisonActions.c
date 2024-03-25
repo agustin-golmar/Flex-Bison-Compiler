@@ -14,6 +14,10 @@ void shutdownBisonActionsModule() {
 	}
 }
 
+/** IMPORTED FUNCTIONS */
+
+extern unsigned int flexCurrentContext(void);
+
 /* PRIVATE FUNCTIONS */
 
 static void _logSyntacticAnalyzerAction(const char * functionName);
@@ -72,6 +76,12 @@ Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Express
 	Program * program = calloc(1, sizeof(Program));
 	program->expression = expression;
 	compilerState->abstractSyntaxtTree = program;
-	compilerState->succeed = true;
+	if (0 < flexCurrentContext()) {
+		logError(_logger, "The final context is not the default (0): %d", flexCurrentContext());
+		compilerState->succeed = false;
+	}
+	else {
+		compilerState->succeed = true;
+	}
 	return program;
 }
