@@ -27,7 +27,7 @@ typedef struct {
 	// TODO: Add configuration.
 	// TODO: ...
 
-	// The computed value of the entire program.
+	// The computed value of the entire program (only for the calculator).
 	int value;
 } CompilerState;
 
