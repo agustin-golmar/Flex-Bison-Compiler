@@ -10,7 +10,7 @@ docker run \
 	--hostname docker \
 	--interactive \
 	--rm \
-	--user ubuntu \
+	--user root \
 	--tty \
 	--volume .:/home/ubuntu/Flex-Bison-Compiler \
 	--workdir=/home/ubuntu/Flex-Bison-Compiler \

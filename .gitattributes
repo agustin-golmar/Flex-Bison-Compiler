@@ -6,7 +6,9 @@
 .gitmodules text eol=lf
 .npmrc text eol=lf
 .nvmrc text eol=lf
+.order text eol=lf
 .prettierignore text eol=lf
+.prettierrc text eol=lf
 *.bat text eol=lf
 *.c text eol=lf
 *.cnf text eol=lf
@@ -15,27 +17,36 @@
 *.cs text eol=lf
 *.csproj text eol=lf
 *.css text eol=lf
+*.csv text eol=lf
+*.drawio text eol=lf
+*.env text eol=lf
 *.h text eol=lf
 *.hpp text eol=lf
 *.htm text eol=lf
 *.html text eol=lf
 *.ini text eol=lf
+*.java text eol=lf
 *.js text eol=lf
 *.json text eol=lf
 *.l text eol=lf
+*.lock text eol=lf
 *.md text eol=lf
 *.mjs text eol=lf
 *.pem text eol=lf
 *.php text eol=lf
 *.prisma text eol=lf
 *.py text eol=lf
+*.rdp text eol=lf
 *.scss text eol=lf
 *.sh text eol=lf
 *.sln text eol=lf
 *.sql text eol=lf
 *.svg text eol=lf
+*.tex text eol=lf
+*.tf text eol=lf
 *.toml text eol=lf
 *.ts text eol=lf
+*.tsv text eol=lf
 *.txt text eol=lf
 *.xml text eol=lf
 *.y text eol=lf
@@ -59,6 +70,9 @@ Dockerfile text eol=lf
 *.pdf binary
 *.phar binary
 *.png binary
+*.ppt binary
+*.pptx binary
+*.raw binary
 *.ttc binary
 *.ttf binary
 *.webp binary

@@ -147,7 +147,9 @@ static char * _indentation(const unsigned int level) {
 }
 
 /**
- * Outputs a formatted string to standard output.
+ * Outputs a formatted string to standard output. The "fflush" instruction
+ * allows to see the output even close to a failure, because it drops the
+ * buffering.
  */
 static void _output(const unsigned int indentationLevel, const char * const format, ...) {
 	va_list arguments;
@@ -155,6 +157,7 @@ static void _output(const unsigned int indentationLevel, const char * const form
 	char * indentation = _indentation(indentationLevel);
 	char * effectiveFormat = concatenate(2, indentation, format);
 	vfprintf(stdout, effectiveFormat, arguments);
+	fflush(stdout);
 	free(effectiveFormat);
 	free(indentation);
 	va_end(arguments);

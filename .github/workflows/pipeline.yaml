@@ -26,6 +26,5 @@ on:
   pull_request:
     types:
       - closed
-      - opened
       - reopened
   push:

@@ -4,6 +4,7 @@
 
 %}
 
+// You touch this, and you die.
 %define api.value.union.name SemanticValue
 
 %union {
@@ -23,7 +24,8 @@
 /**
  * Destructors. This functions are executed after the parsing ends, so if the
  * AST must be used in the following phases of the compiler you shouldn't used
- * this approach.
+ * this approach. To use this mechanism, the AST must be translated into
+ * another structure.
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
@@ -60,6 +62,8 @@
 %left MUL DIV
 
 %%
+
+// IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
 program: expression													{ $$ = ExpressionProgramSemanticAction(currentCompilerState(), $1); }
 	;
