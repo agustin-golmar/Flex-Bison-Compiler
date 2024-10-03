@@ -15,8 +15,8 @@
  *
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
-%s action
-%s actionDooer
+%s ACTION
+%s ACTIONDOOER
 
 /**
  * Reusable patterns.
