@@ -1,7 +1,6 @@
 %{
-
 #include "FlexActions.h"
-
+#include "LexicalAnalyzerContext.h"
 %}
 
 /**
@@ -26,16 +25,21 @@
 
 %%
 
-\"                                            { BEGIN(ACTION); BeginActionLexeme(createLexicalAnalyzerContext()); }
+"\""                                          { BEGIN(ACTION); BeginActionLexeme(createLexicalAnalyzerContext()); }
 <ACTION> [a-zA-Z]+                            { return NameLexeme(createLexicalAnalyzerContext(), STRING); }
-<ACTION> \"                                   { EndActionLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+<ACTION> "\""                                 { EndActionLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+<ACTION> [[:space:]]+                         { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<ACTION> .                                    { return UnknownLexemeAction(createLexicalAnalyzerContext(), UNKNOWN); }
 "->"                                          { BEGIN(ACTIONDOOER); BeginActionDooerLexeme(createLexicalAnalyzerContext()); }
 <ACTIONDOOER> [a-zA-Z]+                       { return ActionNameLexeme(createLexicalAnalyzerContext(), ACTION_ID); }
+<ACTIONDOOER> [[:space:]]+                    { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <ACTIONDOOER> ";"                             { EndActionDooerLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
-
-<INITIAL, ACTION, ACTIONDOOER> [[:space:]]+   { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<INITIAL, ACTION, ACTIONDOOER> .              { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+[[:space:]]+                                  { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+"\n"                                          { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+"\r"                                          { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+.                                             { return UnknownLexemeAction(createLexicalAnalyzerContext(), UNKNOWN); }
 
 %%
 
 #include "FlexExport.h"
+
