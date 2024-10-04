@@ -14,64 +14,48 @@ void shutdownAbstractSyntaxTreeModule();
  * This typedefs allows self-referencing types.
  */
 
-typedef enum ExpressionType ExpressionType;
-typedef enum FactorType FactorType;
 
-typedef struct Constant Constant;
-typedef struct Expression Expression;
-typedef struct Factor Factor;
+typedef enum RegexType RegexType;
+
+
+typedef struct Action Action;
+typedef struct Regex Regex;
 typedef struct Program Program;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
 
-enum ExpressionType {
-	ADDITION,
-	DIVISION,
-	FACTOR,
-	MULTIPLICATION,
-	SUBTRACTION
+enum RegexType {
+	ID,
+	DEF
 };
 
-enum FactorType {
-	CONSTANT,
-	EXPRESSION
-};
-
-struct Constant {
-	int value;
-};
-
-struct Factor {
+struct Regex {
+	char * string;
 	union {
-		Constant * constant;
-		Expression * expression;
-	};
-	FactorType type;
-};
-
-struct Expression {
-	union {
-		Factor * factor;
-		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
-		};
-	};
-	ExpressionType type;
-};
+		char * action_id;
+		Action * action_def;
+	}
+	RegexType type;
+}
 
 struct Program {
-	Expression * expression;
+	Regex * Regex;
 };
 
 /**
  * Node recursive destructors.
  */
+/*
 void releaseConstant(Constant * constant);
 void releaseExpression(Expression * expression);
 void releaseFactor(Factor * factor);
+*/
+
+void releaseRegex(Regex * regex);
 void releaseProgram(Program * program);
 
 #endif
+
+

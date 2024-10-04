@@ -1,7 +1,6 @@
 %{
 
 #include "FlexActions.h"
-#include "Felx2Actions.h"
 
 %}
 
@@ -15,8 +14,8 @@
  *
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
-%s ACTION
-%s ACTIONDOOER
+%x ACTION
+%x ACTIONDOOER
 
 /**
  * Reusable patterns.
@@ -27,21 +26,16 @@
 
 %%
 
-"\""								                            { BEGIN(ACTION); BeginActionLexeme(createLexicalAnalyzerContext()); }
-<ACTION> [a-zA-Z]+                                              { return ActionLexeme(createLexicalAnalyzerContext()); } // return the name of the action, name not empty
-<ACTION>"\""                                                    { EndActionLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
-"->"								                            { BEGIN(ACTIONDOOER); BeginActionDooerLexeme(createLexicalAnalyzerContext()); }
-<ACTIONDOOER> [a-zA-Z]*                                         { return ActionReturner(createLexicalAnalyzerContext()) } // acction defined in felx2actions
-<ACTIONDOOER>";"					                            { EndActionDooerLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+\"                                            { BEGIN(ACTION); BeginActionLexeme(createLexicalAnalyzerContext()); }
+<ACTION> [a-zA-Z]+                            { return NameLexeme(createLexicalAnalyzerContext(), STRING); }
+<ACTION> \"                                   { EndActionLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+"->"                                          { BEGIN(ACTIONDOOER); BeginActionDooerLexeme(createLexicalAnalyzerContext()); }
+<ACTIONDOOER> [a-zA-Z]+                       { return ActionNameLexeme(createLexicalAnalyzerContext(), ACTION_ID); }
+<ACTIONDOOER> ";"                             { EndActionDooerLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
+<INITIAL, ACTION, ACTIONDOOER> [[:space:]]+   { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<INITIAL, ACTION, ACTIONDOOER> .              { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 
-<INITIAL, ACTION, ACTIONDOOER>[[:space:]]+						{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-[ \t\n\r]                                                       { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-/**
-* Our default is included in "." so we dont added.
-**/
-<INITIAL, ACTION, ACTIONDOOER>.									{ return UnknownLexemeAction(createLexicalAnalyzerContext()); } 
-
-%% 
+%%
 
 #include "FlexExport.h"

@@ -18,11 +18,18 @@ void shutdownBisonActionsModule();
  * Bison semantic actions.
  */
 
+// new
+
+Regex * RegexSemanticAction(char* action_name, char * action, RegexType type);
+Program * ProgramSemanticAction(CompilerState * compilerState, Regex * expression);
+
+// old
+/*
 Constant * IntegerConstantSemanticAction(const int value);
 Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
 Expression * FactorExpressionSemanticAction(Factor * factor);
 Factor * ConstantFactorSemanticAction(Constant * constant);
 Factor * ExpressionFactorSemanticAction(Expression * expression);
 Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Expression * expression);
-
+*/
 #endif

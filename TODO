@@ -1,0 +1,77 @@
+
+// flex
+// .l
+> make the rules to interpte:
+  - lambda functions
+  - rules
+  - ingnore spaces|tabs|newlines
+  - . to error
+
+// FlexActions.h
+> define all the actions for the lexical rules
+  //context
+  - createLexicalAnalyzerContext - ready
+  // scopes
+  - BeginActionLexeme - ready
+  - EndActionLexeme - ready
+  - BeginActionDooerLexeme - ready
+  - EndActionDooerLexeme - ready
+  // token returners
+  - NameLexeme - ready
+  - ActionNameLexeme - ready
+  // ignore and error
+  - IgnoredLexemeAction - ready
+  - UnknownLexemeAction - ready
+
+// FlexActions.c
+> implement all the actions
+  //context
+  - createLexicalAnalyzerContext - ready
+  // scopes
+  - BeginActionLexeme - ready
+  - EndActionLexeme - ready
+  - BeginActionDooerLexeme - ready
+  - EndActionDooerLexeme - ready
+  // token returners
+  - NameLexeme - ready
+  - ActionNameLexeme - ready
+  // ignore and error
+  - IgnoredLexemeAction - ready
+  - UnknownLexemeAction - ready
+
+// bison
+// .y
+> define used tokens and non terminals
+  - string name - ready
+  - action id - ready
+  - action definition - ready
+> define union part with all the types
+  - string name - ready
+  - action id - ready
+  - action definition - ready
+
+// BisonActions.h
+> define all actions for the semantic rules defined
+  - program - ready
+  - regex - ready
+
+// BisonActions.c
+> implement all the actions
+  - program - ready
+  - regex - ready
+
+// abstractSyntaxTree.h
+> define all the used types
+  - regex - ready
+  - regexType - ready
+> define recursive destructors for all the define types
+  - program
+  - regex
+
+// abstractSyntaxTree.c
+> implement all the destructors
+  - program
+  - regex
+
+
+

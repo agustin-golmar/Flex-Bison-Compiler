@@ -28,13 +28,15 @@ void EndActionLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void BeginActionDooerLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void EndActionDooerLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-Token ActionLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token NameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token name);
+Token ActionNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token action_id);
 
-
+void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 
 // OLD, PORLAS
-
+/*
 void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
@@ -42,7 +44,7 @@ void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token ArithmeticOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token ParenthesisLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
+*/
 
-Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 #endif
