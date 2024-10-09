@@ -39,55 +39,60 @@
 <MULTILINE_COMMENT>[^*]+			            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>.				            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
+/* Para mi, todos los Begin...Lexeme() podrían ser una sola función BeginLexeme(), idem con end */
+/* Un dif entre este commit y el anterior muestra que saque los "nombre" del token de aca a las 
+funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo sobrevivió en el content */
 "[Rr]egex"                                      { BEGIN(REGEX); BeginRegexLexeme(createLexicalAnalyzerContext()); }
-<REGEX> [a-zA-Z]                                { BEGIN(REGEX_NAME); BeginRegexName(createLexicalAnalyzerContext()); }
+<REGEX> [a-zA-Z]                                { BEGIN(REGEX_NAME); BeginRegexNameLexeme(createLexicalAnalyzerContext()); }
 
-<REGEX_NAME> [[:space:]]+                       { return UnknownLexemeAction(createLexicalAnalyzerContext(), UNKNOWN); }
+<REGEX_NAME> [[:space:]]+                       { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 <REGEX_NAME> [a-zA-Z0-9_$]*                     { return RegexNameLexeme(createLexicalAnalyzerContext(), REGEX_ID); BEGIN(REGEX_PRECONTENT); }
 
 <REGEX_PRECONTENT> "["                          { BEGIN(REGEX_CONTENT); BeginRegexContent(createLexicalAnalyzerContext()); }
-<REGEX_PRECONTENT> [^[:space:]]                 { return UnknownLexemeAction(createLexicalAnalyzerContext(), UNKNOWN); }
+<REGEX_PRECONTENT> [^[:space:]]                 { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 
-<REGEX_CONTENT> [[:space:]]+                    { return UnknownLexemeAction(createLexicalAnalyzerContext(), UNKNOWN); }
-<REGEX_CONTENT> [a-z]                           { return RegexMinLexeme(createLexicalAnalyzerContext(), MIN); }
-<REGEX_CONTENT> [A-Z]                           { return RegexMayuscLexeme(createLexicalAnalyzerContext(), MAYUSC); }
-<REGEX_CONTENT> [0-9]                           { return RegexDigitLexeme(createLexicalAnalyzerContext(), DIGIT); }
-<REGEX_CONTENT> "-"                             { return RegexRangerLexeme(createLexicalAnalyzerContext(), RANGER); }
-<REGEX_CONTENT> [^\-\[\]\\]                     { return RegexSimbolLexeme(createLexicalAnalyzerContext(), SIMBOL); }
-<REGEX_CONTENT> "\\"[\^\-\[\]\\]                { return RegexEscapedLexeme(createLexicalAnalyzerContext(), SIMBOL); }
-<REGEX_CONTENT> "]"                             { BEGIN(REGEX); IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<REGEX_CONTENT> [[:space:]]+                    { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+<REGEX_CONTENT> [a-z]                           { return RegexContentLexeme(createLexicalAnalyzerContext(), MIN); }
+<REGEX_CONTENT> [A-Z]                           { return RegexContentLexeme(createLexicalAnalyzerContext(), MAYUSC); }
+<REGEX_CONTENT> [0-9]                           { return RegexContentLexeme(createLexicalAnalyzerContext(), DIGIT); }
+<REGEX_CONTENT> "-"                             { return RegexContentLexeme(createLexicalAnalyzerContext(), RANGER); }
+<REGEX_CONTENT> [^\-\[\]\\]                     { return RegexContentLexeme(createLexicalAnalyzerContext(), SIMBOL); }
+<REGEX_CONTENT> "\\"[\^\-\[\]\\]                { return RegexContentLexeme(createLexicalAnalyzerContext(), ESCAPED_SIMBOL); }
+<REGEX_CONTENT> "]"                             { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 "\""                                            { BEGIN(LEXEME); BeginLexeme(createLexicalAnalyzerContext()); }
-<LEXEME> [^"]+                                  { return NameLexeme(createLexicalAnalyzerContext(), STRING); }   
-<LEXEME> "\""                                   { EndLexeme(createLexicalAnalyzerContext()); BEGIN(PRE_ACTION); }
+<LEXEME> [^"]+                                  { return StringLexeme(createLexicalAnalyzerContext()); }   
+<LEXEME> "\""                                   { EndStringLexeme(createLexicalAnalyzerContext()); BEGIN(PRE_ACTION); }
 
 "["                                             { BEGIN(REGEX_LEXEME); BeginRegexContent(createLexicalAnalyzerContext()); }
-<REGEX_LEXEME> [[:space:]]+                     { return UnknownLexemeAction(createLexicalAnalyzerContext(), UNKNOWN); }
-<REGEX_LEXEME> [a-z]                            { return RegexMinLexeme(createLexicalAnalyzerContext(), MIN); }
-<REGEX_LEXEME> [A-Z]                            { return RegexMayuscLexeme(createLexicalAnalyzerContext(), MAYUSC); }
-<REGEX_LEXEME> [0-9]                            { return RegexDigitLexeme(createLexicalAnalyzerContext(), DIGIT); }
-<REGEX_LEXEME> "-"                              { return RegexRangerLexeme(createLexicalAnalyzerContext(), RANGER); }
-<REGEX_LEXEME> [^\-\[\]\\]                      { return RegexSimbolLexeme(createLexicalAnalyzerContext(), SIMBOL); }
-<REGEX_LEXEME> "\\"[\^\-\[\]\\]                 { return RegexEscapedLexeme(createLexicalAnalyzerContext(), SIMBOL); }
+<REGEX_LEXEME> [[:space:]]+                     { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+<REGEX_LEXEME> [a-z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), MIN); }
+<REGEX_LEXEME> [A-Z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), MAYUSC); }
+<REGEX_LEXEME> [0-9]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), DIGIT); }
+<REGEX_LEXEME> "-"                              { return RegexContentLexeme(createLexicalAnalyzerContext(), RANGER); }
+<REGEX_LEXEME> [^\-\[\]\\]                      { return RegexContentLexeme(createLexicalAnalyzerContext(), SIMBOL); }
+<REGEX_LEXEME> "\\"[\^\-\[\]\\]                 { return RegexContentLexeme(createLexicalAnalyzerContext(), ESCAPED_SIMBOL); }
 <REGEX_LEXEME> "]"                              { BEGIN(PRE_ACTION); IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
 "{"                                             { BEGIN(OUR_REGEX_LEXEME); BeginRegexContent(createLexicalAnalyzerContext()); }
-<OUR_REGEX_LEXEME> [[:space:]]+                 { return UnknownLexemeAction(createLexicalAnalyzerContext(), UNKNOWN); }
+<OUR_REGEX_LEXEME> [[:space:]]+                 { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 <OUR_REGEX_LEXEME> [a-z]*                       { return RegexNameLexeme(createLexicalAnalyzerContext(), REGEX_ID); }
 <OUR_REGEX_LEXEME> "}"                          { BEGIN(PRE_ACTION); IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
+"default"                                       { return DefaultLexeme(createLexicalAnalyzerContext()); }
+
 <PRE_ACTION> "->"                               { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(ACTION); }
 <ACTION> [a-zA-Z_$]                             { BEGIN(SIMPLE_ACTION); BeginSimpleActionLexeme(createLexicalAnalyzerContext()); }
-<ACTION> "{".*"}"                               { return FunctionLexeme(createLexicalAnalyzerContext(), FUNCTION); }
+<ACTION> "{"[^}]*"}"                            { return FunctionLexeme(createLexicalAnalyzerContext()); }
 
-<SIMPLE_ACTION> [[:space:]]+                    { return UnknownLexemeAction(createLexicalAnalyzerContext(), UNKNOWN); }
-<SIMPLE_ACTION> [a-zA-Z_$]*                     { return ActionNameLexeme(createLexicalAnalyzerContext(), ACTION_ID); }
+<SIMPLE_ACTION> [[:space:]]+                    { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+<SIMPLE_ACTION> [a-zA-Z_$]*                     { return ActionNameLexeme(createLexicalAnalyzerContext()); }
 
 [[:space:]]+                                    { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-";"                                             { CleanIgnoredLexemes(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+";"                                             { EndLineLexeme(createLexicalAnalyserContext()); BEGIN(INITIAL); }
 "\n"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 "\r"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-.                                               { return UnknownLexemeAction(createLexicalAnalyzerContext(), UNKNOWN); }
+.                                               { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 
 %%
 
