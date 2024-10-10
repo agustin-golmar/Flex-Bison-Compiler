@@ -24,8 +24,8 @@
 %x PRE_ACTION
 %x ACTION
 %x SIMPLE_ACTION
-%x FUNCTION_PARAMS
-%x FUNCTION_INTERMEDIARY
+%x FUNCTION_PARAM
+%x AFTER_PARAM
 %x FUNCTION_BODY
 /**
  * Reusable patterns.
@@ -52,7 +52,7 @@ funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo s
 <REGEX> [a-zA-Z]                                { BEGIN(REGEX_NAME); BeginRegexNameLexeme(createLexicalAnalyzerContext()); }
 
 <REGEX_NAME> [[:space:]]+                       { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-<REGEX_NAME> [a-zA-Z0-9_$]*                     { return RegexNameLexeme(createLexicalAnalyzerContext(), REGEX_ID); BEGIN(REGEX_PRECONTENT); }
+<REGEX_NAME> [a-zA-Z0-9_$]*                     { return RegexNameLexeme(createLexicalAnalyzerContext(), OUR_REGEX_ID); BEGIN(REGEX_PRECONTENT); }
 
 <REGEX_PRECONTENT> "["                          { BEGIN(REGEX_CONTENT); BeginRegexContent(createLexicalAnalyzerContext()); }
 <REGEX_PRECONTENT> [^[:space:]]                 { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
@@ -72,7 +72,7 @@ funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo s
 <LEXEME> [^"]+                                  { return StringLexeme(createLexicalAnalyzerContext(), STR); }   
 <LEXEME> "\""                                   { EndStringLexeme(createLexicalAnalyzerContext()); BEGIN(PRE_ACTION); }
 
-/* SECCION DE DECLARACION  REGEX [XXX]xx (previo al ->) */
+/* SECCION DE DECLARACION  REGEX [XXX] (previo al ->) */
 
 "["                                             { BEGIN(REGEX_LEXEME); BeginRegexContent(createLexicalAnalyzerContext()); }
 <REGEX_LEXEME> [[:space:]]+                     { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
@@ -88,25 +88,26 @@ funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo s
 
 "{"                                             { BEGIN(OUR_REGEX_LEXEME); BeginRegexContent(createLexicalAnalyzerContext()); }
 <OUR_REGEX_LEXEME> [[:space:]]+                 { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-<OUR_REGEX_LEXEME> [a-z]*                       { return RegexNameLexeme(createLexicalAnalyzerContext(), REGEX_ID); }
+<OUR_REGEX_LEXEME> [a-z]*                       { return RegexNameLexeme(createLexicalAnalyzerContext(), OUR_REGEX_ID); }
 <OUR_REGEX_LEXEME> "}"                          { BEGIN(PRE_ACTION); IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
 "default"                                       { return DefaultLexeme(createLexicalAnalyzerContext()); }
 
 <PRE_ACTION> "->"                               { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(ACTION); }
 <ACTION> [a-zA-Z_$]                             { BEGIN(SIMPLE_ACTION); BeginSimpleActionLexeme(createLexicalAnalyzerContext()); }
-<ACTION> "{"[^}]*"}"                            { return FunctionLexeme(createLexicalAnalyzerContext()); }
+<ACTION> "{"                                    { BEGIN(FUNCTION_BODY); BeginFunctionBodyLexeme(createLexicalAnalyzerContext()); }
 <ACTION> "("                                    { BEGIN(FUNCTION_PARAMS); BeginFunctionParamsLexeme(createLexicalAnalyzerContext()); }
 
 /* Seccion para funciones "xxx" -> (....){......}*/
 
-<FUNCTION_PARAMS> [[:space:]]+                  { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-<FUNCTION_PARAMS> [a-zA-Z]([a-zA-Z]|[0-9])*     { return FunctionParamLexeme(createLexicalAnalyzerContext(), PARAM); }
-<FUNCTION_PARAMS> ","                           { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<FUNCTION_PARAMS> ")"                           { BEGIN(FUNCTION_INTERMEDIARY);  BeginFunctionIntermediaryLexeme(createLexicalAnalyzerContext());}
+<FUNCTION_PARAM> [[:space:]]+                   { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+<FUNCTION_PARAM> "String"                       { return FunctionParamLexeme(createLexicalAnalyzerContext(), STRING); BEGIN(AFTER_PARAM); }
+<FUNCTION_PARAM> "Integer"                      { return FunctionParamLexeme(createLexicalAnalyzerContext(), INTEGER); BEGIN(AFTER_PARAM); }
+<FUNCTION_PARAM> "Double"                       { return FunctionParamLexeme(createLexicalAnalyzerContext(), DOUBLE); BEGIN(AFTER_PARAM); }
+<FUNCTION_PARAM> ")"[[:space]]*"{"              { BEGIN(FUNCTION_BODY);  BeginFunctionBodyLexeme(createLexicalAnalyzerContext()); }
 
-<FUNCTION_INTERMEDIARY> [[:space:]]+            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<FUNCTION_INTERMEDIARY> "{"                     { BEGIN(FUNCTION_BODY); BeginFunctionBodyLexeme(createLexicalAnalyzerContext()); }
+<AFTER_PARAM> [[:space:]]+                      { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+<AFTER_PARAM> ")"[[:space]]*"{"                 { BEGIN(FUNCTION_BODY);  BeginFunctionBodyLexeme(createLexicalAnalyzerContext()); }
 
 <FUNCTION_BODY> [^{}]+                          { return FunctionBodyContentLexeme(createLexicalAnalyzerContext(), BODY); }
 <FUNCTION_BODY> "}"                             { EndFunctionBodyLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
