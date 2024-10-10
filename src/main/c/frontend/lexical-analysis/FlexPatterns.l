@@ -24,7 +24,8 @@
 %x PRE_ACTION
 %x ACTION
 %x SIMPLE_ACTION
-
+%x FUNCTION_PARAMS
+%x FUNCTION_BODY
 /**
  * Reusable patterns.
  *
@@ -42,6 +43,10 @@
 /* Para mi, todos los Begin...Lexeme() podrían ser una sola función BeginLexeme(), idem con end */
 /* Un dif entre este commit y el anterior muestra que saque los "nombre" del token de aca a las 
 funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo sobrevivió en el content */
+
+
+/* SECCION DE DEFINICION DE REGEX Regex|regex nombre [xxx]x */
+
 "[Rr]egex"                                      { BEGIN(REGEX); BeginRegexLexeme(createLexicalAnalyzerContext()); }
 <REGEX> [a-zA-Z]                                { BEGIN(REGEX_NAME); BeginRegexNameLexeme(createLexicalAnalyzerContext()); }
 
@@ -60,9 +65,13 @@ funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo s
 <REGEX_CONTENT> "\\"[\^\-\[\]\\]                { return RegexContentLexeme(createLexicalAnalyzerContext(), ESCAPED_SIMBOL); }
 <REGEX_CONTENT> "]"                             { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
+/* SECCION DE DECLARACION DE "xxxx" (previo al ->) */
+
 "\""                                            { BEGIN(LEXEME); BeginLexeme(createLexicalAnalyzerContext()); }
 <LEXEME> [^"]+                                  { return StringLexeme(createLexicalAnalyzerContext()); }   
 <LEXEME> "\""                                   { EndStringLexeme(createLexicalAnalyzerContext()); BEGIN(PRE_ACTION); }
+
+/* SECCION DE DECLARACION  REGEX [XXX]xx (previo al ->) */
 
 "["                                             { BEGIN(REGEX_LEXEME); BeginRegexContent(createLexicalAnalyzerContext()); }
 <REGEX_LEXEME> [[:space:]]+                     { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
@@ -74,6 +83,8 @@ funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo s
 <REGEX_LEXEME> "\\"[\^\-\[\]\\]                 { return RegexContentLexeme(createLexicalAnalyzerContext(), ESCAPED_SIMBOL); }
 <REGEX_LEXEME> "]"                              { BEGIN(PRE_ACTION); IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
+/* SECCION DE DECLARACION MACROREGEX {nombreRegex} (previo al ->)*/
+
 "{"                                             { BEGIN(OUR_REGEX_LEXEME); BeginRegexContent(createLexicalAnalyzerContext()); }
 <OUR_REGEX_LEXEME> [[:space:]]+                 { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 <OUR_REGEX_LEXEME> [a-z]*                       { return RegexNameLexeme(createLexicalAnalyzerContext(), REGEX_ID); }
@@ -84,6 +95,21 @@ funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo s
 <PRE_ACTION> "->"                               { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(ACTION); }
 <ACTION> [a-zA-Z_$]                             { BEGIN(SIMPLE_ACTION); BeginSimpleActionLexeme(createLexicalAnalyzerContext()); }
 <ACTION> "{"[^}]*"}"                            { return FunctionLexeme(createLexicalAnalyzerContext()); }
+<ACTION> "("                                    { BEGIN(FUNCTION_PARAMS); BeginFunctionParamsLexeme(createLexicalAnalyzerContext()); }
+
+/* Seccion para funciones "xxx" -> (....){......}*/
+
+<FUNCTION_PARAMS> [[:space:]]+                  { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+<FUNCTION_PARAMS> {letter}({letter}|{digit})*   { return FunctionParamLexeme(createLexicalAnalyzerContext()); }
+<FUNCTION_PARAMS> ","                           { return CommaLexeme(createLexicalAnalyzerContext()); }
+<FUNCTION_PARAMS> ")"                           { BEGIN(FUNCTION_BODY);  BeginFunctionBodyLexeme(createLexicalAnalyzerContext());}
+
+<FUNCTION_BODY> [[:space:]]+                    { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<FUNCTION_BODY> "{"                             { BeginBlock(createLexicalAnalyzerContext()); }
+<FUNCTION_BODY> [^{}]+                          { return FunctionBodyContentLexeme(createLexicalAnalyzerContext()); }
+<FUNCTION_BODY> "}"                             { EndFunctionBodyLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+
+/* Accion simple  "xx" -> xxx */
 
 <SIMPLE_ACTION> [[:space:]]+                    { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 <SIMPLE_ACTION> [a-zA-Z_$]*                     { return ActionNameLexeme(createLexicalAnalyzerContext()); }
