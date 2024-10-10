@@ -25,6 +25,7 @@
 %x ACTION
 %x SIMPLE_ACTION
 %x FUNCTION_PARAMS
+%x FUNCTION_INTERMEDIARY
 %x FUNCTION_BODY
 /**
  * Reusable patterns.
@@ -68,7 +69,7 @@ funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo s
 /* SECCION DE DECLARACION DE "xxxx" (previo al ->) */
 
 "\""                                            { BEGIN(LEXEME); BeginLexeme(createLexicalAnalyzerContext()); }
-<LEXEME> [^"]+                                  { return StringLexeme(createLexicalAnalyzerContext()); }   
+<LEXEME> [^"]+                                  { return StringLexeme(createLexicalAnalyzerContext(), STR); }   
 <LEXEME> "\""                                   { EndStringLexeme(createLexicalAnalyzerContext()); BEGIN(PRE_ACTION); }
 
 /* SECCION DE DECLARACION  REGEX [XXX]xx (previo al ->) */
@@ -100,13 +101,14 @@ funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo s
 /* Seccion para funciones "xxx" -> (....){......}*/
 
 <FUNCTION_PARAMS> [[:space:]]+                  { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-<FUNCTION_PARAMS> {letter}({letter}|{digit})*   { return FunctionParamLexeme(createLexicalAnalyzerContext()); }
-<FUNCTION_PARAMS> ","                           { return CommaLexeme(createLexicalAnalyzerContext()); }
-<FUNCTION_PARAMS> ")"                           { BEGIN(FUNCTION_BODY);  BeginFunctionBodyLexeme(createLexicalAnalyzerContext());}
+<FUNCTION_PARAMS> [a-zA-Z]([a-zA-Z]|[0-9])*     { return FunctionParamLexeme(createLexicalAnalyzerContext(), PARAM); }
+<FUNCTION_PARAMS> ","                           { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<FUNCTION_PARAMS> ")"                           { BEGIN(FUNCTION_INTERMEDIARY);  BeginFunctionIntermediaryLexeme(createLexicalAnalyzerContext());}
 
-<FUNCTION_BODY> [[:space:]]+                    { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<FUNCTION_BODY> "{"                             { BeginBlock(createLexicalAnalyzerContext()); }
-<FUNCTION_BODY> [^{}]+                          { return FunctionBodyContentLexeme(createLexicalAnalyzerContext()); }
+<FUNCTION_INTERMEDIARY> [[:space:]]+            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+<FUNCTION_INTERMEDIARY> "{"                     { BEGIN(FUNCTION_BODY); BeginFunctionBodyLexeme(createLexicalAnalyzerContext()); }
+
+<FUNCTION_BODY> [^{}]+                          { return FunctionBodyContentLexeme(createLexicalAnalyzerContext(), BODY); }
 <FUNCTION_BODY> "}"                             { EndFunctionBodyLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 /* Accion simple  "xx" -> xxx */
