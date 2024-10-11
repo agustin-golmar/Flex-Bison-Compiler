@@ -1,0 +1,2 @@
+{digit}+ -> NUMBER;
+/*This program will fail at runtime*/

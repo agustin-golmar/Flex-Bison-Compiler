@@ -1,0 +1,3 @@
+regex alphanumerics      "[a-zA-Z0-9_]*";
+
+{alphanumerics}+ -> ALPHA;

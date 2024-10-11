@@ -1,0 +1,2 @@
+Regex digit      [9-0];
+/*This program will fail at runtime*/

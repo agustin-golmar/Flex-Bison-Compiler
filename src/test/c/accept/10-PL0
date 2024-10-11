@@ -1,0 +1,44 @@
+"+" -> PLUS;
+"-" -> MINUS;
+"*" -> TIMES;
+"/" -> SLASH;
+"("  -> LPAREN;
+")" -> RPAREN;
+";" -> SEMICOLON;
+","  -> COMMA;
+"."  -> PERIOD;
+":=" -> BECOMES;
+"="  -> EQL;
+"<>" -> NEQ;
+"<"  -> LSS;
+">"  -> GTR;
+"<=" ->LEQ;
+">=" -> GEQ;
+"begin"-> BEGINSYM;
+"call" -> CALLSYM;
+"const" -> CONSTSYM;
+"do" -> DOSYM;
+"end" -> ENDSYM;
+"if" -> IFSYM;
+"odd" -> ODDSYM;
+"procedure" -> PROCSYM;
+"then" -> THENSYM;
+"var" -> VARSYM;
+"while" -> WHILESYM;
+
+Regex digit         [0-9];
+Regex letter        [a-zA-Z];
+
+{letter}({letter}|{digit})* -> (State var){
+                       var.attribute.id = var.text.toString(); /* var.text is an instance of StringBuilder */
+                       return IDENT;
+ };
+
+{digit}+ -> (State var){
+                       var.attribute.num = Integer.parseInt(var.text.toString());
+                       return NUMBER;
+ };
+
+[ \t\n\r]            /* skip whitespace */;
+
+default -> REJECT;

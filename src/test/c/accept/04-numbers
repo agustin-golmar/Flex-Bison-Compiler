@@ -1,0 +1,6 @@
+Regex digit      [0-9];
+
+{letter}+ -> (State var){
+    var.attibute.num = Integer.parseInt(var.text.toString());
+    return NUMBER;
+};

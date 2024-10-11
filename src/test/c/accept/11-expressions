@@ -1,0 +1,23 @@
+"+" -> PLUS;
+"-" -> MINUS;
+"*" -> TIMES;
+"/" -> SLASH;
+"("  -> LPAREN;
+")" -> RPAREN;
+"="  -> EQL;
+"<>" -> NEQ;
+"<"  -> LSS;
+">"  -> GTR;
+"<=" ->LEQ;
+">=" -> GEQ;
+
+Regex digit         [0-9];
+
+{digit}+ -> (State var){
+                       var.attribute.num = Integer.parseInt(var.text.toString());
+                       return NUMBER;
+ };
+
+[ \t\n\r]            /* skip whitespace */;
+
+default -> { return REJECT; };
