@@ -1,0 +1,4 @@
+{digit}+ -> (int*** var){
+                       var.attribute.num = Integer.parseInt(var.text.toString());
+                       return NUMBER;
+ };

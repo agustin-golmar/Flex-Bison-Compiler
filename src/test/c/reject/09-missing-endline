@@ -1,0 +1,10 @@
+"+" -> PLUS;
+"-" -> MINUS;
+"*" -> TIMES
+"/" -> SLASH
+"("  -> LPAREN;
+")" -> RPAREN;
+"="  -> EQL;
+"<>" -> NEQ;
+"<"  -> LSS
+">"  -> GTR
