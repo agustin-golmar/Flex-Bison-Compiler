@@ -36,11 +36,11 @@ const int main(const int count, const char ** arguments) {
 	};
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
+	Program * program = compilerState.abstractSyntaxtTree;
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		logDebugging(logger, "Computing expression value...");
-		Program * program = compilerState.abstractSyntaxtTree;
 		ComputationResult computationResult = computeExpression(program->expression);
 		if (computationResult.succeed) {
 			compilerState.value = computationResult.value;
@@ -52,14 +52,13 @@ const int main(const int count, const char ** arguments) {
 		}
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
-		logDebugging(logger, "Releasing AST resources...");
-		releaseProgram(program);
 	}
 	else {
 		logError(logger, "The syntactic-analysis phase rejects the input program.");
 		compilationStatus = FAILED;
 	}
-
+	logDebugging(logger, "Releasing AST resources...");
+	releaseProgram(program);
 	logDebugging(logger, "Releasing modules resources...");
 	shutdownGeneratorModule();
 	shutdownCalculatorModule();

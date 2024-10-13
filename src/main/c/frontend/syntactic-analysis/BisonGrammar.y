@@ -24,17 +24,14 @@
 /**
  * Destructors. This functions are executed after the parsing ends, so if the
  * AST must be used in the following phases of the compiler you shouldn't used
- * this approach. To use this mechanism, the AST must be translated into
- * another structure.
+ * this approach for the AST root node ("program" non-terminal, in this
+ * grammar), or it will drop the entire tree even if the parse succeeds.
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
-/*
 %destructor { releaseConstant($$); } <constant>
 %destructor { releaseExpression($$); } <expression>
 %destructor { releaseFactor($$); } <factor>
-%destructor { releaseProgram($$); } <program>
-*/
 
 /** Terminals. */
 %token <integer> INTEGER
