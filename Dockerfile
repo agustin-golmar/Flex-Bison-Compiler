@@ -1,5 +1,5 @@
 # @see https://hub.docker.com/_/ubuntu
-FROM ubuntu:latest AS runner
+FROM ubuntu:24.10 AS runner
 
 # Define the default shell.
 SHELL [ "/bin/bash", "-c" ]
