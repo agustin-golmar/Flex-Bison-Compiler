@@ -1,10 +1,10 @@
-[![✗](https://img.shields.io/badge/Release-v2.0.0-ffb600.svg?style=for-the-badge)](https://github.com/agustin-golmar/Flex-Bison-Compiler/releases)
+[![✗](https://img.shields.io/badge/Release-v2.0.0-ffb600.svg?style=for-the-badge)](https://github.com/isa-conde/AC-DCompiler/releases)
 
-[![✗](https://github.com/agustin-golmar/Flex-Bison-Compiler/actions/workflows/pipeline.yaml/badge.svg?branch=production)](https://github.com/agustin-golmar/Flex-Bison-Compiler/actions/workflows/pipeline.yaml)
+[![✗](https://github.com/agustin-golmar/Flex-Bison-Compiler/actions/workflows/pipeline.yaml/badge.svg?branch=production)](https://github.com/isa-conde/AC-DCompiler/actions/workflows/pipeline.yaml)
 
-# Flex-Bison-Compiler
+# AC-DCompiler
 
-A base compiler example, developed with Flex and Bison.
+A compiler to generate electrical circuit drawings for physics problems, developed with Flex and Bison.
 
 * [Requirements](#requirements)
 * [Configuration](#configuration)
