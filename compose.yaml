@@ -14,8 +14,6 @@ networks:
     driver_opts:
       com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
     driver: "bridge"
-    enable_ipv4: true
-    enable_ipv6: false
     name: "ar-edu-itba-atlyc"
 
 services:
@@ -36,7 +34,7 @@ services:
       ar-edu-itba-atlyc:
         aliases:
           - "compiler.atlyc.itba.edu.ar"
-    pull_policy: "every_7d"
+    pull_policy: "build"
     user: "ubuntu:ubuntu"
     volumes:
       - ".:/home/ubuntu/Flex-Bison-Compiler"
