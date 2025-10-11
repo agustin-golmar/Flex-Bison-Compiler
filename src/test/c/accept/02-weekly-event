@@ -1,0 +1,2 @@
+event "Reunión de equipo" on Monday at 09:00 repeat: weekly
+

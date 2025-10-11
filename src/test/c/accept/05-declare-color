@@ -1,0 +1,4 @@
+declare color azul = #007BFF
+
+event "Entrenamiento" on 2025-10-20 at 08:30 color: azul
+

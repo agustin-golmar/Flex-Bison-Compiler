@@ -1,0 +1,4 @@
+event "Clase de guitarra" on Thursday at 18:00 repeat: weekly
+
+override "Clase de guitarra" on 2025-10-23 with "Clase especial de guitarra eléctrica"
+
