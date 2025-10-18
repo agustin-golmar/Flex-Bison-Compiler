@@ -15,16 +15,20 @@
  */
 
 extern CompilationStatus ArithmeticOperatorLexemeAction(TokenLabel label);
-extern CompilationStatus EnterImportExpressionLexemeAction(FlexContext context);
 extern CompilationStatus EnterMultilineCommentLexemeAction(FlexContext context);
 extern CompilationStatus EOFLexemeAction();
 extern CompilationStatus IgnoredLexemeAction();
 extern CompilationStatus IntegerLexemeAction();
-extern CompilationStatus LeaveImportExpressionLexemeAction();
 extern CompilationStatus LeaveMultilineCommentLexemeAction();
 extern CompilationStatus ParenthesisLexemeAction(TokenLabel label);
-extern CompilationStatus SubexpressionLexemeAction();
 extern CompilationStatus UnknownLexemeAction();
+extern CompilationStatus KeyWordLexemeAction(TokenLabel label);
+extern CompilationStatus BeginOfNewParameterLexemeAction();
+extern CompilationStatus ObjectAccessExpressionLexemeAction();
+extern CompilationStatus EnterFunctionCallExpressionLexemeAction(FlexContext context);
+extern CompilationStatus LeaveFunctionCallExpressionLexemeAction();
+extern CompilationStatus BracketsLexemeAction(TokenLabel label);
+extern CompilationStatus PunctuatorLexemeAction(TokenLabel label);
 
 %}
 
@@ -33,7 +37,8 @@ extern CompilationStatus UnknownLexemeAction();
  *
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
-%x IMPORT_EXPRESSION
+%s ALPHANUM_CONTEXT
+%s ALHPANUM_WHITESPACE_CONTEXT
 %x MULTILINE_COMMENT
 
 /**
@@ -54,11 +59,6 @@ whitespace			[[:space:]]+
 
 %}
 
-"{"									{ return EnterImportExpressionLexemeAction(IMPORT_EXPRESSION); }
-<IMPORT_EXPRESSION>[^{}]+			{ return SubexpressionLexemeAction(); }
-<IMPORT_EXPRESSION>"}"				{ return LeaveImportExpressionLexemeAction(); }
-<IMPORT_EXPRESSION>.				{ return UnknownLexemeAction(); }
-
 "/*"								{ return EnterMultilineCommentLexemeAction(MULTILINE_COMMENT); }
 <MULTILINE_COMMENT>"*/"				{ return LeaveMultilineCommentLexemeAction(); }
 <MULTILINE_COMMENT>[^*]+			{ return IgnoredLexemeAction(); }
@@ -69,12 +69,40 @@ whitespace			[[:space:]]+
 "/"									{ return ArithmeticOperatorLexemeAction(DIV); }
 "+"									{ return ArithmeticOperatorLexemeAction(ADD); }
 
+"="								    { return ArithmeticOperatorLexemeAction(ASSIGN); }
+
 "("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS); }
 ")"									{ return ParenthesisLexemeAction(CLOSE_PARENTHESIS); }
 
+"{"                                 { return BracketsLexemeAction(OPEN_BRACE); }
+"}"                                 { return BracketsLexemeAction(CLOSE_BRACE); }
+
+";"                                 { return PunctuatorLexemeAction(SEMICOLON); }
+","                                 { return PunctuatorLexemeAction(COMMA); }
+
 [[:digit:]]+						{ return IntegerLexemeAction(); }
 
+// Keywords
+"class"							    { return KeyWordLexemeAction(CLASS); }
+"new"								{ return KeyWordLexemeAction(NEW); }
+"return"							{ return KeyWordLexemeAction(RETURN); }
+"private"							{ return KeyWordLexemeAction(PRIVATE); }
+"public"							{ return KeyWordLexemeAction(PUBLIC); }
+"this"                              { return KeyWordLexemeAction(THIS); }
+"static"                            { return KeyWordLexemeAction(STATIC); }
+"constructor"                       { return KeyWordLexemeAction(CONSTRUCTOR); }
+"destructor"                        { return KeyWordLexemeAction(DESTRUCTOR); }
+"int"								{ return KeyWordLexemeAction(INT); }
+"void"								{ return KeyWordLexemeAction(VOID); }
+"char"                              { return KeyWordLexemeAction(CHAR); }
+
+// Object access
+"->"                                { return ObjectAccessExpressionLexemeAction(); }
+
 {whitespace}						{ return IgnoredLexemeAction(); }
+
+[[:alpha:]][[:alnum:]]+             { return AlphaNumericLexemeAction(); }
+
 .									{ return UnknownLexemeAction(); }
 
 <<EOF>>								{ return EOFLexemeAction(); }

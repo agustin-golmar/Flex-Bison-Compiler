@@ -27,6 +27,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	/** Terminals. */
 
 	signed int integer;
+	char * alphanum;
 	TokenLabel token;
 
 	/** Non-terminals. */
@@ -51,6 +52,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 /** Terminals. */
 %token <integer> INTEGER
+%token <alphanum> ALPHANUMERIC
 %token <token> ADD
 %token <token> CLOSE_BRACE
 %token <token> CLOSE_COMMENT
