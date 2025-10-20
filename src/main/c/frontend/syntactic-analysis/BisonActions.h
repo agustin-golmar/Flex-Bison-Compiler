@@ -45,6 +45,8 @@ MemberDeclaration * ConstructorMemberSemanticAction(MethodDeclaration * construc
 MemberDeclaration * DestructorMemberSemanticAction(MethodDeclaration * destructorDeclaration);
 FieldDeclaration * FieldDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier);
 FieldDeclaration * StaticFieldDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier);
+FieldDeclaration * InitializedFieldDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier, Expression * expression);
+FieldDeclaration * InitializedStaticFieldDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier, Expression * expression);
 MethodDeclaration * MethodDeclarationSemanticAction(TypeSpecifier * returnType, char * identifier, Parameter * parameterList, Statement * statementList);
 MethodDeclaration * StaticMethodDeclarationSemanticAction(TypeSpecifier * returnType, char * identifier, Parameter * parameterList, Statement * statementList);
 MethodDeclaration * ConstructorDeclarationSemanticAction(Parameter * parameterList, Statement * statementList);

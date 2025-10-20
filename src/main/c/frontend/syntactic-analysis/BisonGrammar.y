@@ -159,7 +159,9 @@ memberDeclaration: fieldDeclaration							{ $$ = FieldMemberSemanticAction($1); 
 	| destructorDeclaration									{ $$ = DestructorMemberSemanticAction($1); }
 	;
 
-fieldDeclaration: typeSpecifier IDENTIFIER SEMICOLON			{ $$ = FieldDeclarationSemanticAction($1, $2); }
+fieldDeclaration: typeSpecifier IDENTIFIER ASSIGN expression SEMICOLON	{ $$ = InitializedFieldDeclarationSemanticAction($1, $2, $4); }
+	| typeSpecifier IDENTIFIER SEMICOLON			{ $$ = FieldDeclarationSemanticAction($1, $2); }
+	| STATIC typeSpecifier IDENTIFIER ASSIGN expression SEMICOLON	{ $$ = InitializedStaticFieldDeclarationSemanticAction($2, $3, $5); }
 	| STATIC typeSpecifier IDENTIFIER SEMICOLON				{ $$ = StaticFieldDeclarationSemanticAction($2, $3); }
 	;
 

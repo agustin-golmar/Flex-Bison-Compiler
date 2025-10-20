@@ -146,6 +146,9 @@ void destroyFieldDeclaration(FieldDeclaration * fieldDeclaration) {
 		if (fieldDeclaration->identifier != NULL) {
 			free(fieldDeclaration->identifier);
 		}
+		if (fieldDeclaration->initializationExpression != NULL) {
+			destroyExpression(fieldDeclaration->initializationExpression);
+		}
 		free(fieldDeclaration);
 	}
 }

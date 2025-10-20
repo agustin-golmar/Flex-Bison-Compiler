@@ -209,6 +209,26 @@ FieldDeclaration * FieldDeclarationSemanticAction(TypeSpecifier * typeSpecifier,
 	return fieldDeclaration;
 }
 
+FieldDeclaration * InitializedFieldDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier, Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FieldDeclaration * fieldDeclaration = calloc(1, sizeof(FieldDeclaration));
+	fieldDeclaration->typeSpecifier = typeSpecifier;
+	fieldDeclaration->identifier = identifier;
+	fieldDeclaration->initializationExpression = expression;
+	fieldDeclaration->isStatic = 0;
+	return fieldDeclaration;
+}
+
+FieldDeclaration * InitializedStaticFieldDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier, Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FieldDeclaration * fieldDeclaration = calloc(1, sizeof(FieldDeclaration));
+	fieldDeclaration->typeSpecifier = typeSpecifier;
+	fieldDeclaration->identifier = identifier;
+	fieldDeclaration->initializationExpression = expression;
+	fieldDeclaration->isStatic = 1;
+	return fieldDeclaration;
+}
+
 FieldDeclaration * StaticFieldDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	FieldDeclaration * fieldDeclaration = calloc(1, sizeof(FieldDeclaration));

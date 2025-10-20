@@ -150,6 +150,7 @@ struct MemberDeclaration {
 struct FieldDeclaration {
 	TypeSpecifier * typeSpecifier;
 	char * identifier;
+	Expression * initializationExpression;
 	int isStatic;
 };
 
