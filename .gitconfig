@@ -1,0 +1,17 @@
+[commit]
+	gpgsign = true
+
+[tag]
+	gpgSign = true
+
+[core]
+    hooksPath = .githooks
+
+[merge]
+    ff = no
+
+[pull]
+    rebase = true
+
+[include]
+    path = ./.gitconfig.local
