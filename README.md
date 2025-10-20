@@ -1,16 +1,17 @@
-[![✗](https://img.shields.io/badge/Release-v2.0.0-ffb600.svg?style=for-the-badge)](https://github.com/agustin-golmar/Flex-Bison-Compiler/releases)
+<!-- [![✗](https://img.shields.io/badge/Release-v2.0.0-ffb600.svg?style=for-the-badge)](https://github.com/agustin-golmar/Flex-Bison-Compiler/releases) -->
 
-[![✗](https://github.com/agustin-golmar/Flex-Bison-Compiler/actions/workflows/pipeline.yaml/badge.svg?branch=production)](https://github.com/agustin-golmar/Flex-Bison-Compiler/actions/workflows/pipeline.yaml)
+[![✗](https://github.com/TLA-2025-0mega/cplus/actions/workflows/pipeline.yaml/badge.svg?branch=production)](https://github.com/TLA-2025-0mega/cplus/actions/workflows/pipeline.yaml)
 
-# Flex-Bison-Compiler
+# CPlus
 
-A base compiler example, developed with Flex and Bison.
+## Members
 
-* [Requirements](#requirements)
-* [Configuration](#configuration)
-* [Commands](#commands)
-* [CI/CD](#cicd)
-* [Recommended Extensions](#recommended-extensions)
+| Name                   | Student ID | Email                      |
+|------------------------|------------|----------------------------|
+| Lucia Oliveto          | 64646      | loliveto@itba.edu.ar       |
+| Máximo Wehncke         | 64018      | mwehncke@itba.edu.ar       |
+| Tomas Pietravallo      | 64288      | tpietravallo@itba.edu.ar   |
+| Emilio Mitchell        | 64590      | emitchell@itba.edu.ar      |
 
 ## Requirements
 
