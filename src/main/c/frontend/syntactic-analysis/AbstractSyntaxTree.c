@@ -94,9 +94,6 @@ void destroyProgram(Program * program) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (program != NULL) {
 		switch (program->type) {
-			case EXPRESSION_PROGRAM:
-				destroyExpression(program->expression);
-				break;
 			case CLASS_PROGRAM:
 				destroyClassDeclaration(program->classDeclaration);
 				break;
