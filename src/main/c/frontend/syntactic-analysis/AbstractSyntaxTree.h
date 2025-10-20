@@ -123,7 +123,7 @@ struct Expression {
 };
 
 struct Program {
-	ClassDeclaration ** classDeclaration;
+	ClassDeclaration * classDeclaration;
 	ProgramType type;
 };
 
