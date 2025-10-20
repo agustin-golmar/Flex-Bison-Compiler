@@ -92,11 +92,27 @@ void destroyProgram(Program * program) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (program != NULL) {
 		switch (program->type) {
-			case CLASS_PROGRAM:
-				destroyClassDeclaration(program->classDeclaration);
+			case BLOCK_PROGRAM:
+				destroyBlockDeclaration(program->blockDeclaration);
 				break;
 		}
 		free(program);
+	}
+}
+
+void destroyBlockDeclaration(BlockDeclaration * BlockDeclaration) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (BlockDeclaration != NULL) {
+		switch (BlockDeclaration->type) {
+			case CLASS_BLOCK:
+				destroyClassDeclaration(BlockDeclaration->classDeclaration);
+				break;
+			case METHOD_BLOCK:
+				destroyMethodDeclaration(BlockDeclaration->methodDeclaration);
+				break;
+		}
+		destroyBlockDeclaration(BlockDeclaration->next);
+		free(BlockDeclaration);
 	}
 }
 
@@ -107,7 +123,6 @@ void destroyClassDeclaration(ClassDeclaration * classDeclaration) {
 			free(classDeclaration->identifier);
 		}
 		destroyClassBody(classDeclaration->classBody);
-		destroyClassDeclaration(classDeclaration->next);
 		free(classDeclaration);
 	}
 }

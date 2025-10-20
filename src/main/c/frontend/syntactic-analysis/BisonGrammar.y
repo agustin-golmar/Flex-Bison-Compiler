@@ -32,6 +32,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 	/** Non-terminals. */
 
+	BlockDeclaration * blockDeclaration;
 	ClassDeclaration * classDeclaration;
 	ClassBody * classBody;
 	MemberDeclaration * memberDeclaration;
@@ -54,6 +55,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
+%destructor { destroyBlockDeclaration($$); } <blockDeclaration>
 %destructor { destroyClassDeclaration($$); } <classDeclaration>
 %destructor { destroyClassBody($$); } <classBody>
 %destructor { destroyMemberDeclaration($$); } <memberDeclaration>
@@ -100,7 +102,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 /** Non-terminals. */
 %type <program> program
-%type <classDeclaration> classDeclaration classDeclarationList
+%type <blockDeclaration> blockDeclaration blockDeclarationList
+%type <classDeclaration> classDeclaration
 %type <classBody> classBody
 %type <memberDeclaration> member memberDeclaration memberList
 %type <methodDeclaration> methodDeclaration constructorDeclaration destructorDeclaration
@@ -127,14 +130,18 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: classDeclarationList									{ $$ = ClassProgramSemanticAction($1); }
+program: blockDeclarationList									{ $$ = BlockProgramSemanticAction($1); }
 	;
 
-classDeclarationList: classDeclaration						{ $$ = SingleClassDeclarationSemanticAction($1); }
-	| classDeclarationList classDeclaration					{ $$ = MultipleClassDeclarationSemanticAction($1, $2); }
+blockDeclarationList: blockDeclaration						{ $$ = SingleBlockDeclarationSemanticAction($1); }
+	| blockDeclarationList blockDeclaration					{ $$ = MultipleBlockDeclarationSemanticAction($1, $2); }
 	;
 
-classDeclaration: CLASS IDENTIFIER OPEN_BRACE classBody CLOSE_BRACE		{ $$ = ClassDeclarationSemanticAction($2, $4); }
+blockDeclaration: classDeclaration							{ $$ = ClassBlockDeclarationSemanticAction($1); }
+	| methodDeclaration										{ $$ = MethodBlockDeclarationSemanticAction($1); }
+	;
+
+classDeclaration: CLASS IDENTIFIER OPEN_BRACE classBody CLOSE_BRACE	{ $$ = ClassDeclarationSemanticAction($2, $4); }
 	;
 
 classBody: %empty												{ $$ = EmptyClassBodySemanticAction(); }

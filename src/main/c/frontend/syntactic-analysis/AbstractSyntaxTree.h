@@ -17,6 +17,7 @@ ModuleDestructor initializeAbstractSyntaxTreeModule();
 typedef enum ExpressionType ExpressionType;
 typedef enum FactorType FactorType;
 typedef enum ProgramType ProgramType;
+typedef enum BlockType BlockType;
 typedef enum MemberType MemberType;
 typedef enum StatementType StatementType;
 typedef enum TypeSpecifierType TypeSpecifierType;
@@ -26,6 +27,7 @@ typedef struct Constant Constant;
 typedef struct Expression Expression;
 typedef struct Factor Factor;
 typedef struct Program Program;
+typedef struct BlockDeclaration BlockDeclaration;
 typedef struct ClassDeclaration ClassDeclaration;
 typedef struct ClassBody ClassBody;
 typedef struct MemberDeclaration MemberDeclaration;
@@ -63,7 +65,12 @@ enum FactorType {
 };
 
 enum ProgramType {
-	CLASS_PROGRAM
+	BLOCK_PROGRAM
+};
+
+enum BlockType {
+	CLASS_BLOCK,
+	METHOD_BLOCK
 };
 
 enum MemberType {
@@ -123,14 +130,22 @@ struct Expression {
 };
 
 struct Program {
-	ClassDeclaration * classDeclaration;
+	BlockDeclaration * blockDeclaration;
 	ProgramType type;
+};
+
+struct BlockDeclaration {
+	union {
+		ClassDeclaration * classDeclaration;
+		MethodDeclaration * methodDeclaration;
+	};
+	BlockDeclaration * next;
+	BlockType type;
 };
 
 struct ClassDeclaration {
 	char * identifier;
 	ClassBody * classBody;
-	ClassDeclaration * next;
 };
 
 struct ClassBody {
@@ -203,6 +218,7 @@ void destroyConstant(Constant * constant);
 void destroyExpression(Expression * expression);
 void destroyFactor(Factor * factor);
 void destroyProgram(Program * program);
+void destroyBlockDeclaration(BlockDeclaration * blockDeclaration);
 void destroyClassDeclaration(ClassDeclaration * classDeclaration);
 void destroyClassBody(ClassBody * classBody);
 void destroyMemberDeclaration(MemberDeclaration * memberDeclaration);

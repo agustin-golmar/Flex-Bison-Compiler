@@ -27,9 +27,11 @@ Program * ExpressionProgramSemanticAction(Expression * expression);
  * Extended semantic actions for class-based grammar.
  */
 
-Program * ClassProgramSemanticAction(ClassDeclaration * classDeclaration);
-ClassDeclaration * SingleClassDeclarationSemanticAction(ClassDeclaration * classDeclaration);
-ClassDeclaration * MultipleClassDeclarationSemanticAction(ClassDeclaration * classDeclarationList, ClassDeclaration * classDeclaration);
+Program * BlockProgramSemanticAction(BlockDeclaration * blockDeclaration);
+BlockDeclaration * SingleBlockDeclarationSemanticAction(BlockDeclaration * blockDeclaration);
+BlockDeclaration * MultipleBlockDeclarationSemanticAction(BlockDeclaration * blockDeclarationList, BlockDeclaration * blockDeclaration);
+BlockDeclaration * ClassBlockDeclarationSemanticAction(ClassDeclaration * classDeclaration);
+BlockDeclaration * MethodBlockDeclarationSemanticAction(MethodDeclaration * MethodDeclaration);
 ClassDeclaration * ClassDeclarationSemanticAction(char * identifier, ClassBody * classBody);
 ClassBody * EmptyClassBodySemanticAction();
 ClassBody * MemberListClassBodySemanticAction(MemberDeclaration * memberList);

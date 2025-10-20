@@ -141,5 +141,5 @@ ComputationResult computeFactor(Factor * factor) {
 
 ComputationResult executeCalculator(CompilerState * compilerState) {
 	Program * program = compilerState->abstractSyntaxtTree;
-	return computeExpression(program->classDeclaration);
+	return computeExpression(program->blockDeclaration);
 }

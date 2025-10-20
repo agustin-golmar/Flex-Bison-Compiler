@@ -76,28 +76,46 @@ Factor * ExpressionFactorSemanticAction(Expression * expression) {
 	return factor;
 }
 
-Program * ClassProgramSemanticAction(ClassDeclaration * classDeclaration) {
+Program * BlockProgramSemanticAction(BlockDeclaration * blockDeclaration) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Program * program = calloc(1, sizeof(Program));
-	program->classDeclaration = classDeclaration;
-	program->type = CLASS_PROGRAM;
+	program->blockDeclaration = blockDeclaration;
+	program->type = BLOCK_PROGRAM;
 	_compilerState->abstractSyntaxtTree = program;
 	return program;
 }
 
-ClassDeclaration * SingleClassDeclarationSemanticAction(ClassDeclaration * classDeclaration) {
+BlockDeclaration * SingleBlockDeclarationSemanticAction(BlockDeclaration * blockDeclaration) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	return classDeclaration;
+	return blockDeclaration;
 }
 
-ClassDeclaration * MultipleClassDeclarationSemanticAction(ClassDeclaration * classDeclarationList, ClassDeclaration * classDeclaration) {
+BlockDeclaration * MultipleBlockDeclarationSemanticAction(BlockDeclaration * blockDeclarationList, BlockDeclaration * blockDeclaration) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	ClassDeclaration * current = classDeclarationList;
+	BlockDeclaration * current = blockDeclarationList;
 	while (current->next != NULL) {
 		current = current->next;
 	}
-	current->next = classDeclaration;
-	return classDeclarationList;
+	current->next = blockDeclaration;
+	return blockDeclarationList;
+}
+
+BlockDeclaration * ClassBlockDeclarationSemanticAction(ClassDeclaration * classDeclaration) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	BlockDeclaration * blockDeclaration = calloc(1, sizeof(BlockDeclaration));
+	blockDeclaration->classDeclaration = classDeclaration;
+	blockDeclaration->type = CLASS_BLOCK;
+	blockDeclaration->next = NULL;
+	return blockDeclaration;
+}
+
+BlockDeclaration * MethodBlockDeclarationSemanticAction(MethodDeclaration * MethodDeclaration) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	BlockDeclaration * blockDeclaration = calloc(1, sizeof(BlockDeclaration));
+	blockDeclaration->methodDeclaration = MethodDeclaration;
+	blockDeclaration->type = METHOD_BLOCK;
+	blockDeclaration->next = NULL;
+	return blockDeclaration;
 }
 
 ClassDeclaration * ClassDeclarationSemanticAction(char * identifier, ClassBody * classBody) {
@@ -105,7 +123,6 @@ ClassDeclaration * ClassDeclarationSemanticAction(char * identifier, ClassBody *
 	ClassDeclaration * classDeclaration = calloc(1, sizeof(ClassDeclaration));
 	classDeclaration->identifier = identifier;
 	classDeclaration->classBody = classBody;
-	classDeclaration->next = NULL;
 	return classDeclaration;
 }
 
