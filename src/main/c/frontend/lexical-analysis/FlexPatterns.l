@@ -56,6 +56,7 @@ whitespace			[[:space:]]+
 
 %}
 
+"//".*                              { return IgnoredLexemeAction(); }
 "/*"								{ return EnterMultilineCommentLexemeAction(MULTILINE_COMMENT); }
 <MULTILINE_COMMENT>"*/"				{ return LeaveMultilineCommentLexemeAction(); }
 <MULTILINE_COMMENT>[^*]+			{ return IgnoredLexemeAction(); }
