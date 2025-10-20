@@ -1,16 +1,5 @@
 class myClass {
-    private int a;
-
     constructor(int a) {
-        this.a = a;
-    }
-
-    public int getA() {
-        return this.a;
-    }
-
-    public void setA(int n) {
-        this.a = n;
-        return ;
+        this->a = a;
     }
 }

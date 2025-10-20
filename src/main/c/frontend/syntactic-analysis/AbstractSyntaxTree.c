@@ -28,8 +28,8 @@ void destroyConstant(Constant * constant) {
 }
 
 void destroyExpression(Expression * expression) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (expression != NULL) {
+	logDebugging(_logger, "Executing destructor: %s of type %d", __FUNCTION__, expression->type);
 		switch (expression->type) {
 			case ADDITION:
 			case DIVISION:
@@ -47,9 +47,7 @@ void destroyExpression(Expression * expression) {
 				break;
 			case MEMBER_ACCESS:
 				destroyExpression(expression->leftExpression);
-				if (expression->identifier != NULL) {
-					free(expression->identifier);
-				}
+				destroyExpression(expression->rightExpression);
 				break;
 			case FUNCTION_CALL:
 				destroyExpression(expression->leftExpression);

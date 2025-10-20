@@ -511,7 +511,10 @@ Expression * MemberAccessSemanticAction(Expression * expression, char * identifi
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Expression * memberAccess = calloc(1, sizeof(Expression));
 	memberAccess->leftExpression = expression;
-	memberAccess->identifier = identifier;
+	Expression * rightExpression = calloc(1, sizeof(Expression));
+	rightExpression->identifier = identifier;
+	rightExpression->type = IDENTIFIER_EXPRESSION;
+	memberAccess->rightExpression = rightExpression;
 	memberAccess->type = MEMBER_ACCESS;
 	return memberAccess;
 }
