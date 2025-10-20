@@ -25,10 +25,9 @@ extern CompilationStatus UnknownLexemeAction();
 extern CompilationStatus KeyWordLexemeAction(TokenLabel label);
 extern CompilationStatus BeginOfNewParameterLexemeAction();
 extern CompilationStatus ObjectAccessExpressionLexemeAction();
-extern CompilationStatus EnterFunctionCallExpressionLexemeAction(FlexContext context);
-extern CompilationStatus LeaveFunctionCallExpressionLexemeAction();
 extern CompilationStatus BracketsLexemeAction(TokenLabel label);
 extern CompilationStatus PunctuatorLexemeAction(TokenLabel label);
+extern CompilationStatus IdentifierLexemeAction();
 
 %}
 
@@ -80,7 +79,6 @@ whitespace			[[:space:]]+
 
 [[:digit:]]+						{ return IntegerLexemeAction(); }
 
-// Keywords
 "class"							    { return KeyWordLexemeAction(CLASS); }
 "new"								{ return KeyWordLexemeAction(NEW); }
 "return"							{ return KeyWordLexemeAction(RETURN); }
@@ -94,7 +92,6 @@ whitespace			[[:space:]]+
 "void"								{ return KeyWordLexemeAction(VOID); }
 "char"                              { return KeyWordLexemeAction(CHAR); }
 
-// Object access
 "->"                                { return ObjectAccessExpressionLexemeAction(); }
 
 {whitespace}						{ return IgnoredLexemeAction(); }

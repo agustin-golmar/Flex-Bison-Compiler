@@ -40,6 +40,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	Statement * statement;
 	Expression * expression;
 	TypeSpecifier * typeSpecifier;
+	AccessSpecifier * accessSpecifier;
 	Parameter * parameter;
 	ArgumentList * argumentList;
 	Program * program;
@@ -100,13 +101,14 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 /** Non-terminals. */
 %type <program> program
 %type <classDeclaration> classDeclaration classDeclarationList
-%type <classBody> classBody memberList
-%type <memberDeclaration> member memberDeclaration
+%type <classBody> classBody
+%type <memberDeclaration> member memberDeclaration memberList
 %type <methodDeclaration> methodDeclaration constructorDeclaration destructorDeclaration
 %type <fieldDeclaration> fieldDeclaration
 %type <statement> statement statementList compoundStatement declarationStatement expressionStatement returnStatement
 %type <expression> expression assignmentExpression additiveExpression multiplicativeExpression unaryExpression postfixExpression primaryExpression
-%type <typeSpecifier> typeSpecifier accessSpecifier
+%type <typeSpecifier> typeSpecifier 
+%type <accessSpecifier> accessSpecifier
 %type <parameter> parameter parameterList parameters
 %type <argumentList> argumentList arguments
 
