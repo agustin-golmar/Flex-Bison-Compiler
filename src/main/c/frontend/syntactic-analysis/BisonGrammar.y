@@ -6,7 +6,6 @@
 #include "../../support/type/TokenLabel.h"
 #include "AbstractSyntaxTree.h"
 #include "BisonActions.h"
-#include "../lexical-analysis/FlexPatterns.h"
 
 /**
  * The error reporting function for Bison parser.
@@ -16,12 +15,7 @@
  * @see https://www.gnu.org/software/bison/manual/html_node/Error-Reporting-Function.html
  * @see https://www.gnu.org/software/bison/manual/html_node/Tracking-Locations.html
  */
-extern int yylineno;
-extern char* yytext;
-
-void yyerror(const char *s) {
-    fprintf(stderr, "Error sintáctico en línea %d cerca de '%s': %s\n", yylineno, yytext, s);
-}
+void yyerror(const YYLTYPE * location, const char * message) {}
 
 %}
 
@@ -33,6 +27,10 @@ void yyerror(const char *s) {
 %locations
 
 %union {
+
+    signed int integer;
+	TokenLabel token;
+
 	char* strVal;
     int intVal;
 }
@@ -44,21 +42,38 @@ void yyerror(const char *s) {
  * grammar), or it will drop the entire tree even if the parsing succeeds.
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
+ *
+ * Por ahora no tengo destructores.
  */
-%destructor { destroyConstant($$); } <constant>
-%destructor { destroyExpression($$); } <expression>
-%destructor { destroyFactor($$); } <factor>
+
 
 /** Terminals. */
+
+%token <token> ADD
+%token <token> CLOSE_BRACE
+%token <token> CLOSE_COMMENT
+%token <token> CLOSE_PARENTHESIS
+%token <token> DIV
+%token <token> MUL
+%token <token> OPEN_BRACE
+%token <token> OPEN_COMMENT
+%token <token> OPEN_PARENTHESIS
+%token <token> SUB
+
+%token <token> IGNORED
+
+%token <strVal> IDENTIFIER
+%token <strVal> HOUR
+%token <strVal> STRING
 %token YEAR MONTH TIMEZONE
 %token EVENT OVERRIDE
 %token ON AND FROM TO AT SINCE TILL
 %token EVERY STARTING ONLY IF
 %token COLOR DESCRIPTION
 %token DAY_OF_MONTH DAY_OF_WEEK
-%token WEEKDAY MONTH_NAME TIMEZONE_NAME
-%token IDENTIFIER STRING URL HOUR
-%token INTEGER
+%token <strVal> WEEKDAY MONTH_NAME TIMEZONE_NAME
+%token <strVal> URL
+%token <intVal> INTEGER
 %token LBRACE RBRACE
 %token UNKNOWN
 
@@ -67,6 +82,8 @@ void yyerror(const char *s) {
 %type <strVal> timezone_decl year_decl month_decl event_decl override_decl
 %type <strVal> event_body recurrence
 %type <strVal> expr_list expr time_range time_expr day_list
+%type <strVal> event_spec
+%type <strVal> event_prop
 
 
 %%
@@ -89,12 +106,13 @@ month_blocks:
     ;
 
 month_block:
-      MONTH (MONTH_NAME | INTEGER) LBRACE statements RBRACE
+      MONTH MONTH_NAME LBRACE statements RBRACE
         {
-            if ($2)
-                printf("Mes definido: %s\n", $2);
-            else
-                printf("Mes numérico definido\n");
+            printf("Mes definido: %s\n", $2);
+        }
+    | MONTH INTEGER LBRACE statements RBRACE
+        {
+            printf("Mes numérico definido: %d\n", $2);
         }
     ;
 
@@ -143,15 +161,3 @@ event_prop:
 
 %%
 
-/* ===============================
-   CÓDIGO USUARIO  (Seguro vuela después)
-   =============================== */
-
-int main(int argc, char **argv) {
-    if (yyparse() == 0) {
-        printf("\nParseo completado sin errores.\n");
-    } else {
-        printf("\nHubo errores durante el parseo.\n");
-    }
-    return 0;
-}

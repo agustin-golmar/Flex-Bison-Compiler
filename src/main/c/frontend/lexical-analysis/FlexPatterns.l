@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-void yyerror(const char *s);
+
 }
 
 
@@ -36,7 +36,7 @@ identifier          {letter}({letter}|{digit}|[_\-])*
 hour                {digit}{digit}:{digit}{digit}
 month_name          (January|February|March|April|May|June|July|August|September|October|November|December)
 weekday             (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)
-timezone_name       ([A-Z]{1,4}([+-][0-9]{1,2})?|{identifier}(/{identifier}){0,2})
+timezone_name       (UTC|GMT|[A-Z]{3,4})
 url_pattern         https?:\/\/[A-Za-z0-9\.\-_/]+
 string              \"([^\"\\]|\\.)*\"
 
@@ -50,10 +50,6 @@ string              \"([^\"\\]|\\.)*\"
 
 %}
 
-"{"									{ return EnterImportExpressionLexemeAction(IMPORT_EXPRESSION); }
-<IMPORT_EXPRESSION>[^{}]+			{ return SubexpressionLexemeAction(); }
-<IMPORT_EXPRESSION>"}"				{ return LeaveImportExpressionLexemeAction(); }
-<IMPORT_EXPRESSION>.				{ return UnknownLexemeAction(); }
 
 "/*"								{ return EnterMultilineCommentLexemeAction(MULTILINE_COMMENT); }
 <MULTILINE_COMMENT>"*/"				{ return LeaveMultilineCommentLexemeAction(); }
@@ -89,25 +85,25 @@ string              \"([^\"\\]|\\.)*\"
 "color"                             { return COLOR; }
 "description"                       { return DESCRIPTION; }
 
-{month_name}                        { yylval.strVal = strdup(yytext); return MONTH_NAME; }
-{weekday}                           { yylval.strVal = strdup(yytext); return WEEKDAY; }
-{hour}                              { yylval.strVal = strdup(yytext); return HOUR; }
+{month_name}                        { yylval->strVal = strdup(yytext); return MONTH_NAME; }
+{weekday}                           { yylval->strVal = strdup(yytext); return WEEKDAY; }
+{hour}                              { yylval->strVal = strdup(yytext); return HOUR; }
 
-{timezone_name}                     { yylval.strVal = strdup(yytext); return TIMEZONE_NAME; }
+{timezone_name}                     { yylval->strVal = strdup(yytext); return TIMEZONE_NAME; }
 
-{url_pattern}                       { yylval.strVal = strdup(yytext); return URL; }
+{url_pattern}                       { yylval->strVal = strdup(yytext); return URL; }
 
 {string}                            {
                                         char *s = strdup(yytext);
                                         s[strlen(s)-1] = '\0';
-                                        yylval.strVal = strdup(s+1);
+                                        yylval->strVal = strdup(s+1);
                                         free(s);
                                         return STRING;
                                     }
 
-{identifier}                        { yylval.strVal = strdup(yytext); return IDENTIFIER; }
+{identifier}                        { yylval->strVal = strdup(yytext); return IDENTIFIER; }
 
-[[:digit:]]+                        { yylval.intVal = atoi(yytext); return INTEGER; }
+[[:digit:]]+                        { yylval->intVal = atoi(yytext); return INTEGER; }
 
 .                                   { 
                                       fprintf(stderr, "Caracter inesperado: '%s'\n", yytext);
@@ -121,9 +117,6 @@ string              \"([^\"\\]|\\.)*\"
 
 %%
 
-void yyerror(const char *s) {
-    fprintf(stderr, "Error léxico: %s\n", s);
-}
 
 /**
  * @see https://westes.github.io/flex/manual/User-Code-Section.html#User-Code-Section
