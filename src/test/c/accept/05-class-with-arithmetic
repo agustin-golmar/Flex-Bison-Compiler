@@ -1,21 +1,21 @@
 class myCounter {
     private int count;
     
-    public myCounter(int initial) {
-        this.count = initial;
+    constructor(int initial) {
+        this->count = initial;
     }
     
     public int increment() {
-        this.count = this.count + 1;
-        return this.count;
+        this->count = this->count + 1;
+        return this->count;
     }
     
     public int decrement() {
-        this.count = this.count - 1;
-        return this.count;
+        this->count = this->count - 1;
+        return this->count;
     }
     
     public int getCount() {
-        return this.count;
+        return this->count;
     }
 }

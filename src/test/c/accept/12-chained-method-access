@@ -2,26 +2,26 @@ class myClass {
     private int a;
     private int b;
 
-    public myClass(int a) {
-        this.a = a;
-        this.b = 0;
+    constructor(int a) {
+        this->a = a;
+        this->b = 0;
     }
 
     public int getA() {
-        return this.a;
+        return this->a;
     }
 
     public int getB() {
-        return this.b;
+        return this->b;
     }
 
     public myClass setA(int n) {
-        this.a = n;
+        this->a = n;
         return this;
     }
 
     public myClass setB(int n) {
-        this.b = n;
+        this->b = n;
         return this;
     }
 }

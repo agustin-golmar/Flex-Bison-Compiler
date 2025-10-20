@@ -1,5 +1,5 @@
 class myClass {
-    public myClass() {
-        this.undef = 0;
+    constructor() {
+        this->undef = 0;
     }
 }

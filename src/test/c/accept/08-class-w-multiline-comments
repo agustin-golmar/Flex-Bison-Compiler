@@ -7,10 +7,10 @@ class myClass {
     private int a;
 
     // This is a constructor
-    public myClass(int a) {
+    constructor(int a) {
         /** Assignment
          * of the parameter to the class variable
         */
-        this.a = a;
+        this->a = a;
     }
 }

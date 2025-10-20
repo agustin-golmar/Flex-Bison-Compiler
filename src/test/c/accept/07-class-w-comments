@@ -4,8 +4,8 @@ class myClass {
     private int a;
 
     // This is a constructor
-    public myClass(int a) {
+    constructor(int a) {
         // Assignment
-        this.a = a;
+        this->a = a;
     }
 }
