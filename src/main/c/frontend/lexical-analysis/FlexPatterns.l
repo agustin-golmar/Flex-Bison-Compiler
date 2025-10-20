@@ -96,7 +96,7 @@ whitespace			[[:space:]]+
 
 {whitespace}						{ return IgnoredLexemeAction(); }
 
-[[:alpha:]][[:alnum:]]+             { return IdentifierLexemeAction(); }
+[[:alpha:]][[:alnum:]]*             { return IdentifierLexemeAction(); }
 
 .									{ return UnknownLexemeAction(); }
 

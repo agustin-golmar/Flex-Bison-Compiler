@@ -1,7 +1,7 @@
 class myClass {
     private int a;
 
-    public myClass(int a) {
+    constructor(int a) {
         this.a = a;
     }
 
