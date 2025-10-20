@@ -32,9 +32,16 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 	/** Non-terminals. */
 
-	Constant * constant;
+	ClassDeclaration * classDeclaration;
+	ClassBody * classBody;
+	MemberDeclaration * memberDeclaration;
+	MethodDeclaration * methodDeclaration;
+	FieldDeclaration * fieldDeclaration;
+	Statement * statement;
 	Expression * expression;
-	Factor * factor;
+	TypeSpecifier * typeSpecifier;
+	Parameter * parameter;
+	ArgumentList * argumentList;
 	Program * program;
 }
 
@@ -46,32 +53,62 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
-%destructor { destroyConstant($$); } <constant>
+%destructor { destroyClassDeclaration($$); } <classDeclaration>
+%destructor { destroyClassBody($$); } <classBody>
+%destructor { destroyMemberDeclaration($$); } <memberDeclaration>
+%destructor { destroyMethodDeclaration($$); } <methodDeclaration>
+%destructor { destroyFieldDeclaration($$); } <fieldDeclaration>
+%destructor { destroyStatement($$); } <statement>
 %destructor { destroyExpression($$); } <expression>
-%destructor { destroyFactor($$); } <factor>
+%destructor { destroyTypeSpecifier($$); } <typeSpecifier>
+%destructor { destroyParameter($$); } <parameter>
+%destructor { destroyArgumentList($$); } <argumentList>
 
 /** Terminals. */
 %token <integer> INTEGER
-%token <alphanum> ALPHANUMERIC
+%token <alphanum> IDENTIFIER
 %token <token> ADD
-%token <token> CLOSE_BRACE
-%token <token> CLOSE_COMMENT
-%token <token> CLOSE_PARENTHESIS
-%token <token> DIV
-%token <token> MUL
-%token <token> OPEN_BRACE
-%token <token> OPEN_COMMENT
-%token <token> OPEN_PARENTHESIS
 %token <token> SUB
+%token <token> MUL
+%token <token> DIV
+%token <token> ASSIGN
+%token <token> OPEN_PARENTHESIS
+%token <token> CLOSE_PARENTHESIS
+%token <token> OPEN_COMMENT
+%token <token> CLOSE_COMMENT
+%token <token> OPEN_BRACE
+%token <token> CLOSE_BRACE
+%token <token> SEMICOLON
+%token <token> COMMA
+%token <token> ARROW
+%token <token> CLASS
+%token <token> NEW
+%token <token> RETURN
+%token <token> PRIVATE
+%token <token> PUBLIC
+%token <token> THIS
+%token <token> STATIC
+%token <token> CONSTRUCTOR
+%token <token> DESTRUCTOR
+%token <token> INT
+%token <token> VOID
+%token <token> CHAR
 
 %token <token> IGNORED
 %token <token> UNKNOWN
 
 /** Non-terminals. */
-%type <constant> constant
-%type <expression> expression
-%type <factor> factor
 %type <program> program
+%type <classDeclaration> classDeclaration classDeclarationList
+%type <classBody> classBody memberList
+%type <memberDeclaration> member memberDeclaration
+%type <methodDeclaration> methodDeclaration constructorDeclaration destructorDeclaration
+%type <fieldDeclaration> fieldDeclaration
+%type <statement> statement statementList compoundStatement declarationStatement expressionStatement returnStatement
+%type <expression> expression assignmentExpression additiveExpression multiplicativeExpression unaryExpression postfixExpression primaryExpression
+%type <typeSpecifier> typeSpecifier accessSpecifier
+%type <parameter> parameter parameterList parameters
+%type <argumentList> argumentList arguments
 
 /**
  * Precedence and associativity.
@@ -79,28 +116,145 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  * @see https://en.cppreference.com/w/cpp/language/operator_precedence.html
  * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
  */
+%right ASSIGN
 %left ADD SUB
 %left MUL DIV
+%left ARROW
 
 %%
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: expression											{ $$ = ExpressionProgramSemanticAction($1); }
+program: classDeclarationList									{ $$ = ClassProgramSemanticAction($1); }
 	;
 
-expression: expression[left] ADD expression[right]			{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| expression[left] DIV expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| expression[left] MUL expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| expression[left] SUB expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| factor												{ $$ = FactorExpressionSemanticAction($1); }
+classDeclarationList: classDeclaration						{ $$ = SingleClassDeclarationSemanticAction($1); }
+	| classDeclarationList classDeclaration					{ $$ = MultipleClassDeclarationSemanticAction($1, $2); }
 	;
 
-factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS		{ $$ = ExpressionFactorSemanticAction($2); }
-	| constant												{ $$ = ConstantFactorSemanticAction($1); }
+classDeclaration: CLASS IDENTIFIER OPEN_BRACE classBody CLOSE_BRACE		{ $$ = ClassDeclarationSemanticAction($2, $4); }
 	;
 
-constant: INTEGER											{ $$ = IntegerConstantSemanticAction($1); }
+classBody: %empty												{ $$ = EmptyClassBodySemanticAction(); }
+	| memberList												{ $$ = MemberListClassBodySemanticAction($1); }
+	;
+
+memberList: member												{ $$ = SingleMemberSemanticAction($1); }
+	| memberList member										{ $$ = MultipleMemberSemanticAction($1, $2); }
+	;
+
+member: accessSpecifier memberDeclaration						{ $$ = AccessSpecifiedMemberSemanticAction($1, $2); }
+	| memberDeclaration										{ $$ = DefaultAccessMemberSemanticAction($1); }
+	;
+
+accessSpecifier: PRIVATE										{ $$ = PrivateAccessSemanticAction(); }
+	| PUBLIC													{ $$ = PublicAccessSemanticAction(); }
+	;
+
+memberDeclaration: fieldDeclaration							{ $$ = FieldMemberSemanticAction($1); }
+	| methodDeclaration										{ $$ = MethodMemberSemanticAction($1); }
+	| constructorDeclaration									{ $$ = ConstructorMemberSemanticAction($1); }
+	| destructorDeclaration									{ $$ = DestructorMemberSemanticAction($1); }
+	;
+
+fieldDeclaration: typeSpecifier IDENTIFIER SEMICOLON			{ $$ = FieldDeclarationSemanticAction($1, $2); }
+	| STATIC typeSpecifier IDENTIFIER SEMICOLON				{ $$ = StaticFieldDeclarationSemanticAction($2, $3); }
+	;
+
+methodDeclaration: typeSpecifier IDENTIFIER OPEN_PARENTHESIS parameterList CLOSE_PARENTHESIS OPEN_BRACE statementList CLOSE_BRACE
+																{ $$ = MethodDeclarationSemanticAction($1, $2, $4, $7); }
+	| STATIC typeSpecifier IDENTIFIER OPEN_PARENTHESIS parameterList CLOSE_PARENTHESIS OPEN_BRACE statementList CLOSE_BRACE
+																{ $$ = StaticMethodDeclarationSemanticAction($2, $3, $5, $8); }
+	;
+
+constructorDeclaration: CONSTRUCTOR OPEN_PARENTHESIS parameterList CLOSE_PARENTHESIS OPEN_BRACE statementList CLOSE_BRACE
+																{ $$ = ConstructorDeclarationSemanticAction($3, $6); }
+	;
+
+destructorDeclaration: DESTRUCTOR OPEN_PARENTHESIS CLOSE_PARENTHESIS OPEN_BRACE statementList CLOSE_BRACE
+																{ $$ = DestructorDeclarationSemanticAction($5); }
+	;
+
+parameterList: %empty											{ $$ = EmptyParameterListSemanticAction(); }
+	| parameters												{ $$ = ParametersSemanticAction($1); }
+	;
+
+parameters: parameter											{ $$ = SingleParameterSemanticAction($1); }
+	| parameters COMMA parameter								{ $$ = MultipleParameterSemanticAction($1, $3); }
+	;
+
+parameter: typeSpecifier IDENTIFIER								{ $$ = ParameterSemanticAction($1, $2); }
+	;
+
+typeSpecifier: INT												{ $$ = IntTypeSemanticAction(); }
+	| VOID														{ $$ = VoidTypeSemanticAction(); }
+	| CHAR														{ $$ = CharTypeSemanticAction(); }
+	| IDENTIFIER												{ $$ = IdentifierTypeSemanticAction($1); }
+	;
+
+statementList: %empty											{ $$ = EmptyStatementListSemanticAction(); }
+	| statementList statement									{ $$ = StatementListSemanticAction($1, $2); }
+	;
+
+statement: expressionStatement									{ $$ = ExpressionStatementSemanticAction($1); }
+	| declarationStatement										{ $$ = DeclarationStatementSemanticAction($1); }
+	| returnStatement											{ $$ = ReturnStatementSemanticAction($1); }
+	| compoundStatement										{ $$ = CompoundStatementSemanticAction($1); }
+	;
+
+compoundStatement: OPEN_BRACE statementList CLOSE_BRACE		{ $$ = CompoundStatementBodySemanticAction($2); }
+	;
+
+declarationStatement: typeSpecifier IDENTIFIER SEMICOLON		{ $$ = VariableDeclarationSemanticAction($1, $2); }
+	| typeSpecifier IDENTIFIER ASSIGN expression SEMICOLON		{ $$ = InitializedVariableDeclarationSemanticAction($1, $2, $4); }
+	;
+
+expressionStatement: expression SEMICOLON						{ $$ = ExpressionStatementBodySemanticAction($1); }
+	;
+
+returnStatement: RETURN expression SEMICOLON					{ $$ = ReturnExpressionSemanticAction($2); }
+	| RETURN SEMICOLON											{ $$ = ReturnVoidSemanticAction(); }
+	;
+
+expression: assignmentExpression								{ $$ = AssignmentExpressionSemanticAction($1); }
+	;
+
+assignmentExpression: additiveExpression						{ $$ = AdditiveExpressionSemanticAction($1); }
+	| unaryExpression ASSIGN assignmentExpression				{ $$ = AssignmentSemanticAction($1, $3); }
+	;
+
+additiveExpression: multiplicativeExpression					{ $$ = MultiplicativeExpressionSemanticAction($1); }
+	| additiveExpression[left] ADD multiplicativeExpression[right]	{ $$ = AdditionSemanticAction($left, $right); }
+	| additiveExpression[left] SUB multiplicativeExpression[right]	{ $$ = SubtractionSemanticAction($left, $right); }
+	;
+
+multiplicativeExpression: unaryExpression						{ $$ = UnaryExpressionSemanticAction($1); }
+	| multiplicativeExpression[left] MUL unaryExpression[right]		{ $$ = MultiplicationSemanticAction($left, $right); }
+	| multiplicativeExpression[left] DIV unaryExpression[right]		{ $$ = DivisionSemanticAction($left, $right); }
+	;
+
+unaryExpression: postfixExpression							{ $$ = PostfixExpressionSemanticAction($1); }
+	| SUB unaryExpression										{ $$ = NegationSemanticAction($2); }
+	;
+
+postfixExpression: primaryExpression							{ $$ = PrimaryExpressionSemanticAction($1); }
+	| postfixExpression ARROW IDENTIFIER						{ $$ = MemberAccessSemanticAction($1, $3); }
+	| postfixExpression OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS	{ $$ = FunctionCallSemanticAction($1, $3); }
+	;
+
+primaryExpression: IDENTIFIER									{ $$ = IdentifierExpressionSemanticAction($1); }
+	| INTEGER													{ $$ = IntegerExpressionSemanticAction($1); }
+	| THIS														{ $$ = ThisExpressionSemanticAction(); }
+	| OPEN_PARENTHESIS expression CLOSE_PARENTHESIS				{ $$ = ParenthesizedExpressionSemanticAction($2); }
+	| NEW IDENTIFIER OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS	{ $$ = NewExpressionSemanticAction($2, $4); }
+	;
+
+argumentList: %empty											{ $$ = EmptyArgumentListSemanticAction(); }
+	| arguments													{ $$ = ArgumentsSemanticAction($1); }
+	;
+
+arguments: expression											{ $$ = SingleArgumentSemanticAction($1); }
+	| arguments COMMA expression								{ $$ = MultipleArgumentSemanticAction($1, $3); }
 	;
 
 %%

@@ -37,8 +37,6 @@ extern CompilationStatus PunctuatorLexemeAction(TokenLabel label);
  *
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
-%s ALPHANUM_CONTEXT
-%s ALHPANUM_WHITESPACE_CONTEXT
 %x MULTILINE_COMMENT
 
 /**
@@ -101,7 +99,7 @@ whitespace			[[:space:]]+
 
 {whitespace}						{ return IgnoredLexemeAction(); }
 
-[[:alpha:]][[:alnum:]]+             { return AlphaNumericLexemeAction(); }
+[[:alpha:]][[:alnum:]]+             { return IdentifierLexemeAction(); }
 
 .									{ return UnknownLexemeAction(); }
 

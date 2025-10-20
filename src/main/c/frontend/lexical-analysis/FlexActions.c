@@ -138,7 +138,7 @@ CompilationStatus KeyWordLexemeAction(TokenLabel label) {
 }
 
 CompilationStatus ObjectAccessExpressionLexemeAction() {
-	Token * token = createToken(_lexicalAnalyzer, ACCESS_OBJECT_PROPERTY);
+	Token * token = createToken(_lexicalAnalyzer, ARROW);
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
 	destroyToken(token);
@@ -161,8 +161,8 @@ CompilationStatus PunctuatorLexemeAction(TokenLabel label) {
 	return status;
 }
 
-CompilationStatus AlphaNumericLexemeAction() {
-	Token * token = createToken(_lexicalAnalyzer, ALPHANUMERIC);
+CompilationStatus IdentifierLexemeAction() {
+	Token * token = createToken(_lexicalAnalyzer, IDENTIFIER);
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
 	destroyToken(token);
