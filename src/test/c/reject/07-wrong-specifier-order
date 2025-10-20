@@ -1,0 +1,7 @@
+class myClass {
+    static public int shouldBePublicStatic;
+
+    public myClass(int b) {
+        this.shouldBePublicStatic = b;
+    }
+}

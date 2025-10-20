@@ -1,0 +1,7 @@
+class myClass {
+    public int a;
+
+    public myClass(int b) {
+        this.a = c;
+    }
+}

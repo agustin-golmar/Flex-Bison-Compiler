@@ -1,0 +1,6 @@
+class myClass {
+    public myClass(int a, int b) {
+        int c;
+        c = a + b;
+    }
+}
