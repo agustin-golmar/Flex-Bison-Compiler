@@ -357,6 +357,14 @@ TypeSpecifier * CharTypeSemanticAction() {
 	return typeSpecifier;
 }
 
+TypeSpecifier * StringTypeSemanticAction() {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	TypeSpecifier * typeSpecifier = calloc(1, sizeof(TypeSpecifier));
+	typeSpecifier->type = STRING_TYPE;
+	typeSpecifier->identifier = NULL;
+	return typeSpecifier;
+}
+
 TypeSpecifier * IdentifierTypeSemanticAction(char * identifier) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	TypeSpecifier * typeSpecifier = calloc(1, sizeof(TypeSpecifier));

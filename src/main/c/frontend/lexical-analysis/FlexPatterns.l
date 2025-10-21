@@ -105,6 +105,7 @@ whitespace			[[:space:]]+
 "int"								{ return KeyWordLexemeAction(INT); }
 "void"								{ return KeyWordLexemeAction(VOID); }
 "char"                              { return KeyWordLexemeAction(CHAR); }
+"string"                            { return KeyWordLexemeAction(STRING); }
 
 "->"                                { return ObjectAccessExpressionLexemeAction(); }
 "."                                 { return FieldAccessExpressionLexemeAction(); }

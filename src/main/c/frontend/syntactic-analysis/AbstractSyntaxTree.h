@@ -102,6 +102,7 @@ enum TypeSpecifierType {
 	INT_TYPE,
 	VOID_TYPE,
 	CHAR_TYPE,
+	STRING_TYPE,
 	IDENTIFIER_TYPE
 };
 

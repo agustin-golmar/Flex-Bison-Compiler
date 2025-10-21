@@ -61,6 +61,7 @@ Parameter * ParameterSemanticAction(TypeSpecifier * typeSpecifier, char * identi
 TypeSpecifier * IntTypeSemanticAction();
 TypeSpecifier * VoidTypeSemanticAction();
 TypeSpecifier * CharTypeSemanticAction();
+TypeSpecifier * StringTypeSemanticAction();
 TypeSpecifier * IdentifierTypeSemanticAction(char * identifier);
 Statement * EmptyStatementListSemanticAction();
 Statement * StatementListSemanticAction(Statement * statementList, Statement * statement);

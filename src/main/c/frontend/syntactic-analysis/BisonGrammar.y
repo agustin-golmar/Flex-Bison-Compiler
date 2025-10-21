@@ -28,6 +28,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 	signed int integer;
 	char * alphanum;
+	char * string;
 	TokenLabel token;
 
 	/** Non-terminals. */
@@ -70,6 +71,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 /** Terminals. */
 %token <integer> INTEGER
 %token <alphanum> IDENTIFIER
+%token <string> STRING
 %token <token> ADD
 %token <token> SUB
 %token <token> MUL
@@ -213,6 +215,7 @@ parameter: typeSpecifier IDENTIFIER								{ $$ = ParameterSemanticAction($1, $2
 typeSpecifier: INT												{ $$ = IntTypeSemanticAction(); }
 	| VOID														{ $$ = VoidTypeSemanticAction(); }
 	| CHAR														{ $$ = CharTypeSemanticAction(); }
+	| STRING													{ $$ = StringTypeSemanticAction(); }															
 	| IDENTIFIER												{ $$ = IdentifierTypeSemanticAction($1); }
 	;
 
