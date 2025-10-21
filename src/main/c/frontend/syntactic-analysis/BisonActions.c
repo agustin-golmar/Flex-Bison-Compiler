@@ -92,3 +92,11 @@ Constant * TestConstantSemanticAction() {
 	constant->value = 1;
 	return constant;
 }
+
+Event * EventSemanticAction(int value) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Event * event = calloc(1, sizeof(Event));
+	event->value = value;
+	_compilerState->abstractSyntaxtTree = event;
+	return event;
+}
