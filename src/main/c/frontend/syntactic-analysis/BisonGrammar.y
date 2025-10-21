@@ -127,7 +127,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <memberDeclaration> member memberDeclaration memberList
 %type <methodDeclaration> methodDeclaration constructorDeclaration destructorDeclaration
 %type <fieldDeclaration> fieldDeclaration
-%type <statement> statement statementList compoundStatement declarationStatement expressionStatement returnStatement ifStatement forStatement whileStatement doWhileStatement
+%type <statement> statement statementList structuralStatement compoundStatement declarationStatement expressionStatement returnStatement ifStatement forStatement whileStatement doWhileStatement
 %type <expression> expression assignmentExpression additiveExpression multiplicativeExpression unaryExpression postfixExpression primaryExpression
 %type <typeSpecifier> typeSpecifier 
 %type <accessSpecifier> accessSpecifier
@@ -227,8 +227,11 @@ statementList: %empty											{ $$ = EmptyStatementListSemanticAction(); }
 	| statementList statement									{ $$ = StatementListSemanticAction($1, $2); }
 	;
 
-statement: expressionStatement									{ $$ = ExpressionStatementSemanticAction($1); }
+statement: structuralStatement									{ $$ = StructuralStatementSemanticAction($1); } 
 	| declarationStatement										{ $$ = DeclarationStatementSemanticAction($1); }
+	;
+
+structuralStatement:  expressionStatement						{ $$ = ExpressionStatementSemanticAction($1); }
 	| returnStatement											{ $$ = ReturnStatementSemanticAction($1); }
 	| compoundStatement											{ $$ = CompoundStatementSemanticAction($1); }
 	| ifStatement												{ $$ = IfStatementSemanticAction($1); }
@@ -241,7 +244,7 @@ ifStatement: IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement 	{ $$ = 
 	| ifStatement ELSE statement							{ $$ = IfElseStatementSemanticAction($1, $3); }
 	;
 
-forStatement: FOR OPEN_PARENTHESIS declarationStatement[initialization] expression[condition] SEMICOLON expression[increment] CLOSE_PARENTHESIS statement[statement]
+forStatement: FOR OPEN_PARENTHESIS declarationStatement[initialization] expression[condition] SEMICOLON expression[increment] CLOSE_PARENTHESIS structuralStatement[statement]
 		{ $$ = ForStatementBodySemanticAction($initialization, $condition, $increment, $statement); }
 	;
 
@@ -256,7 +259,8 @@ doWhileStatement: DO statement WHILE OPEN_PARENTHESIS expression CLOSE_PARENTHES
 compoundStatement: OPEN_BRACE statementList CLOSE_BRACE		{ $$ = CompoundStatementBodySemanticAction($2); }
 	;
 
-declarationStatement: typeSpecifier IDENTIFIER SEMICOLON		{ $$ = VariableDeclarationSemanticAction($1, $2); }
+declarationStatement: SEMICOLON								{ $$ = EmptyDeclarationStatementSemanticAction(); } 
+	| typeSpecifier IDENTIFIER SEMICOLON		{ $$ = VariableDeclarationSemanticAction($1, $2); }
 	| typeSpecifier IDENTIFIER ASSIGN expression SEMICOLON		{ $$ = InitializedVariableDeclarationSemanticAction($1, $2, $4); }
 	;
 
@@ -267,7 +271,8 @@ returnStatement: RETURN expression SEMICOLON					{ $$ = ReturnExpressionSemantic
 	| RETURN SEMICOLON											{ $$ = ReturnVoidSemanticAction(); }
 	;
 
-expression: assignmentExpression								{ $$ = AssignmentExpressionSemanticAction($1); }
+expression: %empty 											{ $$ = EmptyExpressionSemanticAction(); }
+	| assignmentExpression								{ $$ = AssignmentExpressionSemanticAction($1); }
 	;
 
 assignmentExpression: additiveExpression						{ $$ = AdditiveExpressionSemanticAction($1); }

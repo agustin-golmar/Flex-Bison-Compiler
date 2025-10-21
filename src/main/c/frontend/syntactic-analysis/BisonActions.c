@@ -391,14 +391,19 @@ Statement * StatementListSemanticAction(Statement * statementList, Statement * s
 	return statementList;
 }
 
-Statement * ExpressionStatementSemanticAction(Statement * expressionStatement) {
+Statement * StructuralStatementSemanticAction(Statement * structuralStatement) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	return expressionStatement;
+	return structuralStatement;
 }
 
 Statement * DeclarationStatementSemanticAction(Statement * declarationStatement) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	return declarationStatement;
+}
+
+Statement * ExpressionStatementSemanticAction(Statement * expressionStatement) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	return expressionStatement;
 }
 
 Statement * ReturnStatementSemanticAction(Statement * returnStatement) {
@@ -488,6 +493,13 @@ Statement * DoWhileStatementBodySemanticAction(Statement * statement, Expression
 	return doWhileStatement;
 }
 
+Statement * EmptyDeclarationStatementSemanticAction() {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Statement * statement = calloc(1, sizeof(Statement));
+	statement->type = EMPTY_STATEMENT;
+	return statement;
+}
+
 Statement * VariableDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement * statement = calloc(1, sizeof(Statement));
@@ -535,6 +547,13 @@ Statement * ReturnVoidSemanticAction() {
 	statement->type = RETURN_VOID_STATEMENT;
 	statement->next = NULL;
 	return statement;
+}
+
+Expression * EmptyExpressionSemanticAction() {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->type = EMPTY_EXPRESSION;
+	return expression;
 }
 
 Expression * AssignmentExpressionSemanticAction(Expression * expression) {

@@ -87,6 +87,9 @@ void destroyExpression(Expression * expression) {
 			case POST_DECREMENT_EXPRESSION:
 			case POST_INCREMENT_EXPRESSION:
 				destroyExpression(expression->leftExpression);
+			case EMPTY_EXPRESSION:
+				// No dynamic memory to free
+
 				break;
 		}
 		free(expression);
@@ -245,6 +248,9 @@ void destroyStatement(Statement * statement) {
 			case DO_WHILE_STATEMENT:
 				destroyExpression(statement->loopCondition);
 				destroyStatement(statement->statementList);
+				break;
+			case EMPTY_STATEMENT:
+				// No dynamic memory to free
 				break;
 		}
 		destroyStatement(statement->next);
