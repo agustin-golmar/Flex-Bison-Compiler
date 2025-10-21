@@ -23,4 +23,6 @@ Factor * ConstantFactorSemanticAction(Constant * constant);
 Factor * ExpressionFactorSemanticAction(Expression * expression);
 Program * ExpressionProgramSemanticAction(Expression * expression);
 
+Constant * TestConstantSemanticAction();
+
 #endif

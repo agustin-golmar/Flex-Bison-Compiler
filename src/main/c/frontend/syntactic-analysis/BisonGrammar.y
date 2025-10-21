@@ -62,6 +62,29 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> OPEN_PARENTHESIS
 %token <token> SUB
 
+%token <token> TEST
+%token <token> YEAR
+%token <token> MONTH
+%token <token> TIMEZONE
+%token <token> EVENT
+%token <token> OVERRIDE
+%token <token> ON
+%token <token> AND
+%token <token> FROM
+%token <token> TO
+%token <token> AT
+%token <token> SINCE
+%token <token> TILL
+%token <token> EVERY
+%token <token> STARTING
+%token <token> ONLY
+%token <token> IF
+%token <token> DAY_OF_MONTH
+%token <token> DAY_OF_WEEK
+%token <token> COLOR
+%token <token> DESCRIPTION
+
+
 %token <token> IGNORED
 %token <token> UNKNOWN
 
@@ -99,6 +122,7 @@ factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS		{ $$ = ExpressionFactorSe
 	;
 
 constant: INTEGER											{ $$ = IntegerConstantSemanticAction($1); }
+  |  TEST                           { $$ = TestConstantSemanticAction(); }
 	;
 
 %%

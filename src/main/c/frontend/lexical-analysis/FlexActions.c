@@ -159,3 +159,21 @@ CompilationStatus UnknownLexemeAction() {
 	destroyToken(token);
 	return FAILED;
 }
+
+CompilationStatus TokenLexemeAction(TokenLabel label) {
+	Token * token = createToken(_lexicalAnalyzer, label);
+	_logTokenAction(__FUNCTION__, token);
+	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+	destroyToken(token);
+	return status;
+}
+
+//TODO
+CompilationStatus StringValueLexemeAction() {
+	Token * token = createToken(_lexicalAnalyzer, INTEGER);
+	token->semanticValue->integer = 2;  //test
+	_logTokenAction(__FUNCTION__, token);
+	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+	destroyToken(token);
+	return status;
+}

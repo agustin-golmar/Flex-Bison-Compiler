@@ -25,6 +25,8 @@ extern CompilationStatus LeaveMultilineCommentLexemeAction();
 extern CompilationStatus ParenthesisLexemeAction(TokenLabel label);
 extern CompilationStatus SubexpressionLexemeAction();
 extern CompilationStatus UnknownLexemeAction();
+extern CompilationStatus TokenLexemeAction(TokenLabel label);
+extern CompilationStatus StringValueLexemeAction();
 
 %}
 
@@ -43,6 +45,15 @@ extern CompilationStatus UnknownLexemeAction();
  * @see https://westes.github.io/flex/manual/Patterns.html
  */
 whitespace			[[:space:]]+
+digit               [0-9]
+letter              [A-Za-z]
+identifier          {letter}({letter}|{digit}|[_\-])*
+hour                {digit}{digit}:{digit}{digit}
+month_name          (January|February|March|April|May|June|July|August|September|October|November|December)
+weekday             (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)
+timezone_name       [TODO]
+url_pattern         https?:\/\/[A-Za-z0-9\.\-_/]+
+string              \"([^\"\\]|\\.)*\"
 
 %%
 
@@ -71,6 +82,46 @@ whitespace			[[:space:]]+
 
 "("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS); }
 ")"									{ return ParenthesisLexemeAction(CLOSE_PARENTHESIS); }
+
+
+"test"              { return TokenLexemeAction(TEST); }
+
+"year"                              { return TokenLexemeAction(YEAR); }
+"month"                             { return TokenLexemeAction(MONTH); }
+"timezone"                          { return TokenLexemeAction(TIMEZONE); }
+
+"event"                             { return TokenLexemeAction(EVENT); }
+"override"                          { return TokenLexemeAction(OVERRIDE); }
+
+"on"                                { return TokenLexemeAction(ON); }
+"and"                               { return TokenLexemeAction(AND); }
+"from"                              { return TokenLexemeAction(FROM); }
+"to"                                { return TokenLexemeAction(TO); }
+"at"                                { return TokenLexemeAction(AT); }
+"since"                             { return TokenLexemeAction(SINCE); }
+"till"                              { return TokenLexemeAction(TILL); }
+
+"every"                             { return TokenLexemeAction(EVERY); }
+"starting"                          { return TokenLexemeAction(STARTING); }
+"only"                              { return TokenLexemeAction(ONLY); }
+"if"                                { return TokenLexemeAction(IF); }
+
+"day-of-month"                      { return TokenLexemeAction(DAY_OF_MONTH); }
+"day-of-week"                       { return TokenLexemeAction(DAY_OF_WEEK); }
+"color"                             { return TokenLexemeAction(COLOR); }
+"description"                       { return TokenLexemeAction(DESCRIPTION); }
+
+{month_name}                        { return StringValueLexemeAction(); }
+{weekday}                           { return StringValueLexemeAction(); }
+{hour}                              { return StringValueLexemeAction(); }
+
+{timezone_name}                     { return StringValueLexemeAction(); }
+
+{url_pattern}                       { return StringValueLexemeAction(); }
+
+{string}                            { return StringValueLexemeAction(); }
+
+{identifier}                        { return StringValueLexemeAction(); }
 
 [[:digit:]]+						{ return IntegerLexemeAction(); }
 

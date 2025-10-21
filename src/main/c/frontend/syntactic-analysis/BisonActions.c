@@ -83,3 +83,12 @@ Program * ExpressionProgramSemanticAction(Expression * expression) {
 	_compilerState->abstractSyntaxtTree = program;
 	return program;
 }
+
+
+
+Constant * TestConstantSemanticAction() {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Constant * constant = calloc(1, sizeof(Constant));
+	constant->value = 1;
+	return constant;
+}
