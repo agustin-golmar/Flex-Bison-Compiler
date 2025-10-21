@@ -17,6 +17,6 @@ class myClass {
 
 int main() {
     myClass obj = new myClass(10);
-    obj.setA(20);
-    return obj.getA();
+    obj->setA(20);
+    return obj->getA();
 }

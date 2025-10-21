@@ -28,8 +28,8 @@ class myClass {
 
 int main() {
     myClass obj = new myClass(10);
-    obj.setA(20)
-        .setB(30)
-        .setA(40);
-    return obj.getA();
+    obj->setA(20)
+        ->setB(30)
+        ->setA(40);
+    return obj->getA();
 }
