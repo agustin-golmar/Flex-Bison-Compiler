@@ -74,6 +74,10 @@ whitespace			[[:space:]]+
 "<="                                { return ArithmeticOperatorLexemeAction(LOWER_OR_EQUAL_THAN); }
 "=="                                { return ArithmeticOperatorLexemeAction(EQUAL); }
 "!="                                { return ArithmeticOperatorLexemeAction(NOT_EQUAL); }
+
+"&&"                                { return ArithmeticOperatorLexemeAction(LOGICAL_AND); }
+"||"                                { return ArithmeticOperatorLexemeAction(LOGICAL_OR); }
+
 "="								    { return ArithmeticOperatorLexemeAction(ASSIGN); }
 
 "("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS); }

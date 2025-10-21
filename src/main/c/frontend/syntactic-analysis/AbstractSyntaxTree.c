@@ -45,6 +45,8 @@ void destroyExpression(Expression * expression) {
 			case LOWER_OR_EQUAL_THAN_EXPRESSION:
 			case EQUAL_EXPRESSION:
 			case NOT_EQUAL_EXPRESSION:
+			case LOGICAL_AND_EXPRESSION:
+			case LOGICAL_OR_EXPRESSION:
 				destroyExpression(expression->leftExpression);
 				destroyExpression(expression->rightExpression);
 				break;

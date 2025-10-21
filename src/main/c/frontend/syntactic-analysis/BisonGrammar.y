@@ -80,6 +80,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> LOWER_OR_EQUAL_THAN
 %token <token> EQUAL
 %token <token> NOT_EQUAL
+%token <token> LOGICAL_AND
+%token <token> LOGICAL_OR
 %token <token> ASSIGN
 %token <token> OPEN_PARENTHESIS
 %token <token> CLOSE_PARENTHESIS
@@ -254,6 +256,8 @@ assignmentExpression: additiveExpression						{ $$ = AdditiveExpressionSemanticA
 	| additiveExpression LOWER_OR_EQUAL_THAN assignmentExpression	{ $$ = LowerEqualThanSemanticAction($1, $3); }
 	| additiveExpression EQUAL assignmentExpression				{ $$ = EqualSemanticAction($1, $3); }
 	| additiveExpression NOT_EQUAL assignmentExpression			{ $$ = NotEqualSemanticAction($1, $3); }
+	| additiveExpression LOGICAL_AND assignmentExpression			{ $$ = LogicalAndSemanticAction($1, $3); }
+	| additiveExpression LOGICAL_OR assignmentExpression			{ $$ = LogicalOrSemanticAction($1, $3); }
 	;
 
 additiveExpression: multiplicativeExpression					{ $$ = MultiplicativeExpressionSemanticAction($1); }

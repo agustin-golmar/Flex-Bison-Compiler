@@ -22,4 +22,8 @@ class myCounter {
     public int greaterThan() {
         return count > 3;
     }
+
+    public int logicalOr() {
+        return count || 0;
+    }
 }

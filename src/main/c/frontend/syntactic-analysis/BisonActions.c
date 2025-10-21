@@ -541,6 +541,24 @@ Expression * NotEqualSemanticAction(Expression * leftExpression, Expression * ri
 	return expression;
 }
 
+Expression * LogicalAndSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->leftExpression = leftExpression;
+	expression->rightExpression = rightExpression;
+	expression->type = LOGICAL_AND_EXPRESSION;
+	return expression;
+}
+
+Expression * LogicalOrSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->leftExpression = leftExpression;
+	expression->rightExpression = rightExpression;
+	expression->type = LOGICAL_OR_EXPRESSION;
+	return expression;
+}
+
 Expression * AdditiveExpressionSemanticAction(Expression * expression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	return expression;

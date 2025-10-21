@@ -84,6 +84,8 @@ Expression * GreaterEqualThanSemanticAction(Expression * leftExpression, Express
 Expression * LowerEqualThanSemanticAction(Expression * leftExpression, Expression * rightExpression);
 Expression * EqualSemanticAction(Expression * leftExpression, Expression * rightExpression);
 Expression * NotEqualSemanticAction(Expression * leftExpression, Expression * rightExpression);
+Expression * LogicalAndSemanticAction(Expression * leftExpression, Expression * rightExpression);
+Expression * LogicalOrSemanticAction(Expression * leftExpression, Expression * rightExpression);
 Expression * AdditiveExpressionSemanticAction(Expression * expression);
 Expression * AssignmentSemanticAction(Expression * leftExpression, Expression * rightExpression);
 Expression * MultiplicativeExpressionSemanticAction(Expression * expression);
