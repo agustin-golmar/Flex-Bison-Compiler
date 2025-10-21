@@ -84,6 +84,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> SEMICOLON
 %token <token> COMMA
 %token <token> ARROW
+%token <token> DOT
 %token <token> CLASS
 %token <token> NEW
 %token <token> RETURN
@@ -124,7 +125,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %right ASSIGN
 %left ADD SUB
 %left MUL DIV
-%left ARROW
+%left ARROW DOT
 
 %%
 
@@ -250,6 +251,7 @@ unaryExpression: postfixExpression							{ $$ = PostfixExpressionSemanticAction(
 
 postfixExpression: primaryExpression							{ $$ = PrimaryExpressionSemanticAction($1); }
 	| postfixExpression ARROW IDENTIFIER						{ $$ = MemberAccessSemanticAction($1, $3); }
+	| postfixExpression DOT IDENTIFIER							{ $$ = MemberAccessSemanticAction($1, $3); }
 	| postfixExpression OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS	{ $$ = FunctionCallSemanticAction($1, $3); }
 	;
 

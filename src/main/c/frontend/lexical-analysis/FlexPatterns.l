@@ -28,6 +28,7 @@ extern CompilationStatus ObjectAccessExpressionLexemeAction();
 extern CompilationStatus BracketsLexemeAction(TokenLabel label);
 extern CompilationStatus PunctuatorLexemeAction(TokenLabel label);
 extern CompilationStatus IdentifierLexemeAction();
+extern CompilationStatus FieldAccessExpressionLexemeAction();
 
 %}
 
@@ -94,6 +95,7 @@ whitespace			[[:space:]]+
 "char"                              { return KeyWordLexemeAction(CHAR); }
 
 "->"                                { return ObjectAccessExpressionLexemeAction(); }
+"."                                 { return FieldAccessExpressionLexemeAction(); }
 
 {whitespace}						{ return IgnoredLexemeAction(); }
 
