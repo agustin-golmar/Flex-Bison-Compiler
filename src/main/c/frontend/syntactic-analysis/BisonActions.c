@@ -446,7 +446,7 @@ Statement * ForStatementSemanticAction(Statement * forStatement) {
 	return forStatement;
 }
 
-Statement * ForStatementBodySemanticAction(Statement * initialization, Expression * condition, Statement * increment, Statement * statement) {
+Statement * ForStatementBodySemanticAction(Statement * initialization, Expression * condition, Expression * increment, Statement * statement) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement * forStatement = calloc(1, sizeof(Statement));
 	forStatement->initialization = initialization;

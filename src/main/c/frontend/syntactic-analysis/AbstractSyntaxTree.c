@@ -226,7 +226,7 @@ void destroyStatement(Statement * statement) {
 			case FOR_STATEMENT:
 				destroyStatement(statement->initialization);
 				destroyExpression(statement->loopCondition);
-				destroyStatement(statement->postIteration);
+				destroyExpression(statement->postIteration);
 				destroyStatement(statement->statementList);
 				break;
 			case WHILE_STATEMENT:

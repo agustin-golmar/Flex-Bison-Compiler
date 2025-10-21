@@ -205,7 +205,7 @@ struct Statement {
 				struct { // Loop statements
 					Expression * loopCondition;
 					Statement * initialization;
-					Statement * postIteration;
+					Expression * postIteration;
 				};
 			};
 			Statement *statementList;

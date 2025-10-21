@@ -74,7 +74,7 @@ Statement * IfStatementSemanticAction(Statement * ifStatement);
 Statement * IfStatementBodySemanticAction(Expression * expression, Statement * statement);
 Statement * IfElseStatementSemanticAction(Statement * ifStatement, Statement * elseStatement);
 Statement * ForStatementSemanticAction(Statement * forStatement);
-Statement * ForStatementBodySemanticAction(Statement * initialization, Expression * condition, Statement * increment, Statement * statement);
+Statement * ForStatementBodySemanticAction(Statement * initialization, Expression * condition, Expression * increment, Statement * statement);
 Statement * WhileStatementSemanticAction(Statement * whileStatement);
 Statement * WhileStatementBodySemanticAction(Expression * condition, Statement * statement);
 Statement * DoWhileStatementSemanticAction(Statement * doWhileStatement);

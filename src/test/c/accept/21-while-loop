@@ -4,8 +4,8 @@ class myClass {
     constructor(int steps) {
         this->a = 0;
         while (steps > 0) {
-            this->a += steps;
-            steps--;
+            this->a = steps;
+            steps = steps - 1;
         }
     }
 }

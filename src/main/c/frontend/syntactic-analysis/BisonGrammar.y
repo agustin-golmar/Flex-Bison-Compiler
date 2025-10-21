@@ -238,8 +238,8 @@ ifStatement: IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement 	{ $$ = 
 	| ifStatement ELSE statement							{ $$ = IfElseStatementSemanticAction($1, $3); }
 	;
 
-forStatement: FOR OPEN_PARENTHESIS declarationStatement SEMICOLON expression SEMICOLON expression CLOSE_PARENTHESIS statement
-		{ $$ = ForStatementBodySemanticAction($3, $5, $7, $8); }
+forStatement: FOR OPEN_PARENTHESIS declarationStatement[initialization] expression[condition] SEMICOLON expression[increment] CLOSE_PARENTHESIS statement[statement]
+		{ $$ = ForStatementBodySemanticAction($initialization, $condition, $increment, $statement); }
 	;
 
 whileStatement: WHILE OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement
