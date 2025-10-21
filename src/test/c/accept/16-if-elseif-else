@@ -1,0 +1,13 @@
+class myClass {
+    private int a;
+
+    constructor(int a) {
+        if (0) {
+            this->a = a;
+        } else if (1) {
+            this->a = 0;
+        } else {
+            this->a = -a;
+        }
+    }
+}

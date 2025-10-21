@@ -89,6 +89,8 @@ whitespace			[[:space:]]+
 "this"                              { return KeyWordLexemeAction(THIS); }
 "static"                            { return KeyWordLexemeAction(STATIC); }
 "constructor"                       { return KeyWordLexemeAction(CONSTRUCTOR); }
+"if"                                { return KeyWordLexemeAction(IF); }
+"else"                              { return KeyWordLexemeAction(ELSE); }
 "destructor"                        { return KeyWordLexemeAction(DESTRUCTOR); }
 "int"								{ return KeyWordLexemeAction(INT); }
 "void"								{ return KeyWordLexemeAction(VOID); }

@@ -208,6 +208,10 @@ void destroyStatement(Statement * statement) {
 			case COMPOUND_STATEMENT:
 				destroyStatement(statement->statementList);
 				break;
+			case IF_STATEMENT:
+				destroyExpression(statement->expression);
+				destroyStatement(statement->statementList);
+				break;
 		}
 		destroyStatement(statement->next);
 		free(statement);

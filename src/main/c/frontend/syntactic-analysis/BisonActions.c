@@ -412,6 +412,27 @@ Statement * CompoundStatementBodySemanticAction(Statement * statementList) {
 	return statement;
 }
 
+Statement * IfStatementSemanticAction(Statement * ifStatement) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	return ifStatement;
+}
+
+Statement * IfStatementBodySemanticAction(Expression * expression, Statement * statement) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Statement * ifStatement = calloc(1, sizeof(Statement));
+	ifStatement->expression = expression;
+	ifStatement->statementList = statement;
+	ifStatement->type = IF_STATEMENT;
+	ifStatement->next = NULL;
+	return ifStatement;
+}
+
+Statement * IfElseStatementSemanticAction(Statement * ifStatement, Statement * elseStatement) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	ifStatement->next = elseStatement;
+	return ifStatement;
+}
+
 Statement * VariableDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement * statement = calloc(1, sizeof(Statement));

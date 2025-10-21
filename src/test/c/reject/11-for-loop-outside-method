@@ -1,0 +1,11 @@
+class myClass {
+    public int a;
+
+    public static constructor(int b) {
+        this->a = b;
+    }
+
+    for (int i = 0; i < 5; i++) {
+        int b = i;
+    }
+}

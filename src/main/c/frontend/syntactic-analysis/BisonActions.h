@@ -69,6 +69,9 @@ Statement * DeclarationStatementSemanticAction(Statement * declarationStatement)
 Statement * ReturnStatementSemanticAction(Statement * returnStatement);
 Statement * CompoundStatementSemanticAction(Statement * compoundStatement);
 Statement * CompoundStatementBodySemanticAction(Statement * statementList);
+Statement * IfStatementSemanticAction(Statement * ifStatement);
+Statement * IfStatementBodySemanticAction(Expression * expression, Statement * statement);
+Statement * IfElseStatementSemanticAction(Statement * ifStatement, Statement * elseStatement);
 Statement * VariableDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier);
 Statement * InitializedVariableDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier, Expression * expression);
 Statement * ExpressionStatementBodySemanticAction(Expression * expression);

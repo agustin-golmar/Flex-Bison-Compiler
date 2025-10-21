@@ -1,0 +1,9 @@
+class myClass {
+    private int a;
+
+    constructor(int a) {
+        this->a = 0;
+        if (a > 0) {
+            this->a = a;
+    }
+}

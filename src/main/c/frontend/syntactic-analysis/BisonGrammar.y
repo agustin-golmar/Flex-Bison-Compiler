@@ -86,6 +86,10 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> ARROW
 %token <token> DOT
 %token <token> CLASS
+%token <token> IF
+%token <token> ELSE
+%token <token> FOR
+%token <token> WHILE
 %token <token> NEW
 %token <token> RETURN
 %token <token> PRIVATE
@@ -109,7 +113,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <memberDeclaration> member memberDeclaration memberList
 %type <methodDeclaration> methodDeclaration constructorDeclaration destructorDeclaration
 %type <fieldDeclaration> fieldDeclaration
-%type <statement> statement statementList compoundStatement declarationStatement expressionStatement returnStatement
+%type <statement> statement statementList compoundStatement declarationStatement expressionStatement returnStatement ifStatement
 %type <expression> expression assignmentExpression additiveExpression multiplicativeExpression unaryExpression postfixExpression primaryExpression
 %type <typeSpecifier> typeSpecifier 
 %type <accessSpecifier> accessSpecifier
@@ -211,7 +215,12 @@ statementList: %empty											{ $$ = EmptyStatementListSemanticAction(); }
 statement: expressionStatement									{ $$ = ExpressionStatementSemanticAction($1); }
 	| declarationStatement										{ $$ = DeclarationStatementSemanticAction($1); }
 	| returnStatement											{ $$ = ReturnStatementSemanticAction($1); }
-	| compoundStatement										{ $$ = CompoundStatementSemanticAction($1); }
+	| compoundStatement											{ $$ = CompoundStatementSemanticAction($1); }
+	| ifStatement												{ $$ = IfStatementSemanticAction($1); }
+	;
+
+ifStatement: IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement 	{ $$ = IfStatementBodySemanticAction($3, $5); }
+	| ifStatement ELSE statement							{ $$ = IfElseStatementSemanticAction($1, $3); }
 	;
 
 compoundStatement: OPEN_BRACE statementList CLOSE_BRACE		{ $$ = CompoundStatementBodySemanticAction($2); }
