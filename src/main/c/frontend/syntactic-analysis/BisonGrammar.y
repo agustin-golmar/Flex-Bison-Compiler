@@ -29,6 +29,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	signed int integer;
 	TokenLabel token;
 
+
 	/** Non-terminals. */
 
 	Constant * constant;
@@ -108,7 +109,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
 program: expression											{ $$ = ExpressionProgramSemanticAction($1); }
-  | EVENT INTEGER                        { $$ = EventSemanticAction($2); }
+  | EVENT INTEGER                        					{ $$ = EventSemanticAction($2); }
 	;
 
 expression: expression[left] ADD expression[right]			{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }

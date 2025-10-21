@@ -24,5 +24,6 @@ Factor * ExpressionFactorSemanticAction(Expression * expression);
 Program * ExpressionProgramSemanticAction(Expression * expression);
 
 Constant * TestConstantSemanticAction();
+Program * EventSemanticAction(int value);
 
 #endif

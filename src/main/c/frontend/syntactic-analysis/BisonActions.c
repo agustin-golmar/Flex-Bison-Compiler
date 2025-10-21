@@ -93,10 +93,10 @@ Constant * TestConstantSemanticAction() {
 	return constant;
 }
 
-Event * EventSemanticAction(int value) {
+//testeando
+Program * EventSemanticAction(int value) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Event * event = calloc(1, sizeof(Event));
-	event->value = value;
-	_compilerState->abstractSyntaxtTree = event;
-	return event;
+	Factor * factor = ConstantFactorSemanticAction(IntegerConstantSemanticAction(1));
+	Expression * expression = FactorExpressionSemanticAction(factor);
+	return ExpressionProgramSemanticAction(expression);
 }
