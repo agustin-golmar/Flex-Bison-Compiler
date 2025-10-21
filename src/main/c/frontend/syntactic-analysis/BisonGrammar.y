@@ -100,6 +100,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> ELSE
 %token <token> FOR
 %token <token> WHILE
+%token <token> DO
 %token <token> NEW
 %token <token> RETURN
 %token <token> PRIVATE
@@ -123,7 +124,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <memberDeclaration> member memberDeclaration memberList
 %type <methodDeclaration> methodDeclaration constructorDeclaration destructorDeclaration
 %type <fieldDeclaration> fieldDeclaration
-%type <statement> statement statementList compoundStatement declarationStatement expressionStatement returnStatement ifStatement
+%type <statement> statement statementList compoundStatement declarationStatement expressionStatement returnStatement ifStatement forStatement whileStatement doWhileStatement
 %type <expression> expression assignmentExpression additiveExpression multiplicativeExpression unaryExpression postfixExpression primaryExpression
 %type <typeSpecifier> typeSpecifier 
 %type <accessSpecifier> accessSpecifier
@@ -228,10 +229,25 @@ statement: expressionStatement									{ $$ = ExpressionStatementSemanticAction(
 	| returnStatement											{ $$ = ReturnStatementSemanticAction($1); }
 	| compoundStatement											{ $$ = CompoundStatementSemanticAction($1); }
 	| ifStatement												{ $$ = IfStatementSemanticAction($1); }
-	;
+	| forStatement												{ $$ = ForStatementSemanticAction($1); }
+	| whileStatement											{ $$ = WhileStatementSemanticAction($1); }
+	| doWhileStatement											{ $$ = DoWhileStatementSemanticAction($1); }
+;
 
 ifStatement: IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement 	{ $$ = IfStatementBodySemanticAction($3, $5); }
 	| ifStatement ELSE statement							{ $$ = IfElseStatementSemanticAction($1, $3); }
+	;
+
+forStatement: FOR OPEN_PARENTHESIS declarationStatement SEMICOLON expression SEMICOLON expression CLOSE_PARENTHESIS statement
+		{ $$ = ForStatementBodySemanticAction($3, $5, $7, $8); }
+	;
+
+whileStatement: WHILE OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement
+		{ $$ = WhileStatementBodySemanticAction($3, $5); }
+	;
+
+doWhileStatement: DO statement WHILE OPEN_PARENTHESIS expression CLOSE_PARENTHESIS SEMICOLON
+		{ $$ = DoWhileStatementBodySemanticAction($2, $5); };
 	;
 
 compoundStatement: OPEN_BRACE statementList CLOSE_BRACE		{ $$ = CompoundStatementBodySemanticAction($2); }

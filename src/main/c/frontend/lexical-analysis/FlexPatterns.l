@@ -101,6 +101,9 @@ whitespace			[[:space:]]+
 "constructor"                       { return KeyWordLexemeAction(CONSTRUCTOR); }
 "if"                                { return KeyWordLexemeAction(IF); }
 "else"                              { return KeyWordLexemeAction(ELSE); }
+"for"                               { return KeyWordLexemeAction(FOR); }
+"while"                             { return KeyWordLexemeAction(WHILE); }
+"do"                                { return KeyWordLexemeAction(DO); }
 "destructor"                        { return KeyWordLexemeAction(DESTRUCTOR); }
 "int"								{ return KeyWordLexemeAction(INT); }
 "void"								{ return KeyWordLexemeAction(VOID); }

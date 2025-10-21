@@ -428,7 +428,7 @@ Statement * IfStatementSemanticAction(Statement * ifStatement) {
 Statement * IfStatementBodySemanticAction(Expression * expression, Statement * statement) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement * ifStatement = calloc(1, sizeof(Statement));
-	ifStatement->expression = expression;
+	ifStatement->condition = expression;
 	ifStatement->statementList = statement;
 	ifStatement->type = IF_STATEMENT;
 	ifStatement->next = NULL;
@@ -439,6 +439,53 @@ Statement * IfElseStatementSemanticAction(Statement * ifStatement, Statement * e
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ifStatement->next = elseStatement;
 	return ifStatement;
+}
+
+Statement * ForStatementSemanticAction(Statement * forStatement) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	return forStatement;
+}
+
+Statement * ForStatementBodySemanticAction(Statement * initialization, Expression * condition, Statement * increment, Statement * statement) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Statement * forStatement = calloc(1, sizeof(Statement));
+	forStatement->initialization = initialization;
+	forStatement->loopCondition = condition;
+	forStatement->postIteration = increment;
+	forStatement->statementList = statement;
+	forStatement->type = FOR_STATEMENT;
+	forStatement->next = NULL;
+	return forStatement;
+}
+
+Statement * WhileStatementSemanticAction(Statement * whileStatement) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	return whileStatement;
+}
+
+Statement * WhileStatementBodySemanticAction(Expression * condition, Statement * statement) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Statement * whileStatement = calloc(1, sizeof(Statement));
+	whileStatement->loopCondition = condition;
+	whileStatement->statementList = statement;
+	whileStatement->type = WHILE_STATEMENT;
+	whileStatement->next = NULL;
+	return whileStatement;
+}
+
+Statement * DoWhileStatementSemanticAction(Statement * doWhileStatement) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	return doWhileStatement;
+}
+
+Statement * DoWhileStatementBodySemanticAction(Statement * statement, Expression * condition) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Statement * doWhileStatement = calloc(1, sizeof(Statement));
+	doWhileStatement->statementList = statement;
+	doWhileStatement->loopCondition = condition;
+	doWhileStatement->type = DO_WHILE_STATEMENT;
+	doWhileStatement->next = NULL;
+	return doWhileStatement;
 }
 
 Statement * VariableDeclarationSemanticAction(TypeSpecifier * typeSpecifier, char * identifier) {

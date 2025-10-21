@@ -1,0 +1,11 @@
+class myClass {
+    private int a;
+
+    constructor(int steps) {
+        this->a = 0;
+        while (steps > 0) {
+            this->a += steps;
+            steps--;
+        }
+    }
+}

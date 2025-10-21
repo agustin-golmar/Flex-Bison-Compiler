@@ -95,7 +95,10 @@ enum StatementType {
 	RETURN_STATEMENT,
 	RETURN_VOID_STATEMENT,
 	COMPOUND_STATEMENT,
-	IF_STATEMENT
+	IF_STATEMENT,
+	FOR_STATEMENT,
+	WHILE_STATEMENT,
+	DO_WHILE_STATEMENT
 };
 
 enum TypeSpecifierType {
@@ -194,7 +197,19 @@ struct Statement {
 			char * identifier;
 			Expression * expression;
 		};
-		Statement * statementList;
+		struct {
+			union {
+				struct { // Conditional statements
+					Expression *condition;
+				};
+				struct { // Loop statements
+					Expression * loopCondition;
+					Statement * initialization;
+					Statement * postIteration;
+				};
+			};
+			Statement *statementList;
+		};
 	};
 	StatementType type;
 	Statement * next;

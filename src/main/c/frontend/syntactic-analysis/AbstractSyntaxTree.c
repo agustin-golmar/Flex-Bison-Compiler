@@ -220,7 +220,21 @@ void destroyStatement(Statement * statement) {
 				destroyStatement(statement->statementList);
 				break;
 			case IF_STATEMENT:
-				destroyExpression(statement->expression);
+				destroyExpression(statement->condition);
+				destroyStatement(statement->statementList);
+				break;
+			case FOR_STATEMENT:
+				destroyStatement(statement->initialization);
+				destroyExpression(statement->loopCondition);
+				destroyStatement(statement->postIteration);
+				destroyStatement(statement->statementList);
+				break;
+			case WHILE_STATEMENT:
+				destroyExpression(statement->loopCondition);
+				destroyStatement(statement->statementList);
+				break;
+			case DO_WHILE_STATEMENT:
+				destroyExpression(statement->loopCondition);
 				destroyStatement(statement->statementList);
 				break;
 		}
