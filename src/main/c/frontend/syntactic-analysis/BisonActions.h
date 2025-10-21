@@ -103,6 +103,11 @@ Expression * MultiplicationSemanticAction(Expression * leftExpression, Expressio
 Expression * DivisionSemanticAction(Expression * leftExpression, Expression * rightExpression);
 Expression * PostfixExpressionSemanticAction(Expression * expression);
 Expression * NegationSemanticAction(Expression * expression);
+Expression * LogicalNotSemanticAction(Expression * expression);
+Expression * PreIncrementSemanticAction(Expression * expression);
+Expression * PreDecrementSemanticAction(Expression * expression);
+Expression * PostIncrementSemanticAction(Expression * expression);
+Expression * PostDecrementSemanticAction(Expression * expression);
 Expression * PrimaryExpressionSemanticAction(Expression * expression);
 Expression * MemberAccessSemanticAction(Expression * expression, char * identifier);
 Expression * FunctionCallSemanticAction(Expression * expression, ArgumentList * argumentList);

@@ -79,6 +79,15 @@ void destroyExpression(Expression * expression) {
 				}
 				destroyArgumentList(expression->argumentList);
 				break;
+			case PRE_DECREMENT_EXPRESSION:
+			case PRE_INCREMENT_EXPRESSION:
+			case LOGICAL_NOT_EXPRESSION:
+				destroyExpression(expression->rightExpression);
+				break;
+			case POST_DECREMENT_EXPRESSION:
+			case POST_INCREMENT_EXPRESSION:
+				destroyExpression(expression->leftExpression);
+				break;
 		}
 		free(expression);
 	}

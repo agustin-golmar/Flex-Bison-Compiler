@@ -62,7 +62,9 @@ whitespace			[[:space:]]+
 <MULTILINE_COMMENT>"*/"				{ return LeaveMultilineCommentLexemeAction(); }
 <MULTILINE_COMMENT>[^*]+			{ return IgnoredLexemeAction(); }
 <MULTILINE_COMMENT>.				{ return IgnoredLexemeAction(); }
-
+"++"								{ return ArithmeticOperatorLexemeAction(UNARY_INCREMENT); }
+"--"								{ return ArithmeticOperatorLexemeAction(UNARY_DECREMENT); }
+"!"                                 { return ArithmeticOperatorLexemeAction(LOGICAL_NOT); }
 "-"									{ return ArithmeticOperatorLexemeAction(SUB); }
 "*"									{ return ArithmeticOperatorLexemeAction(MUL); }
 "/"									{ return ArithmeticOperatorLexemeAction(DIV); }

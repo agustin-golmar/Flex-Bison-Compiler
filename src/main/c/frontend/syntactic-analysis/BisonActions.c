@@ -687,6 +687,46 @@ Expression * NegationSemanticAction(Expression * expression) {
 	return negation;
 }
 
+Expression * LogicalNotSemanticAction(Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * logicalNot = calloc(1, sizeof(Expression));
+	logicalNot->rightExpression = expression;
+	logicalNot->type = LOGICAL_NOT_EXPRESSION;
+	return logicalNot;
+}
+
+Expression * PreIncrementSemanticAction(Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * preIncrement = calloc(1, sizeof(Expression));
+	preIncrement->rightExpression = expression;
+	preIncrement->type = PRE_INCREMENT_EXPRESSION;
+	return preIncrement;
+}
+
+Expression * PreDecrementSemanticAction(Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * preDecrement = calloc(1, sizeof(Expression));
+	preDecrement->rightExpression = expression;
+	preDecrement->type = PRE_DECREMENT_EXPRESSION;
+	return preDecrement;
+}
+
+Expression * PostIncrementSemanticAction(Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * postIncrement = calloc(1, sizeof(Expression));
+	postIncrement->leftExpression = expression;
+	postIncrement->type = POST_INCREMENT_EXPRESSION;
+	return postIncrement;
+}
+
+Expression * PostDecrementSemanticAction(Expression * expression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * postDecrement = calloc(1, sizeof(Expression));
+	postDecrement->leftExpression = expression;
+	postDecrement->type = POST_DECREMENT_EXPRESSION;
+	return postDecrement;
+}
+
 Expression * PrimaryExpressionSemanticAction(Expression * expression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	return expression;

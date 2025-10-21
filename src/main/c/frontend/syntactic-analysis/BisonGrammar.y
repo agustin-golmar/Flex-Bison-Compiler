@@ -81,6 +81,9 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> GREATER_OR_EQUAL_THAN
 %token <token> LOWER_OR_EQUAL_THAN
 %token <token> EQUAL
+%token <token> UNARY_INCREMENT
+%token <token> UNARY_DECREMENT
+%token <token> LOGICAL_NOT
 %token <token> NOT_EQUAL
 %token <token> LOGICAL_AND
 %token <token> LOGICAL_OR
@@ -291,7 +294,11 @@ multiplicativeExpression: unaryExpression						{ $$ = UnaryExpressionSemanticAct
 
 unaryExpression: postfixExpression							{ $$ = PostfixExpressionSemanticAction($1); }
 	| SUB unaryExpression										{ $$ = NegationSemanticAction($2); }
-	;
+	| LOGICAL_NOT unaryExpression								{ $$ = LogicalNotSemanticAction($2); }
+	| UNARY_INCREMENT unaryExpression							{ $$ = PreIncrementSemanticAction($2); }
+	| UNARY_DECREMENT unaryExpression							{ $$ = PreDecrementSemanticAction($2); }
+	| unaryExpression UNARY_INCREMENT							{ $$ = PostIncrementSemanticAction($1); }
+	| unaryExpression UNARY_DECREMENT							{ $$ = PostDecrementSemanticAction($1); }
 
 postfixExpression: primaryExpression							{ $$ = PrimaryExpressionSemanticAction($1); }
 	| postfixExpression ARROW IDENTIFIER						{ $$ = MemberAccessSemanticAction($1, $3); }
