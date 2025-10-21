@@ -788,6 +788,15 @@ Expression * IntegerExpressionSemanticAction(int value) {
 	return expression;
 }
 
+Expression * StringLiteralExpressionSemanticAction(char * value) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    Expression * expression = calloc(1, sizeof(Expression));
+    expression->length = strlen(value) + 1;
+    expression->stringLiteralValue = value;  
+    expression->type = STRING_LITERAL_EXPRESSION;
+    return expression;
+}
+
 Expression * ThisExpressionSemanticAction() {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Expression * expression = calloc(1, sizeof(Expression));

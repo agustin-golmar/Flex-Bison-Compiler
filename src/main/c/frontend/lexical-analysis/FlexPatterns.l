@@ -16,10 +16,13 @@
 
 extern CompilationStatus ArithmeticOperatorLexemeAction(TokenLabel label);
 extern CompilationStatus EnterMultilineCommentLexemeAction(FlexContext context);
+extern CompilationStatus EnterStringLexemeAction(FlexContext context);
 extern CompilationStatus EOFLexemeAction();
 extern CompilationStatus IgnoredLexemeAction();
 extern CompilationStatus IntegerLexemeAction();
 extern CompilationStatus LeaveMultilineCommentLexemeAction();
+extern CompilationStatus LeaveStringLexemeAction();
+extern CompilationStatus StringLiteralLexemeAction();
 extern CompilationStatus ParenthesisLexemeAction(TokenLabel label);
 extern CompilationStatus UnknownLexemeAction();
 extern CompilationStatus KeyWordLexemeAction(TokenLabel label);
@@ -65,6 +68,9 @@ whitespace			[[:space:]]+
 "++"								{ return ArithmeticOperatorLexemeAction(UNARY_INCREMENT); }
 "--"								{ return ArithmeticOperatorLexemeAction(UNARY_DECREMENT); }
 "!"                                 { return ArithmeticOperatorLexemeAction(LOGICAL_NOT); }
+
+\"([^"\\]|\\.)*\"                   { return StringLiteralLexemeAction(); }                         { return IgnoredLexemeAction(); }
+
 "-"									{ return ArithmeticOperatorLexemeAction(SUB); }
 "*"									{ return ArithmeticOperatorLexemeAction(MUL); }
 "/"									{ return ArithmeticOperatorLexemeAction(DIV); }
@@ -110,7 +116,7 @@ whitespace			[[:space:]]+
 "int"								{ return KeyWordLexemeAction(INT); }
 "void"								{ return KeyWordLexemeAction(VOID); }
 "char"                              { return KeyWordLexemeAction(CHAR); }
-"string"                            { return KeyWordLexemeAction(STRING); }
+"string"                            { return KeyWordLexemeAction(STRING_T); }
 
 "->"                                { return ObjectAccessExpressionLexemeAction(); }
 "."                                 { return FieldAccessExpressionLexemeAction(); }

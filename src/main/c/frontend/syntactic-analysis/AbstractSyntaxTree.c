@@ -70,6 +70,10 @@ void destroyExpression(Expression * expression) {
 				}
 				break;
 			case INTEGER_EXPRESSION:
+				break;
+			case STRING_LITERAL_EXPRESSION:
+				destroyStringValue(expression->stringLiteralValue);
+				break;
 			case THIS_EXPRESSION:
 				// No dynamic memory to free
 				break;
@@ -293,5 +297,12 @@ void destroyArgumentList(ArgumentList * argumentList) {
 		destroyExpression(argumentList->expression);
 		destroyArgumentList(argumentList->next);
 		free(argumentList);
+	}
+}
+
+void destroyStringValue(char * value) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (value != NULL) {
+		free(value);
 	}
 }

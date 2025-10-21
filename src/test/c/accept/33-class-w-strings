@@ -1,0 +1,37 @@
+class StringDemo {
+    private string message;
+    private string empty;
+    private string quoted;
+    
+    constructor(string msg) {
+        this->message = msg;
+        this->empty = "";
+        this->quoted = "Hello \"World\"";
+    }
+    
+    public string getMessage() {
+        return this->message;
+    }
+    
+    public string getQuoted() {
+        return this->quoted;
+    }
+    
+    public void setMessage(string newMsg) {
+        this->message = newMsg;
+        return;
+    }
+}
+
+int main() {
+    string simple = "Hello World";
+    string withQuotes = "She said \"Hello!\"";
+    string withEscapes = "Line 1\nLine 2\tTabbed";
+    string empty = "";
+    string complex = "Mix: \"quotes\" and \\backslashes\\ here";
+    
+    StringDemo demo = new StringDemo("Initial message");
+    demo->setMessage("Updated \"message\" with quotes");
+    
+    return 0;
+}

@@ -116,6 +116,7 @@ Expression * MemberAccessSemanticAction(Expression * expression, char * identifi
 Expression * FunctionCallSemanticAction(Expression * expression, ArgumentList * argumentList);
 Expression * IdentifierExpressionSemanticAction(char * identifier);
 Expression * IntegerExpressionSemanticAction(int value);
+Expression * StringLiteralExpressionSemanticAction(char * value);
 Expression * ThisExpressionSemanticAction();
 Expression * ParenthesizedExpressionSemanticAction(Expression * expression);
 Expression * NewExpressionSemanticAction(char * identifier, ArgumentList * argumentList);

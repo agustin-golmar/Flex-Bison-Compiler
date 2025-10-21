@@ -28,7 +28,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 	signed int integer;
 	char * alphanum;
-	char * string;
+	char * string_t;
+	char * string_literal;
 	TokenLabel token;
 
 	/** Non-terminals. */
@@ -66,12 +67,14 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %destructor { destroyExpression($$); } <expression>
 %destructor { destroyTypeSpecifier($$); } <typeSpecifier>
 %destructor { destroyParameter($$); } <parameter>
-%destructor { destroyArgumentList($$); } <argumentList>
+%destructor { destroyArgumentList($$);} <argumentList>
+%destructor { destroyStringValue($$);} <string_literal>
 
 /** Terminals. */
 %token <integer> INTEGER
 %token <alphanum> IDENTIFIER
-%token <string> STRING
+%token <string_t> STRING_T
+%token <string_literal> STRING_LITERAL
 %token <token> ADD
 %token <token> SUB
 %token <token> MUL
@@ -219,7 +222,7 @@ parameter: typeSpecifier IDENTIFIER								{ $$ = ParameterSemanticAction($1, $2
 typeSpecifier: INT												{ $$ = IntTypeSemanticAction(); }
 	| VOID														{ $$ = VoidTypeSemanticAction(); }
 	| CHAR														{ $$ = CharTypeSemanticAction(); }
-	| STRING													{ $$ = StringTypeSemanticAction(); }															
+	| STRING_T													{ $$ = StringTypeSemanticAction(); }															
 	| IDENTIFIER												{ $$ = IdentifierTypeSemanticAction($1); }
 	;
 
@@ -314,6 +317,7 @@ postfixExpression: primaryExpression							{ $$ = PrimaryExpressionSemanticActio
 primaryExpression: IDENTIFIER									{ $$ = IdentifierExpressionSemanticAction($1); }
 	| INTEGER													{ $$ = IntegerExpressionSemanticAction($1); }
 	| THIS														{ $$ = ThisExpressionSemanticAction(); }
+	| STRING_LITERAL											{ $$ = StringLiteralExpressionSemanticAction($1); }
 	| OPEN_PARENTHESIS expression CLOSE_PARENTHESIS				{ $$ = ParenthesizedExpressionSemanticAction($2); }
 	| NEW IDENTIFIER OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS	{ $$ = NewExpressionSemanticAction($2, $4); }
 	;

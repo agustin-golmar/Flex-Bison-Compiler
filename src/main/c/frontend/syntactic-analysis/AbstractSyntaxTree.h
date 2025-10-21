@@ -70,7 +70,8 @@ enum ExpressionType {
 	PRE_INCREMENT_EXPRESSION,
 	POST_DECREMENT_EXPRESSION,
 	PRE_DECREMENT_EXPRESSION,
-	EMPTY_EXPRESSION
+	EMPTY_EXPRESSION,
+	STRING_LITERAL_EXPRESSION
 };
 
 enum FactorType {
@@ -142,8 +143,14 @@ struct Expression {
 		};
 		struct {
 			char * identifier;
-			int integerValue;
 			ArgumentList * argumentList;
+			union {
+				struct {
+					char * stringLiteralValue;
+					int length;
+				};
+				int integerValue;
+			};
 		};
 	};
 	ExpressionType type;
@@ -261,5 +268,6 @@ void destroyTypeSpecifier(TypeSpecifier * typeSpecifier);
 void destroyAccessSpecifier(AccessSpecifier * accessSpecifier);
 void destroyParameter(Parameter * parameter);
 void destroyArgumentList(ArgumentList * argumentList);
+void destroyStringValue(char * value);
 
 #endif
