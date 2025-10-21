@@ -68,6 +68,12 @@ whitespace			[[:space:]]+
 "/"									{ return ArithmeticOperatorLexemeAction(DIV); }
 "+"									{ return ArithmeticOperatorLexemeAction(ADD); }
 
+">"                                 { return ArithmeticOperatorLexemeAction(GREATER_THAN); }
+"<"                                 { return ArithmeticOperatorLexemeAction(LOWER_THAN); }
+">="                                { return ArithmeticOperatorLexemeAction(GREATER_OR_EQUAL_THAN); }
+"<="                                { return ArithmeticOperatorLexemeAction(LOWER_OR_EQUAL_THAN); }
+"=="                                { return ArithmeticOperatorLexemeAction(EQUAL); }
+"!="                                { return ArithmeticOperatorLexemeAction(NOT_EQUAL); }
 "="								    { return ArithmeticOperatorLexemeAction(ASSIGN); }
 
 "("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS); }

@@ -18,4 +18,8 @@ class myCounter {
     public int getCount() {
         return this->count;
     }
+
+    public int greaterThan() {
+        return count > 3;
+    }
 }

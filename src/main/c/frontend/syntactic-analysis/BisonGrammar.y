@@ -74,6 +74,12 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> SUB
 %token <token> MUL
 %token <token> DIV
+%token <token> GREATER_THAN
+%token <token> LOWER_THAN
+%token <token> GREATER_OR_EQUAL_THAN
+%token <token> LOWER_OR_EQUAL_THAN
+%token <token> EQUAL
+%token <token> NOT_EQUAL
 %token <token> ASSIGN
 %token <token> OPEN_PARENTHESIS
 %token <token> CLOSE_PARENTHESIS
@@ -242,6 +248,12 @@ expression: assignmentExpression								{ $$ = AssignmentExpressionSemanticActio
 
 assignmentExpression: additiveExpression						{ $$ = AdditiveExpressionSemanticAction($1); }
 	| unaryExpression ASSIGN assignmentExpression				{ $$ = AssignmentSemanticAction($1, $3); }
+	| additiveExpression GREATER_THAN assignmentExpression			{ $$ = GreaterThanSemanticAction($1, $3); }
+	| additiveExpression LOWER_THAN assignmentExpression			{ $$ = LowerThanSemanticAction($1, $3); }
+	| additiveExpression GREATER_OR_EQUAL_THAN assignmentExpression	{ $$ = GreaterEqualThanSemanticAction($1, $3); }
+	| additiveExpression LOWER_OR_EQUAL_THAN assignmentExpression	{ $$ = LowerEqualThanSemanticAction($1, $3); }
+	| additiveExpression EQUAL assignmentExpression				{ $$ = EqualSemanticAction($1, $3); }
+	| additiveExpression NOT_EQUAL assignmentExpression			{ $$ = NotEqualSemanticAction($1, $3); }
 	;
 
 additiveExpression: multiplicativeExpression					{ $$ = MultiplicativeExpressionSemanticAction($1); }

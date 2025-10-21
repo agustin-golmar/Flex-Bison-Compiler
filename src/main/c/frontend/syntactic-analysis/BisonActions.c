@@ -487,6 +487,60 @@ Expression * AssignmentExpressionSemanticAction(Expression * expression) {
 	return expression;
 }
 
+Expression * GreaterThanSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->leftExpression = leftExpression;
+	expression->rightExpression = rightExpression;
+	expression->type = GREATER_THAN_EXPRESSION;
+	return expression;
+}
+
+Expression * LowerThanSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->leftExpression = leftExpression;
+	expression->rightExpression = rightExpression;
+	expression->type = LOWER_THAN_EXPRESSION;
+	return expression;
+}
+
+Expression * GreaterEqualThanSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->leftExpression = leftExpression;
+	expression->rightExpression = rightExpression;
+	expression->type = GREATER_OR_EQUAL_THAN_EXPRESSION;
+	return expression;
+}
+
+Expression * LowerEqualThanSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->leftExpression = leftExpression;
+	expression->rightExpression = rightExpression;
+	expression->type = LOWER_OR_EQUAL_THAN_EXPRESSION;
+	return expression;
+}
+
+Expression * EqualSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->leftExpression = leftExpression;
+	expression->rightExpression = rightExpression;
+	expression->type = EQUAL_EXPRESSION;
+	return expression;
+}
+
+Expression * NotEqualSemanticAction(Expression * leftExpression, Expression * rightExpression) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Expression * expression = calloc(1, sizeof(Expression));
+	expression->leftExpression = leftExpression;
+	expression->rightExpression = rightExpression;
+	expression->type = NOT_EQUAL_EXPRESSION;
+	return expression;
+}
+
 Expression * AdditiveExpressionSemanticAction(Expression * expression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	return expression;
