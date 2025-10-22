@@ -130,7 +130,7 @@ static void _generateStatement(Statement * statement){
 	switch (statement->type){
 			case STATEMENT_COLOR_DECLARATION: break;
 			case STATEMENT_EVENT:
-				_output(2, "ÉXITO: ARMAMOS EL EVENTO NÚMERO %d\n", statement->event->value);
+				_output(2, "ÉXITO: ARMAMOS EL EVENTO %s\n", statement->event->name != NULL ? statement->event->name : "error: name is null");
 				break;
 			case STATEMENT_REPLACE: break;
 			default:

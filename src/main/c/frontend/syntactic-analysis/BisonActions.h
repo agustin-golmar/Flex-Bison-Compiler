@@ -26,7 +26,8 @@ Program * ExpressionProgramSemanticAction(Expression * expression);
 Constant * TestConstantSemanticAction();
 Program * EventSemanticAction(int value);
 Statement * EventStatementSemanticAction(Event * event);
-Event * IntegerEventSemanticAction(int value);
+//Event * IntegerEventSemanticAction(int value); //vuela
+Event * CreateEventSemanticAction(char * name);
 Program * StatementProgramSemanticAction(Statement * statement);
 
 #endif

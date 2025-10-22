@@ -1,0 +1,2 @@
+event "Revisión mensual" on Friday which: first at 11:00
+event "Revisión de cierre" on Friday which: last at 11:00

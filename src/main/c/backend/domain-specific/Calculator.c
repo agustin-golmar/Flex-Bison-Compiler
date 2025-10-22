@@ -152,7 +152,7 @@ ComputationResult computeStatement(Statement * statement) {
 ComputationResult computeEvent(Event * event) {
 	ComputationResult computationResult = {
 		.succeeded = true,
-		.value = event->value
+		.value = 10
 	};
 	return computationResult;
 }

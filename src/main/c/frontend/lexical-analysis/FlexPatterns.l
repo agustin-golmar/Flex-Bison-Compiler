@@ -27,6 +27,9 @@ extern CompilationStatus SubexpressionLexemeAction();
 extern CompilationStatus UnknownLexemeAction();
 extern CompilationStatus TokenLexemeAction(TokenLabel label);
 extern CompilationStatus StringValueLexemeAction();
+extern CompilationStatus StringLexemeAction();
+extern CompilationStatus DaytimeLexemeAction();
+extern CompilationStatus DateLexemeAction();
 
 %}
 
@@ -48,7 +51,8 @@ whitespace			[[:space:]]+
 digit               [0-9]
 letter              [A-Za-z]
 identifier          {letter}({letter}|{digit}|[_\-])*
-hour                {digit}{digit}:{digit}{digit}
+daytime             {digit}{digit}:{digit}{digit}
+date                [0-9]{4}-[0-9]{2}-[0-9]{2}
 month_name          (January|February|March|April|May|June|July|August|September|October|November|December)
 weekday             (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)
 timezone_name       [TODO]
@@ -113,13 +117,14 @@ string              \"([^\"\\]|\\.)*\"
 
 {month_name}                        { return StringValueLexemeAction(); }
 {weekday}                           { return StringValueLexemeAction(); }
-{hour}                              { return StringValueLexemeAction(); }
+{daytime}                           { return DaytimeLexemeAction(); }
+{date}                              { return DateLexemeAction(); }
 
 {timezone_name}                     { return StringValueLexemeAction(); }
 
 {url_pattern}                       { return StringValueLexemeAction(); }
 
-{string}                            { return StringValueLexemeAction(); }
+{string}                            { return StringLexemeAction(); }
 
 {identifier}                        { return StringValueLexemeAction(); }
 

@@ -28,7 +28,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 	signed int integer;
 	TokenLabel token;
-
+	char * strVal;
 
 	/** Non-terminals. */
 
@@ -92,7 +92,9 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> DAY_OF_WEEK
 %token <token> COLOR
 %token <token> DESCRIPTION
-
+%token <strVal> STRING
+%token <strVal> DATE
+%token <strVal> DAYTIME
 
 %token <token> IGNORED
 %token <token> UNKNOWN
@@ -129,7 +131,8 @@ statement: color_decl										{ $$ = TestConstantSemanticAction(); }
 	| replace_statement										{ $$ = TestConstantSemanticAction(); }
 	;
 
-event_decl: EVENT INTEGER									{ $$ = IntegerEventSemanticAction($2); }
+event_decl: 
+	EVENT STRING 											{ $$ = CreateEventSemanticAction($2); }
 	;
 
 color_decl: COLOR											{ $$ = TestConstantSemanticAction(); }

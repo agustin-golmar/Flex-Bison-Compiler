@@ -112,12 +112,12 @@ Statement * EventStatementSemanticAction(Event * event){
 	return statement;
 }
 
-Event * IntegerEventSemanticAction(int value){
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Event * event = calloc(1, sizeof(Event));
-	event->value = value;
-	return event;
-}
+// Event * IntegerEventSemanticAction(int value){
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	Event * event = calloc(1, sizeof(Event));
+// 	event->value = value;
+// 	return event;
+// }
 
 Program * StatementProgramSemanticAction(Statement * statement){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
@@ -125,4 +125,12 @@ Program * StatementProgramSemanticAction(Statement * statement){
 	program->firstStatement = statement;
 	_compilerState->abstractSyntaxtTree = program;
 	return program;
+}
+
+Event * CreateEventSemanticAction(char * name) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Event * event = calloc(1, sizeof(Event));
+	char * copy = strdup(name);
+	event->name = copy;
+	return event;
 }

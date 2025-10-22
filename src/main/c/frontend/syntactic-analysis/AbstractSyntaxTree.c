@@ -72,6 +72,7 @@ void destroyProgram(Program * program) {
 void destroyEvent(Event * event) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (event != NULL) {
+		free(event->name);
 		free(event);
 	}
 }

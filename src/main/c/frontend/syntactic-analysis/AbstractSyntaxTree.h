@@ -27,6 +27,8 @@ typedef struct Program Program;
 typedef struct Event Event;
 typedef struct Replace Replace;
 typedef struct ColorDeclaration ColorDeclaration;
+typedef struct Date Date;
+typedef struct Time Time;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
@@ -117,15 +119,32 @@ struct ColorDeclaration {
 // 	char *which;
 // };
 
-struct Event {
-	int value;
-};
+
 
 struct Replace {
 	char *targetTitle;
 	char *date;
 	char *newTitle;
 };
+
+struct Date {
+    int year;
+    int month;
+    int day;
+};
+
+struct Time {
+    int hour;
+    int minute;
+};
+
+struct Event {
+	char * name;
+	Date date;
+	Time start;
+	Time end;
+};
+
 
 /**
  * Node recursive super-duper-trambolik-destructors.
