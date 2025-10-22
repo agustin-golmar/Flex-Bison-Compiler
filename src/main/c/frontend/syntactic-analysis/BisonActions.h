@@ -27,10 +27,32 @@ Constant * TestConstantSemanticAction();
 Program * EventSemanticAction(int value);
 Statement * EventStatementSemanticAction(Event * event);
 //Event * IntegerEventSemanticAction(int value); //vuela
-Event * CreateEventSemanticAction(char * name);
+
 Program * StatementProgramSemanticAction(Statement * statement);
 
-// EventProp * UrlSemanticAction(char * url);
-// DayList CreateDayListSemanticAction(char * dayOfWeek);
+EventProp * ColorSemanticAction(char * colorId); 
+EventProp * DescriptionSemanticAction(char * description);
+EventProp * UrlSemanticAction(char * url);
+EventBody * EventBodySingleSemanticAction(EventProp * prop);
+EventBody * EventBodyAppendSemanticAction(EventBody * body, EventProp * prop);
+DayList * SingleDayStringSemanticAction(const char * dayName);
+DayList * AppendDayStringSemanticAction(DayList * dayList, const char * dayName);
+OverrideDecl * CreateOverrideSemanticActio(char * identifier, EventBody * body);
+EventDecl * CreateEventSemanticAction(char * indentifier, EventSpec * spec, EventBody * body);
+Statement * OverrideStatementSemanticAction(OverrideDecl * override);
+Statement * EventStatementSemanticAction(EventDecl * event);
+Statements * SingleStatementListSemanticAction(Statement * statement);
+Statements * AppendStatementSemanticAction(Statements * statements, Statement * statement);
+MonthBlock * StatementsMonthIntegerSemanticAction(int month, Statements * statements);
+MonthBlock * StatementsMonthNameSemanticAction(char * monthName, Statements * statements);
+MonthBlocks * SingleMonthBlockSemanticAction(MonthBlock * monthBlock);
+MonthBlocks * AppendMonthBlockSemanticAction(MonthBlocks * monthBlocks, MonthBlock * monthBlock);
+YearBlock * YearBlockSemanticAction(int year, MonthBlocks * monthBlocks);
+ColorDef * DefineColorSemanticAction(char * identifier, char * hexColor);
+ColorList * SingleColorDefSemanticAction(ColorDef * colorDef);
+ColorList * AppendColorDefSemanticAction(ColorList * colorList, ColorDef * colorDef);
+TimezoneDecl * CreateTimezoneSemanticAction(char * timezone);
+Header * createHeaderSemanticAction(TimezoneDecl * timezoneDecl, ColorList * colorList);
+Program * CreateProgramSemanticAction(Header * header, YearBlock * yearBlock);
 
 #endif

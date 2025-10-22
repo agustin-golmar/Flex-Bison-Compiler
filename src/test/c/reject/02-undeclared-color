@@ -1,1 +1,7 @@
-event "Entrenamiento" on 2025-10-20 at 08:00 color: violeta
+timezone America/Argentina/Buenos_Aires
+year 2025 { 
+    month August {
+        event "Reunión" on 10 from 10:00 to 11:00 { color no_declarado }
+    }
+}
+

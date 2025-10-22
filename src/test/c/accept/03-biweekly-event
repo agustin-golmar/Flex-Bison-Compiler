@@ -1,1 +1,7 @@
-event "Clase de yoga" on Wednesday at 19:00 repeat: biweekly
+timezone America/Argentina/Buenos_Aires
+year 2025 { 
+    month August {
+        event Entrenamiento every 2 Tuesday starting from 1 from 10:00 to 11:00 { color green description "Fisico y futbol" }
+    }
+}
+

@@ -1,1 +1,5 @@
-event "Conferencia" on 2025-10-22 start: 18:00 end: 16:00
+year 2025 { 
+    month August {
+        event Turno on 12 from 18:00 to 17:00
+    }
+}

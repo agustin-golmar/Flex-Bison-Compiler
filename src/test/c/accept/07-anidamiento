@@ -1,0 +1,9 @@
+timezone America/Argentina/Buenos_Aires
+
+year 2025 { 
+    month August {
+        event Clase on 12 from 10:00 to 11:00 { color blue }
+        event Reunion on 12 from 12:00 to 13:00 { color red }
+        event Break after Clase till Reunion { color gray }
+    }
+}

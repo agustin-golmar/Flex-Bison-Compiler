@@ -25,6 +25,7 @@ typedef struct Factor Factor;
 /* ENUM */
 typedef enum StatementType StatementType;
 typedef enum EventSpecType EventSpecType;
+typedef enum EventPropType EventPropType;
 
 /* TERMINAL */
 typedef struct Date Date;
@@ -109,6 +110,12 @@ enum EventSpecType {
 	RECURRENT
 }; 
 
+enum EventPropType {
+    EVENT_PROP_COLOR,
+    EVENT_PROP_DESCRIPTION,
+    EVENT_PROP_URL
+};
+
 /* TERMINAL */
 struct Date {
     int year;
@@ -133,10 +140,8 @@ struct Program {
 };
 
 struct Header {
-	union {
-		TimezoneDecl * timezoneDecl;
-		ColorList * colorList;
-	};
+	TimezoneDecl * timezoneDecl;
+	ColorList * colorList;
 };
 
 struct TimezoneDecl {
@@ -207,11 +212,19 @@ struct DayList {
 };
 
 struct EventBody {
-	union {
-		Color * color;
-		char * description;
-		char * url;
-	};
+	char * colorId;
+	char * description;
+	char * url;
+};
+
+
+struct EventProp {
+    EventPropType type;
+    union {
+        char * colorId;
+        char * description;
+        char * url;
+    };
 };
 
 
@@ -225,9 +238,22 @@ struct EventBody {
 void destroyConstant(Constant * constant);
 void destroyExpression(Expression * expression);
 void destroyFactor(Factor * factor);
-void destroyProgram(Program * program);
 
-void destroyEvent(Event * event);
+void destroyEventBody(EventBody * body);
+
+void destroyDayList(DayList * dayList);
+void destroyOverrideDecl(OverrideDecl * override);
+void destroyEventDecl(EventDecl * event);
 void destroyStatement(Statement * statement);
+void destroyStatements(Statements * statements);
+void destroyMonthBlock(MonthBlock * monthBlock);
+void destroyMonthBlocks(MonthBlocks * monthBlocks);
+void destroyYearBlock(YearBlock * yearBlock);
+void destroyColor(Color * color);
+void destroyColorDef(ColorDef * colorDef);
+void destroyColorList(ColorList * colorList);
+void destroyTimezoneDecl(TimezoneDecl * timezoneDecl);
+void destroyHeader(Header * header);
+void destroyProgram(Program * program);
 
 #endif

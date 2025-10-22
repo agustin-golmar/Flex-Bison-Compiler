@@ -67,8 +67,21 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %destructor { destroyExpression($$); } <expression>
 %destructor { destroyFactor($$); } <factor>
 
-%destructor { destroyEvent($$); } <event_decl>
+%destructor { destroyEventBody($$); } <event_body>
+
+%destructor { destroyDayList($$); } <day_list>
+%destructor { destroyEventDecl($$); } <event_decl>
+%destructor { destroyOverrideDecl($$); } <override_decl>
+%destructor { destroyStatements($$); } <statements>
 %destructor { destroyStatement($$); } <statement>
+%destructor { destroyMonthBlocks($$); } <month_blocks>
+%destructor { destroyMonthBlock($$); } <month_block>
+%destructor { destroyYearBlock($$); } <year_block
+%destructor { destroyColorList($$); } <color_list>
+%destructor { destroyColorDef($$); } <color_def>
+%destructor { destroyTimezoneDecl($$); } <timezone_decl>
+%destructor { destroyHeader($$); } <header>
+
 
 /** Terminals. */
 %token <token> ADD
@@ -156,20 +169,20 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: header year_block									{ $$ = HeaderProgramSemanticAction($1, $2); }
-	| year_block											{ $$ = YearProgramSemanticAction(); }
+program: header year_block									{ $$ = CreateProgramSemanticAction($1, $2); }
+	| year_block											{ $$ = CreateProgramSemanticAction(NULL, $1); }
 	;
 
-header: timezone_decl color_list							{ $$ = TODO; }
-	| timezone_decl											{ $$ = TODO; }
-	| color_list											{ $$ = TODO; }
+header: timezone_decl color_list							{ $$ = createHeaderSemanticAction($1, $2); }
+	| timezone_decl											{ $$ = createHeaderSemanticAction($1, NULL); }
+	| color_list											{ $$ = createHeaderSemanticAction(NULL, $1); }
 	;
 
 timezone_decl: TIMEZONE TIMEZONE_NAME						{ $$ = CreateTimezoneSemanticAction($2); }
 	;
 
-color_list: color_list color_def							{ $$ = TODO; }
-	| color_def												{ $$ = TODO; }
+color_list: color_list color_def							{ $$ = AppendColorDefSemanticAction($1, $2); }
+	| color_def												{ $$ =  SingleColorDefSemanticAction($1); }
 	;
 
 color_def: DEFINE COLOR IDENTIFIER HEXVALUE					{ $$ = DefineColorSemanticAction($3, $4); }
@@ -178,16 +191,16 @@ color_def: DEFINE COLOR IDENTIFIER HEXVALUE					{ $$ = DefineColorSemanticAction
 year_block: YEAR INTEGER LBRACE month_blocks RBRACE  		{ $$ = YearBlockSemanticAction($2, $4); }
 	;
 
-month_blocks: month_blocks month_block						{ $$ = TODO; }
-	| month_block											{ $$ = TODO; }
+month_blocks: month_blocks month_block						{ $$ = AppendMonthBlockSemanticAction($1, $2); }
+	| month_block											{ $$ = SingleMonthBlockSemanticAction($1); }
 	;
 
 month_block: MONTH MONTH_NAME LBRACE statements RBRACE 		{ $$ = StatementsMonthNameSemanticAction($2, $4); }
 	| MONTH INTEGER LBRACE statements RBRACE				{ $$ = StatementsMonthIntegerSemanticAction($2, $4); }
 	;
 
-statements: statements statement							{ $$ = TODO; }
-	| statement												{ $$ = TODO; }
+statements: statements statement							{ $$ = AppendStatementSemanticAction($1, $2); }
+	| statement												{ $$ = SingleStatementListSemanticAction($1); }
 	;
 
 statement: event_decl										{ $$ = EventStatementSemanticAction($1); }
@@ -204,15 +217,14 @@ override_decl: OVERRIDE IDENTIFIER LBRACE event_body RBRACE		{ $$ = CreateOverri
 event_spec: ON day_list FROM TIME TO TIME					{ $$ = EventSpecificsSemanticAction($2, $4, $6); }
 	| ON day_list AT TIME 									{ $$ = PuntualEventSemanticAction($2, $4); }
 	| EVERY INTEGER day_list STARTING FROM INTEGER		{ $$ = RecurrentEventSemanticAction($2, $3, $6); }
-	| /* vacío (mmmmmm) */
 	;
 
-day_list: DAY_OF_WEEK										{ $$ = CreateDayListSemanticAction($1); }
-	| day_list AND DAY_OF_WEEK								{ $$ = CreateDayListRecSemanticAction($1, $3); }
+day_list: DAY_OF_WEEK										{ $$ = SingleDayStringSemanticAction($1); }
+	| day_list AND DAY_OF_WEEK								{ $$ = AppendDayStringSemanticAction($1, $3); }
 	;
 
-event_body: event_body event_prop							{ $$ = TODO }
-	| event_prop											{ $$ = TODO }
+event_body: event_body event_prop							{ $$ = EventBodyAppendSemanticAction($1, $2); }
+	| event_prop											{ $$ = EventBodySingleSemanticAction($1); }
 	;
 
 event_prop: COLOR IDENTIFIER								{ $$ = ColorSemanticAction($2); }

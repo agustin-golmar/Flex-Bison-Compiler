@@ -1,3 +1,8 @@
-declare color azul = #007BFF
+timezone America/Argentina/Buenos_Aires
+declare cyan #00FFFF
 
-event "Entrenamiento" on 2025-10-20 at 08:30 color: azul
+year 2025 { 
+    month August {
+        event Reunión on Tuesday from 14:00 to 15:00 { color cyan }
+    }
+}

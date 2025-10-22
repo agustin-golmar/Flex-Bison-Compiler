@@ -1,1 +1,7 @@
-event "Reunión de equipo" on Monday at 09:00 repeat: weekly
+timezone America/Argentina/Buenos_Aires
+year 2025 { 
+    month August {
+        event Clases on Monday from 08:00 to 10:00 { color blue }
+    }
+}
+

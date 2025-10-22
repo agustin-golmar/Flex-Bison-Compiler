@@ -1,0 +1,6 @@
+timezone America/Argentina/Buenos_Aires
+year 2025 { 
+    month October {
+        event "Taller" on Monday and Friday from 08:00 to 10:00 { color orange }
+    }
+}

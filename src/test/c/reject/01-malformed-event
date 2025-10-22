@@ -1,1 +1,4 @@
-event "Reunión" on at 10:00
+year 2025 { month August {
+  event X on 10 from 10:00 to 11:00
+}
+

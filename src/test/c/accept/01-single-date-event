@@ -1,1 +1,7 @@
-event "Cumpleaños de Ana" on 2025-10-15 at 18:00
+timezone America/Argentina/Buenos_Aires
+year 2025 { 
+    month August {
+        event Examen Parcial on 10 from 09:00 to 11:00 { color red }
+    }
+}
+

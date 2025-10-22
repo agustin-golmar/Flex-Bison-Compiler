@@ -1,3 +1,0 @@
-event "Clase de piano" on Monday at 17:00 repeat: weekly
-
-replace "Clase de piano" on 2025-08-10 with "Clase especial"
