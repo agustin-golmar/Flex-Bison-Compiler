@@ -79,11 +79,14 @@ Factor * ExpressionFactorSemanticAction(Expression * expression) {
 Program * ExpressionProgramSemanticAction(Expression * expression) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Program * program = calloc(1, sizeof(Program));
-	program->expression = expression;
+	//program->expression = expression;
 	_compilerState->abstractSyntaxtTree = program;
 	return program;
 }
 
+// _________________________
+// -----------NUEVO---------
+// ________________________
 
 
 Constant * TestConstantSemanticAction() {
@@ -99,4 +102,27 @@ Program * EventSemanticAction(int value) {
 	Factor * factor = ConstantFactorSemanticAction(IntegerConstantSemanticAction(1));
 	Expression * expression = FactorExpressionSemanticAction(factor);
 	return ExpressionProgramSemanticAction(expression);
+}
+
+Statement * EventStatementSemanticAction(Event * event){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Statement * statement = calloc(1, sizeof(Statement));
+	statement->type = STATEMENT_EVENT;
+	statement->event = event;
+	return statement;
+}
+
+Event * IntegerEventSemanticAction(int value){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Event * event = calloc(1, sizeof(Event));
+	event->value = value;
+	return event;
+}
+
+Program * StatementProgramSemanticAction(Statement * statement){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Program * program = calloc(1, sizeof(Program));
+	program->firstStatement = statement;
+	_compilerState->abstractSyntaxtTree = program;
+	return program;
 }

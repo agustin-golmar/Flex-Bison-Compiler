@@ -54,4 +54,8 @@ ComputationResult computeFactor(Factor * factor);
  */
 ComputationResult executeCalculator(CompilerState * compilerState);
 
+
+ComputationResult computeStatement(Statement * statement);
+ComputationResult computeEvent(Event * event);
+
 #endif

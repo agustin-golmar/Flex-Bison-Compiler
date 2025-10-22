@@ -64,7 +64,28 @@ void destroyFactor(Factor * factor) {
 void destroyProgram(Program * program) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (program != NULL) {
-		destroyExpression(program->expression);
+		destroyStatement(program->firstStatement);
 		free(program);
+	}
+}
+
+void destroyEvent(Event * event) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (event != NULL) {
+		free(event);
+	}
+}
+
+void destroyStatement(Statement * statement) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (statement != NULL){
+		switch (statement->type){
+			case STATEMENT_COLOR_DECLARATION: break;
+			case STATEMENT_EVENT:
+				destroyEvent(statement->event);
+				break;
+			case STATEMENT_REPLACE: break;
+		}
+		free(statement);
 	}
 }

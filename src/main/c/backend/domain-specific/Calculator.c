@@ -138,8 +138,21 @@ ComputationResult computeFactor(Factor * factor) {
 			return _invalidComputation();
 	}
 }
-
+//testeo
 ComputationResult executeCalculator(CompilerState * compilerState) {
 	Program * program = compilerState->abstractSyntaxtTree;
-	return computeExpression(program->expression);
+	//return computeExpression(program->expression);
+	return computeStatement(program->firstStatement);
+}
+
+ComputationResult computeStatement(Statement * statement) {
+	return computeEvent(statement->event);
+}
+
+ComputationResult computeEvent(Event * event) {
+	ComputationResult computationResult = {
+		.succeeded = true,
+		.value = event->value
+	};
+	return computationResult;
 }

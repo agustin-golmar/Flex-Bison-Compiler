@@ -35,7 +35,12 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	Constant * constant;
 	Expression * expression;
 	Factor * factor;
+
 	Program * program;
+	Statement * statement;
+	Event * event_decl;
+	ColorDeclaration * color_decl;
+	Replace * replace_statement;
 }
 
 /**
@@ -49,6 +54,9 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %destructor { destroyConstant($$); } <constant>
 %destructor { destroyExpression($$); } <expression>
 %destructor { destroyFactor($$); } <factor>
+
+%destructor { destroyEvent($$); } <event_decl>
+%destructor { destroyStatement($$); } <statement>
 
 /** Terminals. */
 %token <integer> INTEGER
@@ -95,6 +103,11 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <factor> factor
 %type <program> program
 
+%type <statement> statement
+%type <color_decl> color_decl
+%type <event_decl> event_decl
+%type <replace_statement> replace_statement
+
 /**
  * Precedence and associativity.
  *
@@ -108,10 +121,25 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: expression											{ $$ = ExpressionProgramSemanticAction($1); }
-  | EVENT INTEGER                        					{ $$ = EventSemanticAction($2); }
+program: statement											{ $$ = StatementProgramSemanticAction($1); }
 	;
 
+statement: color_decl										{ $$ = TestConstantSemanticAction(); }
+	| event_decl											{ $$ = EventStatementSemanticAction($1); }
+	| replace_statement										{ $$ = TestConstantSemanticAction(); }
+	;
+
+event_decl: EVENT INTEGER									{ $$ = IntegerEventSemanticAction($2); }
+	;
+
+color_decl: COLOR											{ $$ = TestConstantSemanticAction(); }
+	;
+
+replace_statement: COLOR									{ $$ = TestConstantSemanticAction(); }
+	;
+
+
+//--------------------VIEJO-----------------------
 expression: expression[left] ADD expression[right]			{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
 	| expression[left] DIV expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
 	| expression[left] MUL expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }

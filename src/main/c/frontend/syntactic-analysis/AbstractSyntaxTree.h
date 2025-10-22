@@ -20,9 +20,13 @@ typedef enum FactorType FactorType;
 typedef struct Constant Constant;
 typedef struct Expression Expression;
 typedef struct Factor Factor;
-typedef struct Program Program;
 
+//NUEVO
+typedef struct Statement Statement;
+typedef struct Program Program;
 typedef struct Event Event;
+typedef struct Replace Replace;
+typedef struct ColorDeclaration ColorDeclaration;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
@@ -64,13 +68,63 @@ struct Expression {
 	ExpressionType type;
 };
 
-struct Program {
-	Expression * expression;
+// ________________________________
+// ________________________________
+//          NUEVO
+// ________________________________
+// ________________________________
+
+typedef enum {
+	STATEMENT_COLOR_DECLARATION,
+	STATEMENT_EVENT,
+	STATEMENT_REPLACE
+} StatementType;
+
+// struct Statement {
+// 	StatementType type;
+// 	union {
+// 		ColorDeclaration *colorDeclaration;
+// 		Event *event;
+// 		Replace *replace;
+// 	};
+// 	struct Statement *next;
+// };
+
+struct Statement {
+	StatementType type;
+	union {
+		ColorDeclaration *colorDeclaration;
+		Event *event;
+		Replace *replace;
+	};
 };
 
+struct Program {
+	Statement * firstStatement;
+};
+
+struct ColorDeclaration {
+	char * name;
+	char * hexValue;
+};
+
+// struct Event {
+// 	char *title;
+// 	char *date;
+// 	char *time;
+// 	char *colorName;
+// 	char *repeat;
+// 	char *which;
+// };
 
 struct Event {
 	int value;
+};
+
+struct Replace {
+	char *targetTitle;
+	char *date;
+	char *newTitle;
 };
 
 /**
@@ -81,5 +135,8 @@ void destroyConstant(Constant * constant);
 void destroyExpression(Expression * expression);
 void destroyFactor(Factor * factor);
 void destroyProgram(Program * program);
+
+void destroyEvent(Event * event);
+void destroyStatement(Statement * statement);
 
 #endif

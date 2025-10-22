@@ -32,6 +32,8 @@ static void _generateProgram(Program * program);
 static void _generatePrologue(void);
 static void _output(const unsigned int indentationLevel, const char * const format, ...);
 
+static void _generateStatement(Statement * statement);
+
 /**
  * Converts and expression type to the proper character of the operation
  * involved, or returns '\0' if that's not possible.
@@ -119,7 +121,22 @@ static void _generateFactor(const unsigned int indentationLevel, Factor * factor
  * Generates the output of the program.
  */
 static void _generateProgram(Program * program) {
-	_generateExpression(3, program->expression);
+	if(program != NULL){
+		_generateStatement(program->firstStatement);
+	}
+}
+
+static void _generateStatement(Statement * statement){
+	switch (statement->type){
+			case STATEMENT_COLOR_DECLARATION: break;
+			case STATEMENT_EVENT:
+				_output(2, "ÉXITO: ARMAMOS EL EVENTO NÚMERO %d\n", statement->event->value);
+				break;
+			case STATEMENT_REPLACE: break;
+			default:
+			logError(_logger, "The specified statement type is unknown: %d\n", statement->type);
+			break;
+		}
 }
 
 /**
