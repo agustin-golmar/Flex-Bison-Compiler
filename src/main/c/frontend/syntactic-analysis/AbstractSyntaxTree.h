@@ -22,13 +22,32 @@ typedef struct Expression Expression;
 typedef struct Factor Factor;
 
 //NUEVO
-typedef struct Statement Statement;
-typedef struct Program Program;
-typedef struct Event Event;
-typedef struct Replace Replace;
-typedef struct ColorDeclaration ColorDeclaration;
+/* ENUM */
+typedef enum StatementType StatementType;
+typedef enum EventSpecType EventSpecType;
+
+/* TERMINAL */
 typedef struct Date Date;
 typedef struct Time Time;
+typedef struct Color Color;
+
+/* NON-TERMINAL */
+typedef struct Program Program;
+typedef struct Header Header;
+typedef struct TimezoneDecl TimezoneDecl;
+typedef struct ColorList ColorList;
+typedef struct ColorDef ColorDef;
+typedef struct YearBlock YearBlock;
+typedef struct MonthBlocks MonthBlocks;
+typedef struct MonthBlock MonthBlock;
+typedef struct Statements Statements;
+typedef struct Statement Statement;
+typedef struct EventDecl EventDecl;
+typedef struct OverrideDecl OverrideDecl;
+typedef struct EventSpec EventSpec;
+typedef struct DayList DayList;
+typedef struct EventBody EventBody;
+typedef struct EventProp EventProp;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
@@ -41,6 +60,7 @@ enum ExpressionType {
 	MULTIPLICATION,
 	SUBTRACTION
 };
+
 
 enum FactorType {
 	CONSTANT,
@@ -76,57 +96,20 @@ struct Expression {
 // ________________________________
 // ________________________________
 
-typedef enum {
-	STATEMENT_COLOR_DECLARATION,
+/* ENUM */
+enum StatementType{
 	STATEMENT_EVENT,
-	STATEMENT_REPLACE
-} StatementType;
-
-// struct Statement {
-// 	StatementType type;
-// 	union {
-// 		ColorDeclaration *colorDeclaration;
-// 		Event *event;
-// 		Replace *replace;
-// 	};
-// 	struct Statement *next;
-// };
-
-struct Statement {
-	StatementType type;
-	union {
-		ColorDeclaration *colorDeclaration;
-		Event *event;
-		Replace *replace;
-	};
+	STATEMENT_OVERRIDE
 };
 
-struct Program {
-	Statement * firstStatement;
-};
 
-struct ColorDeclaration {
-	char * name;
-	char * hexValue;
-};
+enum EventSpecType {
+	NORMAL,
+	PUNTUAL,
+	RECURRENT
+}; 
 
-// struct Event {
-// 	char *title;
-// 	char *date;
-// 	char *time;
-// 	char *colorName;
-// 	char *repeat;
-// 	char *which;
-// };
-
-
-
-struct Replace {
-	char *targetTitle;
-	char *date;
-	char *newTitle;
-};
-
+/* TERMINAL */
 struct Date {
     int year;
     int month;
@@ -138,12 +121,101 @@ struct Time {
     int minute;
 };
 
-struct Event {
+struct Color {
 	char * name;
-	Date date;
-	Time start;
-	Time end;
+	char * hexValue;
 };
+
+/* NON-TERMINAL */
+struct Program {
+	Header * header;
+	YearBlock * yearBlock;
+};
+
+struct Header {
+	union {
+		TimezoneDecl * timezoneDecl;
+		ColorList * colorList;
+	};
+};
+
+struct TimezoneDecl {
+	char * timezone; //revisar
+};
+
+struct ColorList {
+	ColorDef * firstColorDef;
+};
+
+struct ColorDef {
+	Color * color;
+	ColorDef * next;
+};
+
+struct YearBlock {
+	int year;
+	MonthBlocks * monthBlocks;
+};
+
+struct MonthBlocks {
+	MonthBlock * months[12];
+};
+
+struct MonthBlock {
+	int month;
+	Statements * statements;
+};
+
+struct Statements {
+	Statement * firstStatement;
+};
+
+struct Statement {
+	Statement * nextStatement;
+	StatementType type;
+	union {
+		EventDecl * eventDecl;
+		OverrideDecl * OverrideDecl;
+	};
+};
+
+struct EventDecl {
+	char * identifier;
+	EventSpec * eventSpec;
+	EventBody * eventBody;
+};
+
+struct OverrideDecl {
+	char * identifier;
+	EventBody * eventBody;
+};
+
+struct EventSpec {
+	EventSpecType type;
+	DayList * dayList;
+	union {
+		Time start;
+		Time end;
+		int recurrence;
+		int startingDay;
+	};
+};
+
+struct DayList {
+	int days[7];
+	int count;
+};
+
+struct EventBody {
+	union {
+		Color * color;
+		char * description;
+		char * url;
+	};
+};
+
+
+
 
 
 /**

@@ -30,4 +30,7 @@ Statement * EventStatementSemanticAction(Event * event);
 Event * CreateEventSemanticAction(char * name);
 Program * StatementProgramSemanticAction(Statement * statement);
 
+// EventProp * UrlSemanticAction(char * url);
+// DayList CreateDayListSemanticAction(char * dayOfWeek);
+
 #endif

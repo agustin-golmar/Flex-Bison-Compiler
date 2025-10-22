@@ -26,9 +26,9 @@ extern CompilationStatus ParenthesisLexemeAction(TokenLabel label);
 extern CompilationStatus SubexpressionLexemeAction();
 extern CompilationStatus UnknownLexemeAction();
 extern CompilationStatus TokenLexemeAction(TokenLabel label);
-extern CompilationStatus StringValueLexemeAction();
+extern CompilationStatus StringValueLexemeAction(TokenLabel label);
 extern CompilationStatus StringLexemeAction();
-extern CompilationStatus DaytimeLexemeAction();
+extern CompilationStatus TimeLexemeAction();
 extern CompilationStatus DateLexemeAction();
 
 %}
@@ -51,13 +51,14 @@ whitespace			[[:space:]]+
 digit               [0-9]
 letter              [A-Za-z]
 identifier          {letter}({letter}|{digit}|[_\-])*
-daytime             {digit}{digit}:{digit}{digit}
+time                {digit}{digit}:{digit}{digit}
 date                [0-9]{4}-[0-9]{2}-[0-9]{2}
 month_name          (January|February|March|April|May|June|July|August|September|October|November|December)
 weekday             (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)
 timezone_name       [TODO]
 url_pattern         https?:\/\/[A-Za-z0-9\.\-_/]+
 string              \"([^\"\\]|\\.)*\"
+hex_value           #[0-9A-Fa-f]{6}
 
 %%
 
@@ -114,19 +115,22 @@ string              \"([^\"\\]|\\.)*\"
 "day-of-week"                       { return TokenLexemeAction(DAY_OF_WEEK); }
 "color"                             { return TokenLexemeAction(COLOR); }
 "description"                       { return TokenLexemeAction(DESCRIPTION); }
+"url"                               { return TokenLexemeAction(URL);}
 
-{month_name}                        { return StringValueLexemeAction(); }
-{weekday}                           { return StringValueLexemeAction(); }
-{daytime}                           { return DaytimeLexemeAction(); }
-{date}                              { return DateLexemeAction(); }
+{month_name}                        { return StringValueLexemeAction(MONTH_NAME); }
+{weekday}                           { return StringValueLexemeAction(DAY_OF_WEEK); }
+{time}                              { return TimeLexemeAction(); }  //revisar, ver si paso la string o el struct ya armado
+{date}                              { return DateLexemeAction(); }  //revisar, misma
 
-{timezone_name}                     { return StringValueLexemeAction(); }
+{timezone_name}                     { return StringValueLexemeAction(TIMEZONE_NAME); }
 
-{url_pattern}                       { return StringValueLexemeAction(); }
+{url_pattern}                       { return StringValueLexemeAction(URL_PATTERN); } //URL_PATTERN
 
 {string}                            { return StringLexemeAction(); }
 
-{identifier}                        { return StringValueLexemeAction(); }
+{hex_value}                         { return StringValueLexemeAction(HEXVALUE); }
+
+{identifier}                        { return StringValueLexemeAction(IDENTIFIER); }
 
 [[:digit:]]+						{ return IntegerLexemeAction(); }
 

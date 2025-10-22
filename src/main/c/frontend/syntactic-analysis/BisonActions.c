@@ -134,3 +134,17 @@ Event * CreateEventSemanticAction(char * name) {
 	event->name = copy;
 	return event;
 }
+
+
+//NUEVONUEVO
+
+// EventProp * UrlSemanticAction(char * url) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	EventProp * eventProp = callor(1, sizeof(EventProp));
+// }
+
+
+// DayList CreateDayListSemanticAction(char * dayOfWeek) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	DayList 
+// }

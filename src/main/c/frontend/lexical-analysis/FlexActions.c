@@ -188,8 +188,8 @@ CompilationStatus DateLexemeAction() {
 	return status;
 }
 
-CompilationStatus DaytimeLexemeAction() {
-	Token * token = createToken(_lexicalAnalyzer, DAYTIME);
+CompilationStatus TimeLexemeAction() {
+	Token * token = createToken(_lexicalAnalyzer, TIME);
 	token->semanticValue->strVal = token->lexeme;
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
@@ -198,9 +198,9 @@ CompilationStatus DaytimeLexemeAction() {
 }
 
 //TODO
-CompilationStatus StringValueLexemeAction() {
-	Token * token = createToken(_lexicalAnalyzer, INTEGER);
-	token->semanticValue->integer = 2;  //test
+CompilationStatus StringValueLexemeAction(TokenLabel label) {
+	Token * token = createToken(_lexicalAnalyzer, label);
+	token->semanticValue->strVal = token->lexeme;
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
 	destroyToken(token);
