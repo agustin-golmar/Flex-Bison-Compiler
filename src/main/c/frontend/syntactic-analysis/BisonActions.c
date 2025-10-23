@@ -377,6 +377,7 @@ MonthBlocks * AppendMonthBlockSemanticAction(MonthBlocks * monthBlocks, MonthBlo
     int index = monthBlock->month - 1;
     if (monthBlocks->months[index] != NULL) {
         logError(_logger, "Duplicate month declaration in AppendMonthBlockSemanticAction");
+		destroyMonthBlock(monthBlock);
         return monthBlocks;
     }
     monthBlocks->months[index] = monthBlock;

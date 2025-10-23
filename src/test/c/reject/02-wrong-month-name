@@ -1,0 +1,7 @@
+timezone GMT+2
+year 2025 { 
+    month Augusto {
+        event Reunion on 10 from 10:00 to 11:00 { color azul }
+    }
+}
+

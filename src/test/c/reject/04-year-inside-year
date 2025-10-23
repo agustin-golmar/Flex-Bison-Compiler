@@ -1,0 +1,7 @@
+year 2025 { 
+    year 2026{
+        month August {
+            event Turno on 12 from 16:00 to 17:00 { color red }
+        }
+    }
+}

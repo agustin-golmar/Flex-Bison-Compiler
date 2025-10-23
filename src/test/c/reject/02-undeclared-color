@@ -1,7 +1,0 @@
-timezone America/Argentina/Buenos_Aires
-year 2025 { 
-    month August {
-        event "Reunión" on 10 from 10:00 to 11:00 { color no_declarado }
-    }
-}
-
