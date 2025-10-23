@@ -102,7 +102,6 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> STARTING
 %token <token> ONLY
 %token <token> IF
-%token <integer> DAY_OF_MONTH
 %token <strVal> DAY_OF_WEEK
 %token <token> DEFINE
 %token <token> COLOR
@@ -198,7 +197,7 @@ override_decl: OVERRIDE IDENTIFIER LBRACE event_body RBRACE		{ $$ = CreateOverri
 	;
 
 event_spec: ON day_list FROM time TO time					{ $$ = DayListSpecSemanticAction($2, $4, $6); }
-	| ON DAY_OF_MONTH FROM time TO time						{ $$ = DayOfMonthSpecSemanticAction($2, $4, $6); }
+	| ON INTEGER FROM time TO time						{ $$ = DayOfMonthSpecSemanticAction($2, $4, $6); }
 	;
 
 time:

@@ -1,8 +1,0 @@
-timezone America/Argentina/Buenos_Aires
-declare cyan #00FFFF
-
-year 2025 { 
-    month August {
-        event Reunión on Tuesday from 14:00 to 15:00 { color cyan }
-    }
-}

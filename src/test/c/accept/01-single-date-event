@@ -1,4 +1,4 @@
-
+timezone GMT-3
 year 2025 {
     month August {
         event ExamenParcial on Monday from 09:00 to 11:00 { color red }

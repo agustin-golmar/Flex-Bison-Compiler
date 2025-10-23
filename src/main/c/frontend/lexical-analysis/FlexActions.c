@@ -205,11 +205,3 @@ CompilationStatus StringValueLexemeAction(TokenLabel label) {
 	return status;
 }
 
-CompilationStatus DayOfMonthLexemeAction() {
-	Token * token = createToken(_lexicalAnalyzer, DAY_OF_MONTH);
-	token->semanticValue->integer = atoi(token->lexeme);
-	_logTokenAction(__FUNCTION__, token);
-	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
-	destroyToken(token);
-	return status;
-}

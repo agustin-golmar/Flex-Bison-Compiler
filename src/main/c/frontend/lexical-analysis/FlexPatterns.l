@@ -26,7 +26,6 @@ extern CompilationStatus StringValueLexemeAction(TokenLabel label);
 extern CompilationStatus StringLexemeAction();
 extern CompilationStatus TimeLexemeAction();
 extern CompilationStatus DateLexemeAction();
-extern CompilationStatus DayOfMonthLexemeAction();
 
 %}
 
@@ -52,7 +51,7 @@ time                {digit}{digit}:{digit}{digit}
 date                [0-9]{4}-[0-9]{2}-[0-9]{2}
 month_name          (January|February|March|April|May|June|July|August|September|October|November|December)
 weekday             (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)
-timezone_name       [TODO]
+timezone_name       ([A-Z]{1,5}[\+\-][0-9]{1,2}|hola)
 url_pattern         https?:\/\/[A-Za-z0-9\.\-_/]+
 string              \"([^\"\\]|\\.)*\"
 hex_value           #[0-9A-Fa-f]{6}
@@ -80,6 +79,8 @@ hex_value           #[0-9A-Fa-f]{6}
 "event"                             { return TokenLexemeAction(EVENT); }
 "override"                          { return TokenLexemeAction(OVERRIDE); }
 
+"define"                            { return TokenLexemeAction(DEFINE); }
+
 "on"                                { return TokenLexemeAction(ON); }
 "and"                               { return TokenLexemeAction(AND); }
 "from"                              { return TokenLexemeAction(FROM); }
@@ -93,8 +94,6 @@ hex_value           #[0-9A-Fa-f]{6}
 "only"                              { return TokenLexemeAction(ONLY); }
 "if"                                { return TokenLexemeAction(IF); }
 
-"day-of-month"                      { return TokenLexemeAction(DAY_OF_MONTH); }
-"day-of-week"                       { return TokenLexemeAction(DAY_OF_WEEK); }
 "color"                             { return TokenLexemeAction(COLOR); }
 "description"                       { return TokenLexemeAction(DESCRIPTION); }
 "url"                               { return TokenLexemeAction(URL);}

@@ -1,6 +1,7 @@
-timezone America/Argentina/Buenos_Aires
-year 2025 { 
-    month August {
+timezone UST+5
+
+year 2026 { 
+    month April {
         event Clases on Monday from 08:00 to 10:00 { color blue }
     }
 }

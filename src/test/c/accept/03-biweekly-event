@@ -1,7 +1,7 @@
-timezone America/Argentina/Buenos_Aires
+timezone GMT+1
 year 2025 { 
     month August {
-        event Entrenamiento every 2 Tuesday starting from 1 from 10:00 to 11:00 { color green description "Fisico y futbol" }
+        event Entrenamiento on Saturday from 10:00 to 11:00 { color green description "Fisico y futbol" }
     }
 }
 

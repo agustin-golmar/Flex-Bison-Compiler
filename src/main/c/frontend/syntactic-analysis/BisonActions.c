@@ -199,6 +199,7 @@ DayList * AppendDayStringSemanticAction(DayList * dayList, const char * dayName)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
     int day = DayOfWeekStringToNumber(dayName);
     if (day == 0) return dayList; // error
+	free(dayName);
     return AppendDaySemanticAction(dayList, day);
 }
 

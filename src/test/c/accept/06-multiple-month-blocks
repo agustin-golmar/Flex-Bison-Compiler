@@ -1,6 +1,6 @@
-timezone America/Argentina/Buenos_Aires
+timezone GMT+4
 year 2026 {
-  month March  { event Consultas on Tuesday from 17:00 to 18:00 { color #0047AB } }
-  month April  { event Reunión_General from 13:00 to 15:00  { color #0A84FF } }
+  month March  { event Consultas on Tuesday from 17:00 to 18:00 { color blue } }
+  month April  { event Reunion_General on Saturday from 13:00 to 15:00  { description "Junta anual" } }
 }
 
