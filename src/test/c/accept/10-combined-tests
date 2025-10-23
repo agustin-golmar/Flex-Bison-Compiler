@@ -1,0 +1,8 @@
+declare color rojo = #FF0000
+declare color verde = #00FF00
+
+event "Entrenamiento" on Tuesday at 19:00 repeat: biweekly color: rojo
+event "Reunión mensual" on Monday which: first at 10:00 color: verde
+
+replace "Entrenamiento" on 2025-10-14 with "Entrenamiento cancelado"
+event "Cena con equipo" on 2025-10-28 at 21:00

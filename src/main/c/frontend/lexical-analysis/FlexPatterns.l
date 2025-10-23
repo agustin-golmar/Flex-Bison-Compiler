@@ -5,14 +5,12 @@
 #include "../../support/type/TokenLabel.h"
 #include "../syntactic-analysis/AbstractSyntaxTree.h"
 #include "../syntactic-analysis/BisonParser.h"
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-}
-
-%{
-
-/**
- * @see https://westes.github.io/flex/manual/Definitions-Section.html#Definitions-Section
- */
 
 
 // extern CompilationStatus EnterMultilineCommentLexemeAction(FlexContext context);
@@ -27,7 +25,6 @@ extern CompilationStatus StringLexemeAction();
 extern CompilationStatus TimeLexemeAction();
 extern CompilationStatus DateLexemeAction();
 
-%}
 
 /**
  * Flex contexts (a.k.a. start conditions).
@@ -113,14 +110,44 @@ hex_value           #[0-9A-Fa-f]{6}
 
 {identifier}                        { return StringValueLexemeAction(IDENTIFIER); }
 
-[[:digit:]]+						{ return IntegerLexemeAction(); }
+"day-of-month"                      { return DAY_OF_MONTH; }
+"day-of-week"                       { return DAY_OF_WEEK; }
+
+"color"                             { return COLOR; }
+"description"                       { return DESCRIPTION; }
+
+{month_name}                        { yylval->strVal = strdup(yytext); return MONTH_NAME; }
+{weekday}                           { yylval->strVal = strdup(yytext); return WEEKDAY; }
+{hour}                              { yylval->strVal = strdup(yytext); return HOUR; }
+
+{timezone_name}                     { yylval->strVal = strdup(yytext); return TIMEZONE_NAME; }
+
+{url_pattern}                       { yylval->strVal = strdup(yytext); return URL; }
+
+{string}                            {
+                                        char *s = strdup(yytext);
+                                        s[strlen(s)-1] = '\0';
+                                        yylval->strVal = strdup(s+1);
+                                        free(s);
+                                        return STRING;
+                                    }
+
+{identifier}                        { yylval->strVal = strdup(yytext); return IDENTIFIER; }
+
+[[:digit:]]+                        { yylval->intVal = atoi(yytext); return INTEGER; }
+
+.                                   { 
+                                      fprintf(stderr, "Caracter inesperado: '%s'\n", yytext);
+                                      return UNKNOWN;
+                                    }
+
+<<EOF>>                             { return 0; }
 
 {whitespace}						{ return IgnoredLexemeAction(); }
-.									{ return UnknownLexemeAction(); }
 
-<<EOF>>								{ return EOFLexemeAction(); }
 
 %%
+
 
 /**
  * @see https://westes.github.io/flex/manual/User-Code-Section.html#User-Code-Section

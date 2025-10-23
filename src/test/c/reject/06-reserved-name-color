@@ -1,0 +1,3 @@
+declare color Monday = #00FF00
+
+event "Ejemplo" on 2025-10-21 at 09:00 color: Monday

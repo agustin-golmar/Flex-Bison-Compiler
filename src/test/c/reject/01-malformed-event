@@ -1,4 +1,4 @@
 year 2025 { month August {
-  event X on 10 from 10:00 to 11:00
+  event X on 10 from 10:00 to 11:00 { color red }
 }
 

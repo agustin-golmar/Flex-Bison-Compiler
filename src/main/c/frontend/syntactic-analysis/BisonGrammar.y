@@ -1,4 +1,7 @@
 %{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "../../support/type/TokenLabel.h"
 #include "AbstractSyntaxTree.h"
@@ -24,9 +27,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %locations
 
 %union {
-	/** Terminals. */
 
-	signed int integer;
+    signed int integer;
 	TokenLabel token;
 	char * strVal;
 
@@ -60,6 +62,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  * grammar), or it will drop the entire tree even if the parsing succeeds.
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
+ *
+ * Por ahora no tengo destructores.
  */
 %destructor { destroyEventBody($$); } <event_body>
 %destructor { destroyDayList($$); } <day_list>
@@ -117,7 +121,6 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <strVal> URL_PATTERN
 
 %token <token> IGNORED
-%token <token> UNKNOWN
 
 /** Non-terminals. */
 
@@ -221,3 +224,4 @@ event_prop: COLOR IDENTIFIER								{ $$ = ColorSemanticAction($2); }
 
 
 %%
+

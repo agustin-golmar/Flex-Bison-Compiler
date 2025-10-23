@@ -1,0 +1,5 @@
+event "Pago de alquiler" on 1 October 2025
+event "Pago de alquiler duplicado" on 1 oct 2025
+event "Pago de alquiler repetido" on 1 OCTOBER 2025
+
+REVISAR SI LA MANTENEMOS, HAY QUE IMPLEMENTARLO TODAVIA
