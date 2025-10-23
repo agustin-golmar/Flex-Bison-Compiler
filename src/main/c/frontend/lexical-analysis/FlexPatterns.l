@@ -51,7 +51,7 @@ time                {digit}{digit}:{digit}{digit}
 date                [0-9]{4}-[0-9]{2}-[0-9]{2}
 month_name          (January|February|March|April|May|June|July|August|September|October|November|December)
 weekday             (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)
-timezone_name       ([A-Z]{1,5}[\+\-][0-9]{1,2}|hola)
+timezone_name       ([A-Z]{1,5}[\+\-][0-9]{1,2})
 url_pattern         https?:\/\/[A-Za-z0-9\.\-_/]+
 string              \"([^\"\\]|\\.)*\"
 hex_value           #[0-9A-Fa-f]{6}
