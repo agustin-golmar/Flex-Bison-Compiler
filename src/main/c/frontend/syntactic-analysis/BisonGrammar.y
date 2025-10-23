@@ -31,11 +31,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	char * strVal;
 
 
-	/** Non-terminals. */
 
-	Constant * constant;
-	Expression * expression;
-	Factor * factor;
+	/** Non-terminals. */
 
 	Program * program;
 	Header * header;
@@ -53,6 +50,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	DayList * day_list;
 	EventBody * event_body;
 	EventProp * event_prop;
+	Time * time;
 }
 
 /**
@@ -63,37 +61,25 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
-%destructor { destroyConstant($$); } <constant>
-%destructor { destroyExpression($$); } <expression>
-%destructor { destroyFactor($$); } <factor>
-
 %destructor { destroyEventBody($$); } <event_body>
-
 %destructor { destroyDayList($$); } <day_list>
+%destructor { destroyTime($$); } <time>
+%destructor { destroyEventSpec($$); } <event_spec>
 %destructor { destroyEventDecl($$); } <event_decl>
 %destructor { destroyOverrideDecl($$); } <override_decl>
 %destructor { destroyStatements($$); } <statements>
 %destructor { destroyStatement($$); } <statement>
 %destructor { destroyMonthBlocks($$); } <month_blocks>
 %destructor { destroyMonthBlock($$); } <month_block>
-%destructor { destroyYearBlock($$); } <year_block
+%destructor { destroyYearBlock($$); } <year_block>
 %destructor { destroyColorList($$); } <color_list>
 %destructor { destroyColorDef($$); } <color_def>
 %destructor { destroyTimezoneDecl($$); } <timezone_decl>
 %destructor { destroyHeader($$); } <header>
+%destructor { destroyString($$); } <strVal>
 
 
 /** Terminals. */
-%token <token> ADD
-%token <token> CLOSE_BRACE
-%token <token> CLOSE_COMMENT
-%token <token> CLOSE_PARENTHESIS
-%token <token> DIV
-%token <token> MUL
-%token <token> OPEN_BRACE
-%token <token> OPEN_COMMENT
-%token <token> OPEN_PARENTHESIS
-%token <token> SUB
 
 %token <integer> INTEGER
 %token <token> LBRACE
@@ -116,7 +102,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> STARTING
 %token <token> ONLY
 %token <token> IF
-%token <token> DAY_OF_MONTH
+%token <integer> DAY_OF_MONTH
 %token <strVal> DAY_OF_WEEK
 %token <token> DEFINE
 %token <token> COLOR
@@ -135,9 +121,6 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> UNKNOWN
 
 /** Non-terminals. */
-%type <constant> constant
-%type <expression> expression
-%type <factor> factor
 
 %type <program> program
 %type <header> header
@@ -155,6 +138,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <day_list> day_list
 %type <event_body> event_body
 %type <event_prop> event_prop
+%type <time> time
 
 /**
  * Precedence and associativity.
@@ -162,8 +146,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  * @see https://en.cppreference.com/w/cpp/language/operator_precedence.html
  * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
  */
-%left ADD SUB
-%left MUL DIV
+
 
 %%
 
@@ -214,10 +197,14 @@ event_decl:
 override_decl: OVERRIDE IDENTIFIER LBRACE event_body RBRACE		{ $$ = CreateOverrideSemanticAction($2, $4); }
 	;
 
-event_spec: ON day_list FROM TIME TO TIME					{ $$ = EventSpecificsSemanticAction($2, $4, $6); }
-	| ON day_list AT TIME 									{ $$ = PuntualEventSemanticAction($2, $4); }
-	| EVERY INTEGER day_list STARTING FROM INTEGER		{ $$ = RecurrentEventSemanticAction($2, $3, $6); }
+event_spec: ON day_list FROM time TO time					{ $$ = DayListSpecSemanticAction($2, $4, $6); }
+	| ON DAY_OF_MONTH FROM time TO time						{ $$ = DayOfMonthSpecSemanticAction($2, $4, $6); }
 	;
+
+time:
+    TIME 													{ $$ = TimeSemanticAction($1); }
+    ;
+
 
 day_list: DAY_OF_WEEK										{ $$ = SingleDayStringSemanticAction($1); }
 	| day_list AND DAY_OF_WEEK								{ $$ = AppendDayStringSemanticAction($1, $3); }
@@ -233,21 +220,5 @@ event_prop: COLOR IDENTIFIER								{ $$ = ColorSemanticAction($2); }
 	;
 
 
-
-//--------------------VIEJO-----------------------
-expression: expression[left] ADD expression[right]			{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| expression[left] DIV expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| expression[left] MUL expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| expression[left] SUB expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| factor												{ $$ = FactorExpressionSemanticAction($1); }
-	;
-
-factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS		{ $$ = ExpressionFactorSemanticAction($2); }
-	| constant												{ $$ = ConstantFactorSemanticAction($1); }
-	;
-
-constant: INTEGER											{ $$ = IntegerConstantSemanticAction($1); }
-  |  TEST                           { $$ = TestConstantSemanticAction(); }
-	;
 
 %%

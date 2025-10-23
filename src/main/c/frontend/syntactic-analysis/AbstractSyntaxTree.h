@@ -14,12 +14,6 @@ ModuleDestructor initializeAbstractSyntaxTreeModule();
  * person, but without the madness).
  */
 
-typedef enum ExpressionType ExpressionType;
-typedef enum FactorType FactorType;
-
-typedef struct Constant Constant;
-typedef struct Expression Expression;
-typedef struct Factor Factor;
 
 //NUEVO
 /* ENUM */
@@ -54,42 +48,6 @@ typedef struct EventProp EventProp;
  * Node types for the Abstract Syntax Tree (AST).
  */
 
-enum ExpressionType {
-	ADDITION,
-	DIVISION,
-	FACTOR,
-	MULTIPLICATION,
-	SUBTRACTION
-};
-
-
-enum FactorType {
-	CONSTANT,
-	EXPRESSION
-};
-
-struct Constant {
-	int value;
-};
-
-struct Factor {
-	union {
-		Constant * constant;
-		Expression * expression;
-	};
-	FactorType type;
-};
-
-struct Expression {
-	union {
-		Factor * factor;
-		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
-		};
-	};
-	ExpressionType type;
-};
 
 // ________________________________
 // ________________________________
@@ -105,9 +63,8 @@ enum StatementType{
 
 
 enum EventSpecType {
-	NORMAL,
-	PUNTUAL,
-	RECURRENT
+	SPEC_DAYLIST,
+	SPEC_DAYOFMONTH
 }; 
 
 enum EventPropType {
@@ -197,13 +154,12 @@ struct OverrideDecl {
 
 struct EventSpec {
 	EventSpecType type;
-	DayList * dayList;
 	union {
-		Time start;
-		Time end;
-		int recurrence;
-		int startingDay;
+		DayList * dayList;
+		int dayOfMonth;
 	};
+	Time * start;
+	Time * end;
 };
 
 struct DayList {
@@ -235,13 +191,11 @@ struct EventProp {
  * Node recursive super-duper-trambolik-destructors.
  */
 
-void destroyConstant(Constant * constant);
-void destroyExpression(Expression * expression);
-void destroyFactor(Factor * factor);
 
 void destroyEventBody(EventBody * body);
-
 void destroyDayList(DayList * dayList);
+void destroyTime(Time * time);
+void destroyEventSpec(EventSpec * spec);
 void destroyOverrideDecl(OverrideDecl * override);
 void destroyEventDecl(EventDecl * event);
 void destroyStatement(Statement * statement);
@@ -255,5 +209,6 @@ void destroyColorList(ColorList * colorList);
 void destroyTimezoneDecl(TimezoneDecl * timezoneDecl);
 void destroyHeader(Header * header);
 void destroyProgram(Program * program);
+void destroyString(char * s);
 
 #endif

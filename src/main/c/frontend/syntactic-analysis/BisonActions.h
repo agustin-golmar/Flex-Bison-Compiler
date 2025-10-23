@@ -16,19 +16,16 @@ ModuleDestructor initializeBisonActionsModule();
  * Bison semantic actions.
  */
 
-Constant * IntegerConstantSemanticAction(const int value);
-Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
-Expression * FactorExpressionSemanticAction(Factor * factor);
-Factor * ConstantFactorSemanticAction(Constant * constant);
-Factor * ExpressionFactorSemanticAction(Expression * expression);
-Program * ExpressionProgramSemanticAction(Expression * expression);
+// Constant * IntegerConstantSemanticAction(const int value);
+// Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
+// Expression * FactorExpressionSemanticAction(Factor * factor);
+// Factor * ConstantFactorSemanticAction(Constant * constant);
+// Factor * ExpressionFactorSemanticAction(Expression * expression);
+// Program * ExpressionProgramSemanticAction(Expression * expression);
 
-Constant * TestConstantSemanticAction();
-Program * EventSemanticAction(int value);
-Statement * EventStatementSemanticAction(Event * event);
-//Event * IntegerEventSemanticAction(int value); //vuela
+// Constant * TestConstantSemanticAction();
+// Program * EventSemanticAction(int value);
 
-Program * StatementProgramSemanticAction(Statement * statement);
 
 EventProp * ColorSemanticAction(char * colorId); 
 EventProp * DescriptionSemanticAction(char * description);
@@ -37,7 +34,10 @@ EventBody * EventBodySingleSemanticAction(EventProp * prop);
 EventBody * EventBodyAppendSemanticAction(EventBody * body, EventProp * prop);
 DayList * SingleDayStringSemanticAction(const char * dayName);
 DayList * AppendDayStringSemanticAction(DayList * dayList, const char * dayName);
-OverrideDecl * CreateOverrideSemanticActio(char * identifier, EventBody * body);
+Time * TimeSemanticAction(char * timeString);
+EventSpec * DayListSpecSemanticAction(DayList * dayList, Time * start, Time * end);
+EventSpec * DayOfMonthSpecSemanticAction(int dayOfMonth, Time * start, Time * end);
+OverrideDecl * CreateOverrideSemanticAction(char * identifier, EventBody * body);
 EventDecl * CreateEventSemanticAction(char * indentifier, EventSpec * spec, EventBody * body);
 Statement * OverrideStatementSemanticAction(OverrideDecl * override);
 Statement * EventStatementSemanticAction(EventDecl * event);

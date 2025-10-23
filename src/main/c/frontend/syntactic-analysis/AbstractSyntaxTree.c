@@ -20,56 +20,6 @@ ModuleDestructor initializeAbstractSyntaxTreeModule() {
 
 /* PUBLIC FUNCTIONS */
 
-void destroyConstant(Constant * constant) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (constant != NULL) {
-		free(constant);
-	}
-}
-
-void destroyExpression(Expression * expression) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (expression != NULL) {
-		switch (expression->type) {
-			case ADDITION:
-			case DIVISION:
-			case MULTIPLICATION:
-			case SUBTRACTION:
-				destroyExpression(expression->leftExpression);
-				destroyExpression(expression->rightExpression);
-				break;
-			case FACTOR:
-				destroyFactor(expression->factor);
-				break;
-		}
-		free(expression);
-	}
-}
-
-void destroyFactor(Factor * factor) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (factor != NULL) {
-		switch (factor->type) {
-			case CONSTANT:
-				destroyConstant(factor->constant);
-				break;
-			case EXPRESSION:
-				destroyExpression(factor->expression);
-				break;
-		}
-		free(factor);
-	}
-}
-
-// void destroyProgram(Program * program) {
-// 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-// 	if (program != NULL) {
-// 		destroyStatement(program->firstStatement);
-// 		free(program);
-// 	}
-// }
-
-
 /* Nuevos destructores*/
 void destroyEventBody(EventBody * body) {
     if (body == NULL) return;
@@ -87,11 +37,33 @@ void destroyEventBody(EventBody * body) {
 }
 
 void destroyDayList(DayList * dayList) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (dayList == NULL)
         return;
     free(dayList);
 }
 
+void destroyTime(Time * time){
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (time == NULL){
+		return;
+	}
+	free(time);
+}
+
+void destroyEventSpec(EventSpec * spec) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (spec == NULL){
+		return;
+	}
+	switch (spec->type) {
+		case SPEC_DAYLIST: destroyDayList(spec->dayList); break;
+		case SPEC_DAYOFMONTH: break;
+	}
+	destroyTime(spec->start);
+	destroyTime(spec->end);
+	free(spec);
+}
 
 void destroyOverrideDecl(OverrideDecl * override) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
@@ -235,4 +207,12 @@ void destroyProgram(Program * program) {
 
 	destroyYearBlock(program->yearBlock);
     free(program);
+}
+
+void destroyString(char * s){
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if(s == NULL){
+		return;
+	}
+	free(s);
 }

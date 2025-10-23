@@ -14,22 +14,19 @@
  * @see https://westes.github.io/flex/manual/Definitions-Section.html#Definitions-Section
  */
 
-extern CompilationStatus ArithmeticOperatorLexemeAction(TokenLabel label);
-extern CompilationStatus EnterImportExpressionLexemeAction(FlexContext context);
-extern CompilationStatus EnterMultilineCommentLexemeAction(FlexContext context);
+
+// extern CompilationStatus EnterMultilineCommentLexemeAction(FlexContext context);
 extern CompilationStatus EOFLexemeAction();
 extern CompilationStatus IgnoredLexemeAction();
 extern CompilationStatus IntegerLexemeAction();
-extern CompilationStatus LeaveImportExpressionLexemeAction();
-extern CompilationStatus LeaveMultilineCommentLexemeAction();
-extern CompilationStatus ParenthesisLexemeAction(TokenLabel label);
-extern CompilationStatus SubexpressionLexemeAction();
+// extern CompilationStatus LeaveMultilineCommentLexemeAction();
 extern CompilationStatus UnknownLexemeAction();
 extern CompilationStatus TokenLexemeAction(TokenLabel label);
 extern CompilationStatus StringValueLexemeAction(TokenLabel label);
 extern CompilationStatus StringLexemeAction();
 extern CompilationStatus TimeLexemeAction();
 extern CompilationStatus DateLexemeAction();
+extern CompilationStatus DayOfMonthLexemeAction();
 
 %}
 
@@ -70,24 +67,9 @@ hex_value           #[0-9A-Fa-f]{6}
 
 %}
 
-"{"									{ return EnterImportExpressionLexemeAction(IMPORT_EXPRESSION); }
-<IMPORT_EXPRESSION>[^{}]+			{ return SubexpressionLexemeAction(); }
-<IMPORT_EXPRESSION>"}"				{ return LeaveImportExpressionLexemeAction(); }
-<IMPORT_EXPRESSION>.				{ return UnknownLexemeAction(); }
 
-"/*"								{ return EnterMultilineCommentLexemeAction(MULTILINE_COMMENT); }
-<MULTILINE_COMMENT>"*/"				{ return LeaveMultilineCommentLexemeAction(); }
-<MULTILINE_COMMENT>[^*]+			{ return IgnoredLexemeAction(); }
-<MULTILINE_COMMENT>.				{ return IgnoredLexemeAction(); }
-
-"-"									{ return ArithmeticOperatorLexemeAction(SUB); }
-"*"									{ return ArithmeticOperatorLexemeAction(MUL); }
-"/"									{ return ArithmeticOperatorLexemeAction(DIV); }
-"+"									{ return ArithmeticOperatorLexemeAction(ADD); }
-
-"("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS); }
-")"									{ return ParenthesisLexemeAction(CLOSE_PARENTHESIS); }
-
+"{"                                 { return TokenLexemeAction(LBRACE); }
+"}"                                 { return TokenLexemeAction(RBRACE); }
 
 "test"              { return TokenLexemeAction(TEST); }
 
@@ -119,8 +101,8 @@ hex_value           #[0-9A-Fa-f]{6}
 
 {month_name}                        { return StringValueLexemeAction(MONTH_NAME); }
 {weekday}                           { return StringValueLexemeAction(DAY_OF_WEEK); }
-{time}                              { return TimeLexemeAction(); }  //revisar, ver si paso la string o el struct ya armado
-{date}                              { return DateLexemeAction(); }  //revisar, misma
+{time}                              { return TimeLexemeAction(); }
+{date}                              { return DateLexemeAction(); }  //revisar, misma (por ahora no se usa)
 
 {timezone_name}                     { return StringValueLexemeAction(TIMEZONE_NAME); }
 

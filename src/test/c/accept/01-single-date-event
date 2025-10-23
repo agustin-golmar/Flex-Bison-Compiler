@@ -1,7 +1,7 @@
-timezone America/Argentina/Buenos_Aires
-year 2025 { 
+
+year 2025 {
     month August {
-        event Examen Parcial on 10 from 09:00 to 11:00 { color red }
+        event ExamenParcial on Monday from 09:00 to 11:00 { color red }
     }
 }
 

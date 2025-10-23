@@ -40,103 +40,72 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 
 /* PUBLIC FUNCTIONS */
 
-Constant * IntegerConstantSemanticAction(const int value) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Constant * constant = calloc(1, sizeof(Constant));
-	constant->value = value;
-	return constant;
-}
+// Constant * IntegerConstantSemanticAction(const int value) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	Constant * constant = calloc(1, sizeof(Constant));
+// 	constant->value = value;
+// 	return constant;
+// }
 
-Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Expression * expression = calloc(1, sizeof(Expression));
-	expression->leftExpression = leftExpression;
-	expression->rightExpression = rightExpression;
-	expression->type = type;
-	return expression;
-}
+// Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	Expression * expression = calloc(1, sizeof(Expression));
+// 	expression->leftExpression = leftExpression;
+// 	expression->rightExpression = rightExpression;
+// 	expression->type = type;
+// 	return expression;
+// }
 
-Expression * FactorExpressionSemanticAction(Factor * factor) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Expression * expression = calloc(1, sizeof(Expression));
-	expression->factor = factor;
-	expression->type = FACTOR;
-	return expression;
-}
+// Expression * FactorExpressionSemanticAction(Factor * factor) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	Expression * expression = calloc(1, sizeof(Expression));
+// 	expression->factor = factor;
+// 	expression->type = FACTOR;
+// 	return expression;
+// }
 
-Factor * ConstantFactorSemanticAction(Constant * constant) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Factor * factor = calloc(1, sizeof(Factor));
-	factor->constant = constant;
-	factor->type = CONSTANT;
-	return factor;
-}
+// Factor * ConstantFactorSemanticAction(Constant * constant) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	Factor * factor = calloc(1, sizeof(Factor));
+// 	factor->constant = constant;
+// 	factor->type = CONSTANT;
+// 	return factor;
+// }
 
-Factor * ExpressionFactorSemanticAction(Expression * expression) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Factor * factor = calloc(1, sizeof(Factor));
-	factor->expression = expression;
-	factor->type = EXPRESSION;
-	return factor;
-}
+// Factor * ExpressionFactorSemanticAction(Expression * expression) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	Factor * factor = calloc(1, sizeof(Factor));
+// 	factor->expression = expression;
+// 	factor->type = EXPRESSION;
+// 	return factor;
+// }
 
-Program * ExpressionProgramSemanticAction(Expression * expression) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Program * program = calloc(1, sizeof(Program));
-	//program->expression = expression;
-	_compilerState->abstractSyntaxtTree = program;
-	return program;
-}
+// Program * ExpressionProgramSemanticAction(Expression * expression) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	Program * program = calloc(1, sizeof(Program));
+// 	//program->expression = expression;
+// 	_compilerState->abstractSyntaxtTree = program;
+// 	return program;
+// }
 
 // _________________________
 // -----------NUEVO---------
 // ________________________
 
 
-Constant * TestConstantSemanticAction() {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Constant * constant = calloc(1, sizeof(Constant));
-	constant->value = 1;
-	return constant;
-}
-
-//testeando
-Program * EventSemanticAction(int value) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Factor * factor = ConstantFactorSemanticAction(IntegerConstantSemanticAction(1));
-	Expression * expression = FactorExpressionSemanticAction(factor);
-	return ExpressionProgramSemanticAction(expression);
-}
-
-Statement * EventStatementSemanticAction(Event * event){
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Statement * statement = calloc(1, sizeof(Statement));
-	statement->type = STATEMENT_EVENT;
-	statement->event = event;
-	return statement;
-}
-
-// Event * IntegerEventSemanticAction(int value){
+// Constant * TestConstantSemanticAction() {
 // 	_logSyntacticAnalyzerAction(__FUNCTION__);
-// 	Event * event = calloc(1, sizeof(Event));
-// 	event->value = value;
-// 	return event;
+// 	Constant * constant = calloc(1, sizeof(Constant));
+// 	constant->value = 1;
+// 	return constant;
 // }
 
-Program * StatementProgramSemanticAction(Statement * statement){
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Program * program = calloc(1, sizeof(Program));
-	program->firstStatement = statement;
-	_compilerState->abstractSyntaxtTree = program;
-	return program;
-}
-//vuela
-// Event * CreateEventSemanticAction(char * name) {
+// //testeando
+// Program * EventSemanticAction(int value) {
 // 	_logSyntacticAnalyzerAction(__FUNCTION__);
-// 	Event * event = calloc(1, sizeof(Event));
-// 	char * copy = strdup(name);
-// 	event->name = copy;
-// 	return event;
+// 	Factor * factor = ConstantFactorSemanticAction(IntegerConstantSemanticAction(1));
+// 	Expression * expression = FactorExpressionSemanticAction(factor);
+// 	return ExpressionProgramSemanticAction(expression);
 // }
 
 
@@ -146,7 +115,7 @@ EventProp * ColorSemanticAction(char * colorId) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     EventProp * prop = calloc(1, sizeof(EventProp));
     prop->type = EVENT_PROP_COLOR;
-    prop->colorId = strdup(colorId);
+    prop->colorId = colorId;
     return prop;
 }
 
@@ -154,7 +123,7 @@ EventProp * DescriptionSemanticAction(char * description) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     EventProp * prop = calloc(1, sizeof(EventProp));
     prop->type = EVENT_PROP_DESCRIPTION;
-    prop->description = strdup(description);
+    prop->description = description;
     return prop;
 }
 
@@ -162,7 +131,7 @@ EventProp * UrlSemanticAction(char * url) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     EventProp * prop = calloc(1, sizeof(EventProp));
     prop->type = EVENT_PROP_URL;
-    prop->url = strdup(url);
+    prop->url = url;
     return prop;
 }
 
@@ -185,15 +154,15 @@ EventBody * EventBodyAppendSemanticAction(EventBody * body, EventProp * prop) {
     _logSyntacticAnalyzerAction(__FUNCTION__);
     switch (prop->type) {
         case EVENT_PROP_COLOR:
-            if (body->colorId != NULL) syntaxError("Color already defined in event body");
+            if (body->colorId != NULL) logError(_logger, "Color already defined in event body");
             body->colorId = prop->colorId;
             break;
         case EVENT_PROP_DESCRIPTION:
-            if (body->description != NULL) syntaxError("Description already defined in event body");
+            if (body->description != NULL) logError(_logger, "Description already defined in event body");
             body->description = prop->description;
             break;
         case EVENT_PROP_URL:
-            if (body->url != NULL) syntaxError("URL already defined in event body");
+            if (body->url != NULL) logError(_logger, "URL already defined in event body");
             body->url = prop->url;
             break;
     }
@@ -222,6 +191,7 @@ DayList * SingleDayStringSemanticAction(const char * dayName) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
     int day = DayOfWeekStringToNumber(dayName);
     if (day == 0) return NULL; // error
+	free(dayName);
     return SingleDaySemanticAction(day);
 }
 
@@ -253,13 +223,43 @@ static DayList * AppendDaySemanticAction(DayList * dayList, int day) {
     return dayList;
 }
 
+Time * TimeSemanticAction(char * timeString) {
+    _logSyntacticAnalyzerAction(__FUNCTION__);
+    int hour, minute;
+    sscanf(timeString, "%d:%d", &hour, &minute); 
+    Time * time = calloc(1, sizeof(Time));
+    time->hour = hour;
+    time->minute = minute;
+	free(timeString);
+    return time;
+}
 
 
+EventSpec * DayListSpecSemanticAction(DayList * dayList, Time * start, Time * end){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	EventSpec * spec = calloc(1, sizeof(EventSpec));
+	spec->type = SPEC_DAYLIST;
+	spec->dayList = dayList;
+	spec->start = start;
+	spec->end = end;
+	return spec;
+}
 
-OverrideDecl * CreateOverrideSemanticActio(char * identifier, EventBody * body) {
+EventSpec * DayOfMonthSpecSemanticAction(int dayOfMonth, Time * start, Time * end){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	EventSpec * spec = calloc(1, sizeof(EventSpec));
+	spec->type = SPEC_DAYOFMONTH;
+	spec->dayOfMonth = dayOfMonth;
+	spec->start = start;
+	spec->end = end;
+	return spec;
+}
+
+
+OverrideDecl * CreateOverrideSemanticAction(char * identifier, EventBody * body) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	OverrideDecl * override = calloc(1, sizeof(OverrideDecl));
-	override->identifier = strdup(identifier);
+	override->identifier = identifier;
 	override->eventBody = body;
 	return override;
 }
@@ -267,7 +267,7 @@ OverrideDecl * CreateOverrideSemanticActio(char * identifier, EventBody * body) 
 EventDecl * CreateEventSemanticAction(char * identifier, EventSpec * spec, EventBody * body) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	EventDecl * event = calloc(1, sizeof(EventDecl));
-	event->identifier = strdup(identifier);
+	event->identifier = identifier;
 	event->eventSpec = spec;
 	event->eventBody = body;
 	return event;
@@ -352,10 +352,11 @@ MonthBlock * StatementsMonthNameSemanticAction(char * monthName, Statements * st
     } else if (strcmp(monthName, "December") == 0) {
         month = 12;
     } else {
-        _logSyntacticAnalyzerError("Unknown month name in StatementsMonthNameSemanticAction");
+        logError(_logger, "Unknown month name in StatementsMonthNameSemanticAction");
         return NULL;
     }
 
+	free(monthName);
 	return StatementsMonthIntegerSemanticAction(month, statements);
 }
 
@@ -374,7 +375,7 @@ MonthBlocks * AppendMonthBlockSemanticAction(MonthBlocks * monthBlocks, MonthBlo
     // }
     int index = monthBlock->month - 1;
     if (monthBlocks->months[index] != NULL) {
-        _logSyntacticAnalyzerError("Duplicate month declaration in AppendMonthBlockSemanticAction");
+        logError(_logger, "Duplicate month declaration in AppendMonthBlockSemanticAction");
         return monthBlocks;
     }
     monthBlocks->months[index] = monthBlock;
@@ -393,8 +394,8 @@ ColorDef * DefineColorSemanticAction(char * identifier, char * hexColor) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ColorDef * colorDef = calloc(1, sizeof(ColorDef));
 	Color * color = calloc(1, sizeof(Color));
-	color->name = strdup(identifier);
-	color->hexValue = strdup(hexColor);
+	color->name = identifier;
+	color->hexValue = hexColor;
 	colorDef->color = color;
 	colorDef->next = NULL;
 	return colorDef;
@@ -437,6 +438,7 @@ Program * CreateProgramSemanticAction(Header * header, YearBlock * yearBlock) {
 	Program * program = calloc(1, sizeof(Program));
 	program->header = header;
 	program->yearBlock = yearBlock;
+	_compilerState->abstractSyntaxtTree = program;
 	return program;
 }
 

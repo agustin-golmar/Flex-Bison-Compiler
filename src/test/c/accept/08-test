@@ -1,1 +1,5 @@
-event "Entrenamiento"
+year 2025 { 
+    month August {
+        event Examen on Monday from 09:00 to 11:00 { description "rezaMalena" }
+    }
+}

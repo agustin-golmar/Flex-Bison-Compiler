@@ -10,11 +10,11 @@
 #include <stdio.h>
 
 /** Initialize module's internal state. */
-ModuleDestructor initializeGeneratorModule();
+// ModuleDestructor initializeGeneratorModule();
 
 /**
  * Generates the final output using the current compiler state.
  */
-void executeGenerator(CompilerState * compilerState);
+// void executeGenerator(CompilerState * compilerState);
 
 #endif
