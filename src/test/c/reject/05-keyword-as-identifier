@@ -1,9 +1,9 @@
-timezone America/Argentina/Buenos_Aires
-declare color Monday: #123456
+timezone GMT+4
+define color Monday #123456
 
 year 2025 { 
     month August {
-        event "Test" on Monday from 10:00 to 11:00 { color Monday }
+        event Test on Monday from 10:00 to 11:00 { color Monday }
     }
 }
 

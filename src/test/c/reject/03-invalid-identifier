@@ -1,0 +1,5 @@
+year 2025 { 
+    month February {
+        event 45Algo on Monday from 10:00 to 11:00 { color white }
+    }
+}
