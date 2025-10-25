@@ -1,0 +1,6 @@
+class myClass {
+    constructor (int a, int b) {
+        int c;
+        c = a + b;
+    }
+}

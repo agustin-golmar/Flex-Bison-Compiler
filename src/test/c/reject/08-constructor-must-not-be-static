@@ -1,0 +1,7 @@
+class myClass {
+    public int a;
+
+    public static constructor(int b) {
+        this->a = b;
+    }
+}

@@ -1,0 +1,5 @@
+class myClass {
+    constructor() {
+        this->undef = 0;
+    }
+}

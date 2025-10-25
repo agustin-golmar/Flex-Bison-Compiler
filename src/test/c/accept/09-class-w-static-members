@@ -1,0 +1,12 @@
+class simpleCalculator {
+    public static int ZERO = 42;
+
+    static int sum(int num1, int num2)
+    {
+        return num1 + num2;
+    }
+
+    static int sub(int num1, int num2) {
+        return num1 - num2;
+    }
+}

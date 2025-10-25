@@ -1,0 +1,7 @@
+class myClass {
+    public int a;
+
+    constructor(int b) {
+        this->a = c;
+    }
+}

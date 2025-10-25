@@ -86,6 +86,24 @@ CompilationStatus EOFLexemeAction() {
 	return status;
 }
 
+CompilationStatus StringLiteralLexemeAction() {
+    Token * token = createToken(_lexicalAnalyzer, STRING_LITERAL);
+    
+    if (token->length >= 2) {
+        memmove(token->lexeme, token->lexeme + 1, token->length - 2);
+        token->lexeme[token->length - 2] = '\0';
+        token->length -= 2;
+    }
+    char * string_value = calloc(1, token->length + 1);
+    strcpy(string_value, token->lexeme);
+    token->semanticValue->string_literal = string_value;
+    
+    _logTokenAction(__FUNCTION__, token);
+    CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+    destroyToken(token);
+    return status;
+}
+
 CompilationStatus IgnoredLexemeAction() {
 	if (_logIgnoredLexemes) {
 		Token * token = createToken(_lexicalAnalyzer, IGNORED);
@@ -138,7 +156,15 @@ CompilationStatus KeyWordLexemeAction(TokenLabel label) {
 }
 
 CompilationStatus ObjectAccessExpressionLexemeAction() {
-	Token * token = createToken(_lexicalAnalyzer, ACCESS_OBJECT_PROPERTY);
+	Token * token = createToken(_lexicalAnalyzer, ARROW);
+	_logTokenAction(__FUNCTION__, token);
+	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+	destroyToken(token);
+	return status;
+}
+
+CompilationStatus FieldAccessExpressionLexemeAction() {
+	Token * token = createToken(_lexicalAnalyzer, DOT);
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
 	destroyToken(token);
@@ -161,8 +187,8 @@ CompilationStatus PunctuatorLexemeAction(TokenLabel label) {
 	return status;
 }
 
-CompilationStatus AlphaNumericLexemeAction() {
-	Token * token = createToken(_lexicalAnalyzer, ALPHANUMERIC);
+CompilationStatus IdentifierLexemeAction() {
+	Token * token = createToken(_lexicalAnalyzer, IDENTIFIER);
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
 	destroyToken(token);

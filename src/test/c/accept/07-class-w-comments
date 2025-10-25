@@ -1,0 +1,11 @@
+// A simple class with comments
+class myClass {
+    // This is a variable
+    private int a;
+
+    // This is a constructor
+    constructor(int a) {
+        // Assignment
+        this->a = a;
+    }
+}

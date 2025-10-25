@@ -1,0 +1,7 @@
+class myClass {
+    static public int shouldBePublicStatic;
+
+    constructor(int b) {
+        this->shouldBePublicStatic = b;
+    }
+}

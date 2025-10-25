@@ -1,0 +1,3 @@
+class myClass {
+    public constructor() {
+}

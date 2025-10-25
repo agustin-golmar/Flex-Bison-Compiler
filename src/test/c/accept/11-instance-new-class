@@ -1,0 +1,22 @@
+class myClass {
+    private int a;
+
+    constructor(int a) {
+        this->a = a;
+    }
+
+    public int getA() {
+        return this->a;
+    }
+
+    public void setA(int n) {
+        this->a = n;
+        return ;
+    }
+}
+
+int main() {
+    myClass obj = new myClass(10);
+    obj->setA(20);
+    return obj->getA();
+}

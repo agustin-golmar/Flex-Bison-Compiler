@@ -1,0 +1,9 @@
+int main() {
+    int a = 0;
+    // This is surprisingly valid C code
+    if (a > 0) for (int i = 0; i < a; i = i + 1) {
+        a = a + i;
+    } else if (a < 5) do {
+        a = a + 1;
+    } while (a < 10);
+}

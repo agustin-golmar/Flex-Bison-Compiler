@@ -16,11 +16,28 @@ ModuleDestructor initializeAbstractSyntaxTreeModule();
 
 typedef enum ExpressionType ExpressionType;
 typedef enum FactorType FactorType;
+typedef enum ProgramType ProgramType;
+typedef enum BlockType BlockType;
+typedef enum MemberType MemberType;
+typedef enum StatementType StatementType;
+typedef enum TypeSpecifierType TypeSpecifierType;
+typedef enum AccessSpecifierType AccessSpecifierType;
 
 typedef struct Constant Constant;
 typedef struct Expression Expression;
 typedef struct Factor Factor;
 typedef struct Program Program;
+typedef struct BlockDeclaration BlockDeclaration;
+typedef struct ClassDeclaration ClassDeclaration;
+typedef struct ClassBody ClassBody;
+typedef struct MemberDeclaration MemberDeclaration;
+typedef struct FieldDeclaration FieldDeclaration;
+typedef struct MethodDeclaration MethodDeclaration;
+typedef struct Statement Statement;
+typedef struct TypeSpecifier TypeSpecifier;
+typedef struct AccessSpecifier AccessSpecifier;
+typedef struct Parameter Parameter;
+typedef struct ArgumentList ArgumentList;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
@@ -31,12 +48,78 @@ enum ExpressionType {
 	DIVISION,
 	FACTOR,
 	MULTIPLICATION,
-	SUBTRACTION
+	SUBTRACTION,
+	GREATER_THAN_EXPRESSION,
+	LOWER_THAN_EXPRESSION,
+	GREATER_OR_EQUAL_THAN_EXPRESSION,
+	LOWER_OR_EQUAL_THAN_EXPRESSION,
+	EQUAL_EXPRESSION,
+	NOT_EQUAL_EXPRESSION,
+	LOGICAL_AND_EXPRESSION,
+	LOGICAL_OR_EXPRESSION,
+	LOGICAL_NOT_EXPRESSION,
+	ASSIGNMENT,
+	NEGATION,
+	MEMBER_ACCESS,
+	FUNCTION_CALL,
+	IDENTIFIER_EXPRESSION,
+	INTEGER_EXPRESSION,
+	THIS_EXPRESSION,
+	NEW_EXPRESSION,
+	POST_INCREMENT_EXPRESSION,
+	PRE_INCREMENT_EXPRESSION,
+	POST_DECREMENT_EXPRESSION,
+	PRE_DECREMENT_EXPRESSION,
+	EMPTY_EXPRESSION,
+	STRING_LITERAL_EXPRESSION
 };
 
 enum FactorType {
 	CONSTANT,
 	EXPRESSION
+};
+
+enum ProgramType {
+	BLOCK_PROGRAM
+};
+
+enum BlockType {
+	CLASS_BLOCK,
+	METHOD_BLOCK
+};
+
+enum MemberType {
+	FIELD_MEMBER,
+	METHOD_MEMBER,
+	CONSTRUCTOR_MEMBER,
+	DESTRUCTOR_MEMBER
+};
+
+enum StatementType {
+	EXPRESSION_STATEMENT,
+	DECLARATION_STATEMENT,
+	INITIALIZED_DECLARATION_STATEMENT,
+	RETURN_STATEMENT,
+	RETURN_VOID_STATEMENT,
+	COMPOUND_STATEMENT,
+	IF_STATEMENT,
+	FOR_STATEMENT,
+	WHILE_STATEMENT,
+	DO_WHILE_STATEMENT,
+	EMPTY_STATEMENT
+};
+
+enum TypeSpecifierType {
+	INT_TYPE,
+	VOID_TYPE,
+	CHAR_TYPE,
+	STRING_TYPE,
+	IDENTIFIER_TYPE
+};
+
+enum AccessSpecifierType {
+	PRIVATE_ACCESS,
+	PUBLIC_ACCESS
 };
 
 struct Constant {
@@ -58,12 +141,112 @@ struct Expression {
 			Expression * leftExpression;
 			Expression * rightExpression;
 		};
+		struct {
+			char * identifier;
+			ArgumentList * argumentList;
+			union {
+				struct {
+					char * stringLiteralValue;
+					int length;
+				};
+				int integerValue;
+			};
+		};
 	};
 	ExpressionType type;
 };
 
 struct Program {
+	BlockDeclaration * blockDeclaration;
+	ProgramType type;
+};
+
+struct BlockDeclaration {
+	union {
+		ClassDeclaration * classDeclaration;
+		MethodDeclaration * methodDeclaration;
+	};
+	BlockDeclaration * next;
+	BlockType type;
+};
+
+struct ClassDeclaration {
+	char * identifier;
+	ClassBody * classBody;
+};
+
+struct ClassBody {
+	MemberDeclaration * memberList;
+};
+
+struct MemberDeclaration {
+	AccessSpecifier * accessSpecifier;
+	union {
+		FieldDeclaration * fieldDeclaration;
+		MethodDeclaration * methodDeclaration;
+	};
+	MemberType type;
+	MemberDeclaration * next;
+};
+
+struct FieldDeclaration {
+	TypeSpecifier * typeSpecifier;
+	char * identifier;
+	Expression * initializationExpression;
+	int isStatic;
+};
+
+struct MethodDeclaration {
+	TypeSpecifier * returnType;
+	char * identifier;
+	Parameter * parameterList;
+	Statement * statementList;
+	int isStatic;
+};
+
+struct Statement {
+	union {
+		struct {
+			TypeSpecifier * typeSpecifier;
+			char * identifier;
+			Expression * expression;
+		};
+		struct {
+			union {
+				struct { // Conditional statements
+					Expression *condition;
+				};
+				struct { // Loop statements
+					Expression * loopCondition;
+					Statement * initialization;
+					Expression * postIteration;
+				};
+			};
+			Statement *statementList;
+		};
+	};
+	StatementType type;
+	Statement * next;
+};
+
+struct TypeSpecifier {
+	TypeSpecifierType type;
+	char * identifier;
+};
+
+struct AccessSpecifier {
+	AccessSpecifierType type;
+};
+
+struct Parameter {
+	TypeSpecifier * typeSpecifier;
+	char * identifier;
+	Parameter * next;
+};
+
+struct ArgumentList {
 	Expression * expression;
+	ArgumentList * next;
 };
 
 /**
@@ -74,5 +257,17 @@ void destroyConstant(Constant * constant);
 void destroyExpression(Expression * expression);
 void destroyFactor(Factor * factor);
 void destroyProgram(Program * program);
+void destroyBlockDeclaration(BlockDeclaration * blockDeclaration);
+void destroyClassDeclaration(ClassDeclaration * classDeclaration);
+void destroyClassBody(ClassBody * classBody);
+void destroyMemberDeclaration(MemberDeclaration * memberDeclaration);
+void destroyFieldDeclaration(FieldDeclaration * fieldDeclaration);
+void destroyMethodDeclaration(MethodDeclaration * methodDeclaration);
+void destroyStatement(Statement * statement);
+void destroyTypeSpecifier(TypeSpecifier * typeSpecifier);
+void destroyAccessSpecifier(AccessSpecifier * accessSpecifier);
+void destroyParameter(Parameter * parameter);
+void destroyArgumentList(ArgumentList * argumentList);
+void destroyStringValue(char * value);
 
 #endif

@@ -16,19 +16,22 @@
 
 extern CompilationStatus ArithmeticOperatorLexemeAction(TokenLabel label);
 extern CompilationStatus EnterMultilineCommentLexemeAction(FlexContext context);
+extern CompilationStatus EnterStringLexemeAction(FlexContext context);
 extern CompilationStatus EOFLexemeAction();
 extern CompilationStatus IgnoredLexemeAction();
 extern CompilationStatus IntegerLexemeAction();
 extern CompilationStatus LeaveMultilineCommentLexemeAction();
+extern CompilationStatus LeaveStringLexemeAction();
+extern CompilationStatus StringLiteralLexemeAction();
 extern CompilationStatus ParenthesisLexemeAction(TokenLabel label);
 extern CompilationStatus UnknownLexemeAction();
 extern CompilationStatus KeyWordLexemeAction(TokenLabel label);
 extern CompilationStatus BeginOfNewParameterLexemeAction();
 extern CompilationStatus ObjectAccessExpressionLexemeAction();
-extern CompilationStatus EnterFunctionCallExpressionLexemeAction(FlexContext context);
-extern CompilationStatus LeaveFunctionCallExpressionLexemeAction();
 extern CompilationStatus BracketsLexemeAction(TokenLabel label);
 extern CompilationStatus PunctuatorLexemeAction(TokenLabel label);
+extern CompilationStatus IdentifierLexemeAction();
+extern CompilationStatus FieldAccessExpressionLexemeAction();
 
 %}
 
@@ -37,8 +40,6 @@ extern CompilationStatus PunctuatorLexemeAction(TokenLabel label);
  *
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
-%s ALPHANUM_CONTEXT
-%s ALHPANUM_WHITESPACE_CONTEXT
 %x MULTILINE_COMMENT
 
 /**
@@ -59,15 +60,31 @@ whitespace			[[:space:]]+
 
 %}
 
+"//".*                              { return IgnoredLexemeAction(); }
 "/*"								{ return EnterMultilineCommentLexemeAction(MULTILINE_COMMENT); }
 <MULTILINE_COMMENT>"*/"				{ return LeaveMultilineCommentLexemeAction(); }
 <MULTILINE_COMMENT>[^*]+			{ return IgnoredLexemeAction(); }
 <MULTILINE_COMMENT>.				{ return IgnoredLexemeAction(); }
+"++"								{ return ArithmeticOperatorLexemeAction(UNARY_INCREMENT); }
+"--"								{ return ArithmeticOperatorLexemeAction(UNARY_DECREMENT); }
+"!"                                 { return ArithmeticOperatorLexemeAction(LOGICAL_NOT); }
+
+\"([^"\\]|\\.)*\"                   { return StringLiteralLexemeAction(); }                         { return IgnoredLexemeAction(); }
 
 "-"									{ return ArithmeticOperatorLexemeAction(SUB); }
 "*"									{ return ArithmeticOperatorLexemeAction(MUL); }
 "/"									{ return ArithmeticOperatorLexemeAction(DIV); }
 "+"									{ return ArithmeticOperatorLexemeAction(ADD); }
+
+">"                                 { return ArithmeticOperatorLexemeAction(GREATER_THAN); }
+"<"                                 { return ArithmeticOperatorLexemeAction(LOWER_THAN); }
+">="                                { return ArithmeticOperatorLexemeAction(GREATER_OR_EQUAL_THAN); }
+"<="                                { return ArithmeticOperatorLexemeAction(LOWER_OR_EQUAL_THAN); }
+"=="                                { return ArithmeticOperatorLexemeAction(EQUAL); }
+"!="                                { return ArithmeticOperatorLexemeAction(NOT_EQUAL); }
+
+"&&"                                { return ArithmeticOperatorLexemeAction(LOGICAL_AND); }
+"||"                                { return ArithmeticOperatorLexemeAction(LOGICAL_OR); }
 
 "="								    { return ArithmeticOperatorLexemeAction(ASSIGN); }
 
@@ -82,7 +99,6 @@ whitespace			[[:space:]]+
 
 [[:digit:]]+						{ return IntegerLexemeAction(); }
 
-// Keywords
 "class"							    { return KeyWordLexemeAction(CLASS); }
 "new"								{ return KeyWordLexemeAction(NEW); }
 "return"							{ return KeyWordLexemeAction(RETURN); }
@@ -91,17 +107,23 @@ whitespace			[[:space:]]+
 "this"                              { return KeyWordLexemeAction(THIS); }
 "static"                            { return KeyWordLexemeAction(STATIC); }
 "constructor"                       { return KeyWordLexemeAction(CONSTRUCTOR); }
+"if"                                { return KeyWordLexemeAction(IF); }
+"else"                              { return KeyWordLexemeAction(ELSE); }
+"for"                               { return KeyWordLexemeAction(FOR); }
+"while"                             { return KeyWordLexemeAction(WHILE); }
+"do"                                { return KeyWordLexemeAction(DO); }
 "destructor"                        { return KeyWordLexemeAction(DESTRUCTOR); }
 "int"								{ return KeyWordLexemeAction(INT); }
 "void"								{ return KeyWordLexemeAction(VOID); }
 "char"                              { return KeyWordLexemeAction(CHAR); }
+"string"                            { return KeyWordLexemeAction(STRING_T); }
 
-// Object access
 "->"                                { return ObjectAccessExpressionLexemeAction(); }
+"."                                 { return FieldAccessExpressionLexemeAction(); }
 
 {whitespace}						{ return IgnoredLexemeAction(); }
 
-[[:alpha:]][[:alnum:]]+             { return AlphaNumericLexemeAction(); }
+[[:alpha:]][[:alnum:]]*             { return IdentifierLexemeAction(); }
 
 .									{ return UnknownLexemeAction(); }
 

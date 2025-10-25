@@ -119,7 +119,7 @@ static void _generateFactor(const unsigned int indentationLevel, Factor * factor
  * Generates the output of the program.
  */
 static void _generateProgram(Program * program) {
-	_generateExpression(3, program->expression);
+	_generateExpression(3, program->blockDeclaration);
 }
 
 /**

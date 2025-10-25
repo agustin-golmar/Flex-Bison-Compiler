@@ -1,0 +1,13 @@
+class myClass {
+    public int a;
+
+    public static constructor(int b) {
+        this->a = b;
+    }
+
+    if (0 == 0) {
+        public int getA() {
+            return this->a;
+        }
+    }
+}

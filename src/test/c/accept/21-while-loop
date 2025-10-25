@@ -1,0 +1,6 @@
+int main() {
+    int steps = 5;
+    while (steps > 0) {
+        steps = steps - 1;
+    }
+}

@@ -1,0 +1,29 @@
+class myCounter {
+    private int count;
+    
+    constructor(int initial) {
+        this->count = initial;
+    }
+    
+    public int increment() {
+        this->count = this->count + 1;
+        return this->count;
+    }
+    
+    public int decrement() {
+        this->count = this->count - 1;
+        return this->count;
+    }
+    
+    public int getCount() {
+        return this->count;
+    }
+
+    public int greaterThan() {
+        return count > 3;
+    }
+
+    public int logicalOr() {
+        return count || 0;
+    }
+}

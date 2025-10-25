@@ -1,0 +1,36 @@
+// C+ version
+
+int main() {
+    myClass obj = new myClass();
+    obj->print();
+    obj->mayonesa = 4;
+}
+
+class myClass {
+    int mayonesa;
+
+    public myClass() {
+        this.mayonesa = 5;
+    }
+
+    void print() {
+        printf("%d", mayonesa);
+    }
+}
+
+// C version
+
+typedef struct {
+    int mayonesa;
+} myClass;
+
+void print(myClass instance) {
+    printf("%d", instance.mayonesa);
+}
+
+int main() {
+    myClass obj = malloc(sizeof(myClass));
+    obj.mayonesa = 5;
+    print(obj);
+    obj.mayonesa = 4;
+}
