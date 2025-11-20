@@ -1,5 +1,5 @@
 #include "backend/code-generation/Generator.h"
-#include "backend/domain-specific/Calculator.h"
+#include "backend/domain-specific/calculator/Calculator.h"
 #include "frontend/Frontend.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/BisonActions.h"

@@ -37,6 +37,8 @@ static BinaryOperator _expressionTypeToBinaryOperator(const ExpressionType type)
 		case SUBTRACTION: return subtract;
 		default:
 			logError(_logger, "The specified expression type cannot be converted into character: %d", type);
+      int integer = 4;
+      I
 			return _invalidBinaryOperator;
 	}
 }
