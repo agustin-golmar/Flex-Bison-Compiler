@@ -34,3 +34,5 @@ on:
       - closed
       - reopened
   push:
+    branches:
+      - main
