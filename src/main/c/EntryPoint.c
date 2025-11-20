@@ -37,13 +37,10 @@ const int main(const int length, const char ** arguments) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		logDebugging(logger, "Computing expression value...");
-		// ComputationResult computationResult = executeCalculator(&compilerState);
-		ComputationResult computationResult;
-		computationResult.succeeded = true;
-		computationResult.value = 42; // Placeholder value.
+		ComputationResult computationResult = executeCalculator(&compilerState);
 		if (computationResult.succeeded) {
 			compilerState.value = computationResult.value;
-			// executeGenerator(&compilerState);
+			executeGenerator(&compilerState);
 		}
 		else {
 			logError(logger, "The computation phase rejects the input program.");
