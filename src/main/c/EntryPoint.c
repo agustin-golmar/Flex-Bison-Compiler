@@ -1,5 +1,4 @@
 #include "backend/code-generation/Generator.h"
-#include "backend/domain-specific/calculator/Calculator.h"
 #include "frontend/Frontend.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -7,6 +6,8 @@
 #include "support/type/CompilationStatus.h"
 #include "support/type/CompilerState.h"
 #include "support/type/ModuleDestructor.h"
+#include "backend/domain-specific/cplus/CplusSemanticAnalyzer.h"
+#include "support/graph/ASTgraph.h"
 
 /**
  * The main entry-point of the entire application. If you use "strtok" to
@@ -21,26 +22,25 @@ const int main(const int length, const char ** arguments) {
 	}
 	CompilerState compilerState = {
 		.abstractSyntaxtTree = NULL,
-		.value = 0
 	};
 	ModuleDestructor moduleDestructors[] = {
 		initializeAbstractSyntaxTreeModule(),
 		initializeFlexActionsModule(lexicalAnalyzer),
 		initializeBisonActionsModule(&compilerState),
 		initializeFrontendModule(lexicalAnalyzer),
-		initializeCalculatorModule(),
-		initializeGeneratorModule()
+		initializeGeneratorModule(),
+    initializeCplusSemanticAnalyzerModule()
 	};
 	CompilationStatus compilationStatus = executeSyntacticAnalysis();
 	Program * program = compilerState.abstractSyntaxtTree;
 	if (compilationStatus == SUCCEEDED) {
+		printASTgraph(program);
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		logDebugging(logger, "Computing expression value...");
-		ComputationResult computationResult = executeCalculator(&compilerState);
+		ComputationResult computationResult = executeSemanticalAnalysis(&compilerState);
 		if (computationResult.succeeded) {
-			compilerState.value = computationResult.value;
-			executeGenerator(&compilerState);
+			// executeGenerator(&compilerState);
 		}
 		else {
 			logError(logger, "The computation phase rejects the input program.");

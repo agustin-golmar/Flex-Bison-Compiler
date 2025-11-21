@@ -189,6 +189,7 @@ CompilationStatus PunctuatorLexemeAction(TokenLabel label) {
 
 CompilationStatus IdentifierLexemeAction() {
 	Token * token = createToken(_lexicalAnalyzer, IDENTIFIER);
+  token->semanticValue->alphanum = strdup(token->lexeme);
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
 	destroyToken(token);
