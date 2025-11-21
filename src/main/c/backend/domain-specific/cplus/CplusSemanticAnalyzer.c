@@ -462,6 +462,7 @@ ComputationResult computeExpression(Expression *expression) {
 
 	switch (expression->type) {
 
+    case ADDITION:
 		case SUBTRACTION:
 		case MULTIPLICATION:
 		case DIVISION: 
