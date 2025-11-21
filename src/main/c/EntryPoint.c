@@ -38,6 +38,7 @@ const int main(const int length, const char ** arguments) {
 		logDebugging(logger, "Computing expression value...");
 		ComputationResult computationResult = executeSemanticalAnalysis(&compilerState);
 		if (computationResult.succeeded) {
+
 			// executeGenerator(&compilerState);
 		}
 		else {
@@ -56,7 +57,7 @@ const int main(const int length, const char ** arguments) {
 	for (int k = (sizeof(moduleDestructors)/sizeof(ModuleDestructor)) - 1; 0 <= k; --k) {
 		moduleDestructors[k]();
 	}
-	logDebugging(logger, "Compilation is done.");
+	logDebugging(logger, "\e[32mCompilation is done.\e[0m");
 	destroyLogger(logger);
 	destroyLexicalAnalyzer(lexicalAnalyzer);
 	return compilationStatus;
