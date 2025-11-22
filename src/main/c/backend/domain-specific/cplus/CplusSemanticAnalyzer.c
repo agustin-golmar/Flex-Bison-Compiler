@@ -457,74 +457,97 @@ ComputationResult computeStatement(Statement * statement) {
 /* -------------------------------------------------------------------------- */
 
 ComputationResult computeExpression(Expression *expression) {
-	if (expression == NULL)
-		return _invalidComputation();
+  if (expression == NULL)
+      return _invalidComputation();
 
-	switch (expression->type) {
+  logDebugging(_logger, "Computing expression of type %d...", expression->type);
 
+  switch (expression->type) {
+
+    // Mathematical expressions
     case ADDITION:
-		case SUBTRACTION:
-		case MULTIPLICATION:
-		case DIVISION: 
-		case FACTOR:
-			return computeFactor(expression->factor);
+    case SUBTRACTION:
+    case MULTIPLICATION:
+    case DIVISION:
+      if (!expression->leftExpression || !expression->rightExpression)
+          return _invalidComputation();
+      if (!computeExpression(expression->leftExpression).succeeded)
+          return _invalidComputation();
+      if (!computeExpression(expression->rightExpression).succeeded)
+          return _invalidComputation();
+      return _ok();
 
-		case GREATER_THAN_EXPRESSION:
-		case LOWER_THAN_EXPRESSION:
-		case GREATER_OR_EQUAL_THAN_EXPRESSION:
-		case LOWER_OR_EQUAL_THAN_EXPRESSION:
-		case EQUAL_EXPRESSION:
-		case NOT_EQUAL_EXPRESSION:
-		case LOGICAL_AND_EXPRESSION:
-		case LOGICAL_OR_EXPRESSION:
-			if (expression->leftExpression &&
-			    !computeExpression(expression->leftExpression).succeeded)
-				return _invalidComputation();
-			if (expression->rightExpression &&
-			    !computeExpression(expression->rightExpression).succeeded)
-				return _invalidComputation();
-			return _ok();
+    case FACTOR:
+      return computeFactor(expression->factor);
 
-		case LOGICAL_NOT_EXPRESSION:
-		case NEGATION:
-			if (!expression->leftExpression) return _invalidComputation();
-			return computeExpression(expression->leftExpression);
+    // Comparison and logical expressions
+    case GREATER_THAN_EXPRESSION:
+    case LOWER_THAN_EXPRESSION:
+    case GREATER_OR_EQUAL_THAN_EXPRESSION:
+    case LOWER_OR_EQUAL_THAN_EXPRESSION:
+    case EQUAL_EXPRESSION:
+    case NOT_EQUAL_EXPRESSION:
+    case LOGICAL_AND_EXPRESSION:
+    case LOGICAL_OR_EXPRESSION:
+      if (expression->leftExpression &&
+          !computeExpression(expression->leftExpression).succeeded)
+          return _invalidComputation();
+      if (expression->rightExpression &&
+          !computeExpression(expression->rightExpression).succeeded)
+          return _invalidComputation();
+      return _ok();
 
-		case ASSIGNMENT:
-			if (!expression->leftExpression) return _invalidComputation();
-			if (!computeExpression(expression->rightExpression).succeeded)
-				return _invalidComputation();
-			return _ok();
+    case LOGICAL_NOT_EXPRESSION:
+    case NEGATION:
+      if (!expression->leftExpression)
+          return _invalidComputation();
+      return computeExpression(expression->leftExpression);
 
-			if (expression->leftExpression &&
-			    !computeExpression(expression->leftExpression).succeeded)
-				return _invalidComputation();
-			return _ok();
+    case ASSIGNMENT:
+      //log what's assigned
+      logDebugging(_logger, "Assignment expression");
+      if (!expression->leftExpression || !expression->rightExpression)
+          return _invalidComputation();
+      if (!computeExpression(expression->leftExpression).succeeded)
+          return _invalidComputation();
+      if (!computeExpression(expression->rightExpression).succeeded)
+          return _invalidComputation();
+      return _ok();
 
-			if (expression->argumentList &&
-			    !computeArgumentList(expression->argumentList).succeeded)
-				return _invalidComputation();
-			return _ok();
+    case MEMBER_ACCESS:
+      // left is only 'this' keyword, right has the identifier which always should be type IDENTIFIER_EXPRESSION
+      logDebugging(_logger, "Expression: MEMBER_ACCESS: accessing member %s", expression->rightExpression->identifier ? expression->rightExpression->identifier : "NULL");
+      if (expression->rightExpression && !computeExpression(expression->rightExpression).succeeded)
+          return _invalidComputation();
+      return _ok();
 
-		case IDENTIFIER_EXPRESSION:
-		case INTEGER_EXPRESSION:
-		case THIS_EXPRESSION:
-		case NEW_EXPRESSION:
-		case EMPTY_EXPRESSION:
-		case STRING_LITERAL_EXPRESSION:
-			return _ok();
+    case FUNCTION_CALL:
+      logDebugging(_logger, "Expression: FUNCTION_CALL");
+      if (expression->argumentList &&
+          !computeArgumentList(expression->argumentList).succeeded)
+          return _invalidComputation();
+      return _ok();
 
-		case POST_INCREMENT_EXPRESSION:
-		case PRE_INCREMENT_EXPRESSION:
-		case POST_DECREMENT_EXPRESSION:
-		case PRE_DECREMENT_EXPRESSION:
-			if (expression->leftExpression)
-				return computeExpression(expression->leftExpression);
-			return _ok();
+    case IDENTIFIER_EXPRESSION:
+    case INTEGER_EXPRESSION:
+    case THIS_EXPRESSION:
+    case NEW_EXPRESSION:
+    case EMPTY_EXPRESSION:
+    case STRING_LITERAL_EXPRESSION:
+      return _ok();
 
-		default:
-			return _invalidComputation();
-	}
+    case POST_INCREMENT_EXPRESSION:
+    case PRE_INCREMENT_EXPRESSION:
+    case POST_DECREMENT_EXPRESSION:
+    case PRE_DECREMENT_EXPRESSION:
+      if (expression->leftExpression)
+          return computeExpression(expression->leftExpression);
+      return _ok();
+
+    default:
+      logError(_logger, "computeExpression: unknown ExpressionType %d.", expression->type);
+      return _invalidComputation();
+  }
 }
 
 /* -------------------------------------------------------------------------- */
