@@ -101,3 +101,17 @@ To trigger an automatic integration on every push or PR (_Pull Request_), you mu
 * [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
 * [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
 * [Yash](https://marketplace.visualstudio.com/items?itemName=daohong-emilio.yash)
+
+## Testing Support Data-Structures
+
+By running the 
+
+```bash
+src/main/bash/build.sh
+```
+
+command, tests executable is already created. In order to run the tests:
+
+```bash
+src/main/bash/support-test.sh
+```
