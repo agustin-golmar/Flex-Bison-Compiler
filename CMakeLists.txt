@@ -49,6 +49,15 @@ if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
 		# ...
 	)
 
+	add_executable(Data-Structures-Tests
+		src/test/c/AllTests.c
+		src/main/c/support/data-structures/HashMapCDT.c
+		src/test/c/data-structures/HashMapTests.c
+		src/test/c/data-structures/HashMapTestUtils.c
+		# Add more test files if needed
+		# ...
+	)
+
 	# Link final project and libraries.
 	target_link_libraries(Flex-Bison-Compiler)
 else ()
