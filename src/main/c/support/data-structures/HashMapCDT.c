@@ -1,4 +1,4 @@
-#include "HashMap.h"
+#include "HashMapADT.h"
 
 // TODO: malloc error validations! We've to defeat the enemy! (current enemy = memory leaks)
 
@@ -16,10 +16,10 @@ struct HashMapCDT {
     size_t lookup_length, lookup_size, size_of_key, size_of_value;
     double load_factor;
     int (*hash_code)(void*);
-    bool (*key_equals)(void*, void*)
+    bool (*key_equals)(void*, void*);
 };
 
-struct HashMapCDT* new_hash_map(
+struct HashMapCDT* hash_map_new(
     size_t size_of_key, 
     size_t size_of_value,
     int (*hash_code)(void*),
@@ -40,6 +40,37 @@ struct HashMapCDT* new_hash_map(
 
 static size_t hash(HashMapADT hash_map, void* key) {
     return (size_t)hash_map->hash_code(key) % (size_t)hash_map->lookup_length;
+}
+
+/* Searchs for the key. Returns:
+**      (output)-> return value: search result status (FOUND/NOT_FOUND/ERROR)
+**      (input/output)-> key_slot: index to insert at
+**      (input/output)-> first_deletion: if any logic deletions found, returns the index of the first appearence
+*/
+int find_key_index(HashMapADT hash_map, void* key, size_t* key_slot, signed long* first_deletion) {
+    size_t current_key_slot = *key_slot;
+    while(hash_map->lookup[current_key_slot] != NULL) {
+        if(*first_deletion == -1 && hash_map->lookup[current_key_slot]->deleted) {
+            *first_deletion = current_key_slot;
+        }
+        if(hash_map->key_equals(hash_map->lookup[current_key_slot]->key, key)) {
+            *key_slot = current_key_slot;
+            return KEY_FOUND;
+        }
+        
+        current_key_slot = (current_key_slot + 1) % hash_map->lookup_length;
+        
+        // Already seen full table and no physical deletions found
+        if(current_key_slot == *key_slot) {
+            if(*first_deletion != -1) {
+                return KEY_NOT_FOUND;
+            } else {
+                return NO_MEM_ERR; // Should never happen
+            }
+        }
+    }
+    *key_slot = current_key_slot;
+    return KEY_NOT_FOUND;
 }
 
 static void lookup_resize(HashMapADT hash_map) {
@@ -94,37 +125,7 @@ static void insert_into_logical_deleted_entry(HashMapADT hash_map, void* key, vo
     hash_map->lookup[index]->deleted = false;
 }
 
-/* Searchs for the key. Returns:
-**      (output)-> return value: search result status (FOUND/NOT_FOUND/ERROR)
-**      (input/output)-> key_slot: index to insert at
-**      (input/output)-> first_deletion: if any logic deletions found, returns the index of the first appearence
-*/
-int find_key_index(HashMapADT hash_map, void* key, size_t* key_slot, signed long* first_deletion) {
-    size_t current_key_slot = *key_slot;
-    while(hash_map->lookup[current_key_slot] != NULL) {
-        if(*first_deletion == -1 && hash_map->lookup[current_key_slot]->deleted) {
-            *first_deletion = current_key_slot;
-        }
-        if(hash_map->key_equals(hash_map->lookup[current_key_slot]->key, key)) {
-            *key_slot = current_key_slot;
-            return KEY_FOUND;
-        }
-
-        current_key_slot = (current_key_slot + 1) % hash_map->lookup_length;
-        
-        // Already seen full table and no physical deletions found
-        if(current_key_slot == *key_slot) {
-            if(*first_deletion != -1) {
-                return KEY_NOT_FOUND;
-            } else {
-                return NO_MEM_ERR; // Should never happen
-            }
-        }
-    }
-    return KEY_NOT_FOUND;
-}
-
-void* put(
+void* hash_map_put(
     HashMapADT hash_map,
     void* key, 
     void* value
@@ -143,7 +144,8 @@ void* put(
         update_value(hash_map, value, key_slot);
         return value;
     } else {
-        return status;
+        // TODO: check status return.
+        return NULL;
     }
 
     if((++hash_map->lookup_size/(double)hash_map->lookup_length) > hash_map->load_factor){
@@ -152,7 +154,7 @@ void* put(
     return value;
 }
 
-void* get(HashMapADT hash_map, void* key) {
+void* hash_map_get(HashMapADT hash_map, void* key) {
     size_t key_slot = hash(hash_map, key);
 
     signed long first_deletion = -1, status;
@@ -163,7 +165,8 @@ void* get(HashMapADT hash_map, void* key) {
     }
 }
 
-static void delete_entry(HashMapADT hash_map, size_t key_slot) {
+static void remove_entry(HashMapADT hash_map, size_t key_slot) {
+    hash_map->lookup[key_slot] != NULL && hash_map->lookup[key_slot]->deleted;
     // If no next element, physical delete
     if(hash_map->lookup[(key_slot + 1) % hash_map->lookup_length] == NULL) {
         free(hash_map->lookup[key_slot]->key);
@@ -177,17 +180,17 @@ static void delete_entry(HashMapADT hash_map, size_t key_slot) {
     }
 }
 
-bool delete(HashMapADT hash_map, void* key) {
+bool hash_map_remove(HashMapADT hash_map, void* key) {
     size_t key_slot = hash(hash_map, key);
 
     signed long first_deletion = -1, status;
     if((status = find_key_index(hash_map, key, &key_slot, &first_deletion)) == KEY_FOUND) {
-        delete_entry(hash_map, key_slot);
+        remove_entry(hash_map, key_slot);
         hash_map->lookup_size--;
-        key_slot = (key_slot - 1 < 0) ? hash_map->lookup_length - 1 : key_slot - 1;
+        key_slot = (key_slot == 0) ? hash_map->lookup_length - 1 : key_slot - 1;
         while(hash_map->lookup[key_slot] != NULL && hash_map->lookup[key_slot]->deleted) {
-            delete_entry(hash_map, key_slot);
-            key_slot = (key_slot - 1 < 0) ? hash_map->lookup_length - 1 : key_slot - 1;
+            remove_entry(hash_map, key_slot);
+            key_slot = (key_slot == 0) ? hash_map->lookup_length - 1 : key_slot - 1;
         }
         return true;
     } else {
@@ -195,7 +198,7 @@ bool delete(HashMapADT hash_map, void* key) {
     }
 }
 
-void free_hash_map(HashMapADT hash_map) {
+void hash_map_free(HashMapADT hash_map) {
     for(int i = 0; i < hash_map->lookup_length; i++) {
         if(hash_map->lookup[i] != NULL) {
             free(hash_map->lookup[i]->key);
