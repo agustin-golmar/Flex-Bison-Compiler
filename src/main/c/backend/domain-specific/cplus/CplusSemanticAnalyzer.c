@@ -499,9 +499,11 @@ ComputationResult computeExpression(Expression *expression) {
 
     case LOGICAL_NOT_EXPRESSION:
     case NEGATION:
-      if (!expression->leftExpression)
+      // see right expression
+      logDebugging(_logger, "NEGATION or LOGICAL_NOT_EXPRESSION, on the right there is a %d", expression->rightExpression ? expression->rightExpression->type : -1);
+      if (!expression->rightExpression)
           return _invalidComputation();
-      return computeExpression(expression->leftExpression);
+      return computeExpression(expression->rightExpression);
 
     case ASSIGNMENT:
       //log what's assigned
