@@ -7,6 +7,7 @@
 #include "support/type/CompilerState.h"
 #include "support/type/ModuleDestructor.h"
 #include "backend/domain-specific/cplus/CplusSemanticAnalyzer.h"
+#include "support/graph/ASTgraph.h"
 
 /**
  * The main entry-point of the entire application. If you use "strtok" to
@@ -33,6 +34,7 @@ const int main(const int length, const char ** arguments) {
 	CompilationStatus compilationStatus = executeSyntacticAnalysis();
 	Program * program = compilerState.abstractSyntaxtTree;
 	if (compilationStatus == SUCCEEDED) {
+		printASTgraph(program);
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		logDebugging(logger, "Computing expression value...");
