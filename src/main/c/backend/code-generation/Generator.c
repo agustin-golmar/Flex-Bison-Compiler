@@ -69,7 +69,9 @@ static void _emitType(int indentationLevel, TypeSpecifier * type) {
         case CHAR_TYPE: _output(indentationLevel, "char"); break;
         case STRING_TYPE: _output(indentationLevel, "char *"); break;
         case IDENTIFIER_TYPE: _output(indentationLevel, "%s", type->identifier); break;
-        default: _output(indentationLevel, "unknown_type"); break;
+        default:
+            logWarning(_logger, "Unknown TypeSpecifierType %d", type->type);
+            _output(indentationLevel, "unknown_type"); break;
     }
 }
 
@@ -175,7 +177,9 @@ static const char * _expressionOperatorString(ExpressionType type) {
         case NOT_EQUAL_EXPRESSION: return "!=";
         case LOGICAL_AND_EXPRESSION: return "&&";
         case LOGICAL_OR_EXPRESSION: return "||";
-        default: return NULL;
+        default:
+            logWarning(_logger, "Unknown ExpressionType %d", type);
+            return NULL;
     }
 }
 
@@ -191,6 +195,7 @@ static void _generateFactorInline(Factor * factor) {
             _output(0, ")");
             break;
         default:
+            logWarning(_logger, "Unknown FactorType %d", factor->type);
             _output(0, "/* unknown factor */");
             break;
     }
@@ -254,6 +259,7 @@ static void _generateExpressionInline(Expression * expression) {
                 _output(0, ")");
             } else {
                 // Could be indirect call; symbol table needed to resolve — leave TODO
+                logWarning(_logger, "Unknown function call (unknown id)");
                 _output(0, "/* TODO: function call (unknown id) */");
             }
             break;
@@ -273,6 +279,7 @@ static void _generateExpressionInline(Expression * expression) {
             if (expression->identifier != NULL) {
                 _output(0, "malloc(sizeof(struct " CDT_NAME_FORMAT "))", expression->identifier);
             } else {
+                logWarning(_logger, "Unknown type in 'new' expression");
                 _output(0, "/* TODO: new (unknown type) */");
             }
             break;
@@ -303,6 +310,7 @@ static void _generateExpressionInline(Expression * expression) {
         case EMPTY_EXPRESSION:
             break;
         default:
+            logWarning(_logger, "Unknown ExpressionType %d", expression->type);
             _output(0, "/* TODO: expr type %d */", expression->type);
             break;
     }
@@ -332,6 +340,7 @@ static void _generateForInitInline(Statement * init) {
             _generateExpressionInline(init->expression);
             break;
         default:
+            logWarning(_logger, "Unknown for-init statement type %d", init->type);
             _output(0, "/* TODO: for-init */");
             break;
     }
@@ -420,6 +429,7 @@ static void _generateStatement(int indentationLevel, Statement * statement) {
             _output(indentationLevel, ";\n");
             break;
         default:
+            logWarning(_logger, "Unknown statement type %d", statement->type);
             _output(indentationLevel, "/* TODO: statement type %d */\n", statement->type);
             break;
     }
