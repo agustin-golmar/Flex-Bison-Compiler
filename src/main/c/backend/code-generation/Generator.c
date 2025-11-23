@@ -106,7 +106,7 @@ static void _emitFunctionSignature(char * className, MethodDeclaration * method,
     printf("(");
     int first = 1;
     
-    if (!isStatic) {
+    if (!isStatic && !isConstructor) {
         printf("%s this", className);
         first = 0;
     }
