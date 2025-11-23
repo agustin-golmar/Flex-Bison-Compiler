@@ -5,7 +5,10 @@
 #include <stdarg.h>
 
 #define CDT_NAME_FORMAT "%s_CDT"
+#define ADT_NAME_SUFFIX "_ADT"
+#define INCLUDE_PREFIX "#include \""
 #define CONSTRUCTOR_SUFFIX "_constructor"
+#define MAIN_FILE_NAME "main.c"
 
 const char _indentationCharacter = ' ';
 const char _indentationSize = 4;
@@ -24,21 +27,29 @@ ModuleDestructor initializeGeneratorModule() {
 }
 
 static char * _indentation(const unsigned int level);
-static void _output(const unsigned int indentationLevel, const char * const format, ...);
-static void _emitType(int indentationLevel, TypeSpecifier * type);
-static void _generateTypedefs(int indentationLevel, Program * program);
-static void _generateStructs(int indentationLevel, Program * program);
-static void _generateStaticGlobals(int indentationLevel, Program * program);
-static void _emitFunctionSignature(int indentationLevel, char * className, MethodDeclaration * method, int isStatic, int isConstructor);
+static void _output(FILE * outputFile, const unsigned int indentationLevel, const char * const format, ...);
+static void _emitType(FILE * outputFile, int indentationLevel, TypeSpecifier * type);
+static void _generateTypedef(FILE * headerFile, int indentationLevel, ClassDeclaration * classDeclaration);
+static void _generateStructs(FILE * sourceFile, int indentationLevel, ClassDeclaration * classDeclaration);
+static void _generateStaticGlobals(FILE * sourceFile, int indentationLevel, ClassDeclaration * classDeclaration);
+static void _emitFunctionSignature(FILE * sourceFile, int indentationLevel, char * className, MethodDeclaration * method, int isStatic, int isConstructor);
 static const char * _expressionOperatorString(ExpressionType type);
-static void _generateExpressionInline(Expression * expression);
-static void _generateFactorInline(Factor * factor);
-static void _generateArgumentListInline(ArgumentList * args);
-static void _generateStatement(int indentationLevel, Statement * statement);
-static void _generateStatementList(int indentationLevel, Statement * statement);
-static void _generateForInitInline(Statement * init);
-static void _generatePrototypes(int indentationLevel, Program * program);
-static void _generateBodies(int indentationLevel, Program * program);
+static void _generateExpressionInline(FILE * sourceFile, Expression * expression);
+static void _generateFactorInline(FILE * sourceFile, Factor * factor);
+static void _generateArgumentListInline(FILE * sourceFile, ArgumentList * args);
+static void _generateStatement(FILE * sourceFile, int indentationLevel, Statement * statement);
+static void _generateStatementList(FILE * sourceFile, int indentationLevel, Statement * statement);
+static void _generateForInitInline(FILE * sourceFile, Statement * init);
+static void _generateClassPrototypes(FILE * outputFile, int indentationLevel, ClassDeclaration * classDeclaration);
+static void _generateMethodsPrototypes(FILE * outputFile, int indentationLevel, BlockDeclaration * block);
+static void _generateClassBody(FILE * outputFile, int indentationLevel, ClassDeclaration * classDeclaration);
+static void _generateMethodsBodies(FILE * outputFile, int indentationLevel, BlockDeclaration * block);
+static void _generateHeaderIncludes(FILE * mainFile, FILE * sourceFile, int indentationLevel, char * headerFileName);
+static void _generateADTHeader(char ** headerFileName, ClassDeclaration * classDeclaration);
+static void _generateADTSource(FILE * mainFile, char * headerFileName, ClassDeclaration * classDeclaration);
+static void _generateADT(FILE * mainFile, ClassDeclaration * classDeclaration);
+static void _generateMethod(FILE * mainFile, MethodDeclaration * methodDeclaration);
+static void _generateProgram(Program * program);
 
 static char * _indentation(const unsigned int level) {
     return indentation(_indentationCharacter, level, _indentationSize);
@@ -49,121 +60,58 @@ static char * _indentation(const unsigned int level) {
  * allows to see the output even close to a failure, because it drops the
  * buffering.
  */
-static void _output(const unsigned int indentationLevel, const char * const format, ...) {
+static void _output(FILE * outputFile, const unsigned int indentationLevel, const char * const format, ...) {
 	va_list arguments;
 	va_start(arguments, format);
 	char * indentation = _indentation(indentationLevel);
 	char * effectiveFormat = concatenate(2, indentation, format);
-	vfprintf(stdout, effectiveFormat, arguments);
-	fflush(stdout);
+	vfprintf(outputFile, effectiveFormat, arguments);
+	fflush(outputFile);
 	free(effectiveFormat);
 	free(indentation);
 	va_end(arguments);
 }
 
-static void _emitType(int indentationLevel, TypeSpecifier * type) {
+static void _emitType(FILE * outputFile, int indentationLevel, TypeSpecifier * type) {
     if (type == NULL) return;
     switch(type->type) {
-        case INT_TYPE: _output(indentationLevel, "int"); break;
-        case VOID_TYPE: _output(indentationLevel, "void"); break;
-        case CHAR_TYPE: _output(indentationLevel, "char"); break;
-        case STRING_TYPE: _output(indentationLevel, "char *"); break;
-        case IDENTIFIER_TYPE: _output(indentationLevel, "%s", type->identifier); break;
+        case INT_TYPE: _output(outputFile, indentationLevel, "int"); break;
+        case VOID_TYPE: _output(outputFile, indentationLevel, "void"); break;
+        case CHAR_TYPE: _output(outputFile, indentationLevel, "char"); break;
+        case STRING_TYPE: _output(outputFile, indentationLevel, "char *"); break;
+        case IDENTIFIER_TYPE: _output(outputFile, indentationLevel, "%s", type->identifier); break;
         default:
             logWarning(_logger, "Unknown TypeSpecifierType %d", type->type);
-            _output(indentationLevel, "unknown_type"); break;
+            _output(outputFile, indentationLevel, "unknown_type"); break;
     }
 }
 
-static void _generateTypedefs(int indentationLevel, Program * program) {
-    BlockDeclaration * block = program->blockDeclaration;
-    while (block != NULL) {
-        if (block->type == CLASS_BLOCK) {
-            char * name = block->classDeclaration->identifier;
-            _output(indentationLevel, "typedef struct " CDT_NAME_FORMAT " *%s;\n", name, name);
-        }
-        block = block->next;
-    }
-    _output(0, "\n");
-}
-
-static void _generateStructs(int indentationLevel, Program * program) {
-    BlockDeclaration * block = program->blockDeclaration;
-    while (block != NULL) {
-        if (block->type == CLASS_BLOCK) {
-            char * className = block->classDeclaration->identifier;
-            _output(indentationLevel, "struct " CDT_NAME_FORMAT " {\n", className);
-            
-            MemberDeclaration * member = block->classDeclaration->classBody->memberList;
-            while (member != NULL) {
-                if (member->type == FIELD_MEMBER) {
-                    FieldDeclaration * field = member->fieldDeclaration;
-                    if (!field->isStatic) {
-                        _emitType(indentationLevel + 1, field->typeSpecifier);
-                        _output(0, " %s;\n", field->identifier);
-                    }
-                }
-                member = member->next;
-            }
-            _output(indentationLevel, "};\n\n");
-        }
-        block = block->next;
-    }
-}
-
-static void _generateStaticGlobals(int indentationLevel, Program * program) {
-    BlockDeclaration * block = program->blockDeclaration;
-    while (block != NULL) {
-        if (block->type == CLASS_BLOCK) {
-            char * className = block->classDeclaration->identifier;
-            MemberDeclaration * member = block->classDeclaration->classBody->memberList;
-            while (member != NULL) {
-                if (member->type == FIELD_MEMBER) {
-                    FieldDeclaration * field = member->fieldDeclaration;
-                    if (field->isStatic) {
-                        _emitType(indentationLevel, field->typeSpecifier);
-                        _output(0, " %s_%s", className, field->identifier);
-                        if (field->initializationExpression != NULL) {
-                            _output(0, " = ");
-                            _generateExpressionInline(field->initializationExpression);
-                        }
-                        _output(0, ";\n");
-                    }
-                }
-                member = member->next;
-            }
-        }
-        block = block->next;
-    }
-    _output(0, "\n");
-}
-
-static void _emitFunctionSignature(int indentationLevel, char * className, MethodDeclaration * method, int isStatic, int isConstructor) {
+static void _emitFunctionSignature(FILE * outputFile, int indentationLevel, char * className, MethodDeclaration * method, int isStatic, int isConstructor) {
     if (isConstructor) {
-        _output(indentationLevel, className);
-        _output(0, " %s" CONSTRUCTOR_SUFFIX, className);
+        _output(outputFile, indentationLevel, className);
+        _output(outputFile, 0, " %s" CONSTRUCTOR_SUFFIX, className);
     } else {
-        _emitType(indentationLevel, method->returnType);
-        _output(0, " %s_%s", className, method->identifier);
+        _emitType(outputFile, indentationLevel, method->returnType);
+        _output(outputFile, 0, " %s_%s", className, method->identifier);
     }
 
-    _output(0, "(");
+    _output(outputFile, 0, "(");
     int first = 1;
     
     if (!isStatic && !isConstructor) {
-        _output(0, "%s this", className);
+        _output(outputFile, 0, "%s this", className);
         first = 0;
     }
 
     Parameter * param = method->parameterList;
     while (param != NULL) {
-        if (!first) _output(0, ", ");
-        _emitType(0, param->typeSpecifier);
-        _output(0, " %s", param->identifier);
+        if (!first) _output(outputFile, 0, ", ");
+        _emitType(outputFile, 0, param->typeSpecifier);
+        _output(outputFile, 0, " %s", param->identifier);
         first = 0;
         param = param->next;
     }
-    _output(0, ")");
+    _output(outputFile, 0, ")");
 }
 
 /** Expression / Statement generation helpers (inline, no leading indentation) */
@@ -187,36 +135,36 @@ static const char * _expressionOperatorString(ExpressionType type) {
     }
 }
 
-static void _generateFactorInline(Factor * factor) {
+static void _generateFactorInline(FILE * outputFile, Factor * factor) {
     if (factor == NULL) return;
     switch (factor->type) {
         case CONSTANT:
-            _output(0, "%d", factor->constant->value);
+            _output(outputFile, 0, "%d", factor->constant->value);
             break;
         case EXPRESSION:
-            _output(0, "(");
-            _generateExpressionInline(factor->expression);
-            _output(0, ")");
+            _output(outputFile, 0, "(");
+            _generateExpressionInline(outputFile, factor->expression);
+            _output(outputFile, 0, ")");
             break;
         default:
             logWarning(_logger, "Unknown FactorType %d", factor->type);
-            _output(0, "/* unknown factor */");
+            _output(outputFile, 0, "/* unknown factor */");
             break;
     }
 }
 
-static void _generateArgumentListInline(ArgumentList * args) {
+static void _generateArgumentListInline(FILE * outputFile, ArgumentList * args) {
     ArgumentList * cur = args;
     int first = 1;
     while (cur != NULL) {
-        if (!first) _output(0, ", ");
-        _generateExpressionInline(cur->expression);
+        if (!first) _output(outputFile, 0, ", ");
+        _generateExpressionInline(outputFile, cur->expression);
         first = 0;
         cur = cur->next;
     }
 }
 
-static void _generateExpressionInline(Expression * expression) {
+static void _generateExpressionInline(FILE * outputFile, Expression * expression) {
     if (expression == NULL) return;
     const char * op;
     switch (expression->type) {
@@ -232,313 +180,446 @@ static void _generateExpressionInline(Expression * expression) {
         case NOT_EQUAL_EXPRESSION:
         case LOGICAL_AND_EXPRESSION:
         case LOGICAL_OR_EXPRESSION:
-            _output(0, "(");
-            _generateExpressionInline(expression->leftExpression);
+            _output(outputFile, 0, "(");
+            _generateExpressionInline(outputFile, expression->leftExpression);
             op = _expressionOperatorString(expression->type);
-            if (op) _output(0, " %s ", op);
-            _generateExpressionInline(expression->rightExpression);
-            _output(0, ")");
+            if (op) _output(outputFile, 0, " %s ", op);
+            _generateExpressionInline(outputFile, expression->rightExpression);
+            _output(outputFile, 0, ")");
             break;
         case FACTOR:
-            _generateFactorInline(expression->factor);
+            _generateFactorInline(outputFile, expression->factor);
             break;
         case ASSIGNMENT:
-            _generateExpressionInline(expression->leftExpression);
-            _output(0, " = ");
-            _generateExpressionInline(expression->rightExpression);
+            _generateExpressionInline(outputFile, expression->leftExpression);
+            _output(outputFile, 0, " = ");
+            _generateExpressionInline(outputFile, expression->rightExpression);
             break;
         case MEMBER_ACCESS:
-            _generateExpressionInline(expression->leftExpression);
-            _output(0, "->");
+            _generateExpressionInline(outputFile, expression->leftExpression);
+            _output(outputFile, 0, "->");
             if (expression->rightExpression != NULL && expression->rightExpression->type == IDENTIFIER_EXPRESSION) {
-                _output(0, "%s", expression->rightExpression->identifier);
+                _output(outputFile, 0, "%s", expression->rightExpression->identifier);
             } else {
-                _generateExpressionInline(expression->rightExpression);
+                _generateExpressionInline(outputFile, expression->rightExpression);
             }
             break;
         case FUNCTION_CALL:
             if (expression->identifier != NULL) {
-                _generateExpressionInline(expression->precedingExpression);
-                _output(0, "(");
-                _generateArgumentListInline(expression->args);
-                _output(0, ")");
+                _generateExpressionInline(outputFile, expression->precedingExpression);
+                _output(outputFile, 0, "(");
+                _generateArgumentListInline(outputFile, expression->args);
+                _output(outputFile, 0, ")");
             } else {
                 // Could be indirect call; symbol table needed to resolve — leave TODO
                 logWarning(_logger, "Unknown function call (unknown id)");
-                _output(0, "/* TODO: function call (unknown id) */");
+                _output(outputFile, 0, "/* TODO: function call (unknown id) */");
             }
             break;
         case IDENTIFIER_EXPRESSION:
-            _output(0, "%s", expression->identifier);
+            _output(outputFile, 0, "%s", expression->identifier);
             break;
         case INTEGER_EXPRESSION:
-            _output(0, "%d", expression->integerValue);
+            _output(outputFile, 0, "%d", expression->integerValue);
             break;
         case STRING_LITERAL_EXPRESSION:
-            _output(0, "\"%s\"", expression->stringLiteralValue);
+            _output(outputFile, 0, "\"%s\"", expression->stringLiteralValue);
             break;
         case THIS_EXPRESSION:
-            _output(0, "this");
+            _output(outputFile, 0, "this");
             break;
         case NEW_EXPRESSION:
             if (expression->identifier != NULL) {
-                _output(0, "%s" CONSTRUCTOR_SUFFIX "(", expression->identifier);
-                _generateArgumentListInline(expression->argumentList);
-                _output(0, ")");
+                _output(outputFile, 0, "%s" CONSTRUCTOR_SUFFIX "(", expression->identifier);
+                _generateArgumentListInline(outputFile, expression->argumentList);
+                _output(outputFile, 0, ")");
             } else {
                 logWarning(_logger, "Unknown type in 'new' expression");
-                _output(0, "/* TODO: new (unknown type) */");
+                _output(outputFile, 0, "/* TODO: new (unknown type) */");
             }
             break;
         case PRE_INCREMENT_EXPRESSION:
-            _output(0, "++");
-            _generateExpressionInline(expression->leftExpression);
+            _output(outputFile, 0, "++");
+            _generateExpressionInline(outputFile, expression->leftExpression);
             break;
         case POST_INCREMENT_EXPRESSION:
-            _generateExpressionInline(expression->leftExpression);
-            _output(0, "++");
+            _generateExpressionInline(outputFile, expression->leftExpression);
+            _output(outputFile, 0, "++");
             break;
         case PRE_DECREMENT_EXPRESSION:
-            _output(0, "--");
-            _generateExpressionInline(expression->leftExpression);
+            _output(outputFile, 0, "--");
+            _generateExpressionInline(outputFile, expression->leftExpression);
             break;
         case POST_DECREMENT_EXPRESSION:
-            _generateExpressionInline(expression->leftExpression);
-            _output(0, "--");
+            _generateExpressionInline(outputFile, expression->leftExpression);
+            _output(outputFile, 0, "--");
             break;
         case LOGICAL_NOT_EXPRESSION:
-            _output(0, "!");
-            _generateExpressionInline(expression->leftExpression);
+            _output(outputFile, 0, "!");
+            _generateExpressionInline(outputFile, expression->leftExpression);
             break;
         case NEGATION:
-            _output(0, "-");
-            _generateExpressionInline(expression->leftExpression);
+            _output(outputFile, 0, "-");
+            _generateExpressionInline(outputFile, expression->leftExpression);
             break;
         case EMPTY_EXPRESSION:
             break;
         default:
             logWarning(_logger, "Unknown ExpressionType %d", expression->type);
-            _output(0, "/* TODO: expr type %d */", expression->type);
+            _output(outputFile, 0, "/* TODO: expr type %d */", expression->type);
             break;
     }
 }
 
-static void _generateStatementList(int indentationLevel, Statement * statement) {
+static void _generateStatementList(FILE * outputFile, int indentationLevel, Statement * statement) {
     Statement * cur = statement;
     while (cur != NULL) {
-        _generateStatement(indentationLevel, cur);
+        _generateStatement(outputFile, indentationLevel, cur);
         cur = cur->next;
     }
 }
 
-static void _generateForInitInline(Statement * init) {
+static void _generateForInitInline(FILE * outputFile, Statement * init) {
     if (init == NULL) return;
     switch (init->type) {
         case DECLARATION_STATEMENT:
-            _emitType(0, init->typeSpecifier);
-            _output(0, " %s", init->identifier);
+            _emitType(outputFile, 0, init->typeSpecifier);
+            _output(outputFile, 0, " %s", init->identifier);
             break;
         case INITIALIZED_DECLARATION_STATEMENT:
-            _emitType(0, init->typeSpecifier);
-            _output(0, " %s = ", init->identifier);
-            _generateExpressionInline(init->expression);
+            _emitType(outputFile, 0, init->typeSpecifier);
+            _output(outputFile, 0, " %s = ", init->identifier);
+            _generateExpressionInline(outputFile, init->expression);
             break;
         case EXPRESSION_STATEMENT:
-            _generateExpressionInline(init->expression);
+            _generateExpressionInline(outputFile, init->expression);
             break;
         default:
             logWarning(_logger, "Unknown for-init statement type %d", init->type);
-            _output(0, "/* TODO: for-init */");
+            _output(outputFile, 0, "/* TODO: for-init */");
             break;
     }
 }
 
-static void _generateStatement(int indentationLevel, Statement * statement) {
+static void _generateStatement(FILE * outputFile, int indentationLevel, Statement * statement) {
     if (statement == NULL) return;
     switch (statement->type) {
         case EXPRESSION_STATEMENT:
-            _output(indentationLevel, "");
-            _generateExpressionInline(statement->expression);
-            _output(0, ";\n");
+            _output(outputFile, indentationLevel, "");
+            _generateExpressionInline(outputFile, statement->expression);
+            _output(outputFile, 0, ";\n");
             break;
         case DECLARATION_STATEMENT:
-            _emitType(indentationLevel, statement->typeSpecifier);
-            _output(0, " %s;\n", statement->identifier);
+            _emitType(outputFile, indentationLevel, statement->typeSpecifier);
+            _output(outputFile, 0, " %s;\n", statement->identifier);
             break;
         case INITIALIZED_DECLARATION_STATEMENT:
-            _emitType(indentationLevel, statement->typeSpecifier);
-            _output(0, " %s = ", statement->identifier);
-            _generateExpressionInline(statement->expression);
-            _output(0, ";\n");
+            _emitType(outputFile, indentationLevel, statement->typeSpecifier);
+            _output(outputFile, 0, " %s = ", statement->identifier);
+            _generateExpressionInline(outputFile, statement->expression);
+            _output(outputFile, 0, ";\n");
             break;
         case RETURN_STATEMENT:
-            _output(indentationLevel, "return ");
-            _generateExpressionInline(statement->expression);
-            _output(0, ";\n");
+            _output(outputFile, indentationLevel, "return ");
+            _generateExpressionInline(outputFile, statement->expression);
+            _output(outputFile, 0, ";\n");
             break;
         case RETURN_VOID_STATEMENT:
-            _output(indentationLevel, "return;\n");
+            _output(outputFile, indentationLevel, "return;\n");
             break;
         case COMPOUND_STATEMENT:
-            _output(indentationLevel, "{\n");
-            _generateStatementList(indentationLevel + 1, statement->statementList);
-            _output(indentationLevel, "}\n");
+            _output(outputFile, indentationLevel, "{\n");
+            _generateStatementList(outputFile, indentationLevel + 1, statement->statementList);
+            _output(outputFile, indentationLevel, "}\n");
             break;
         case IF_STATEMENT:
-            _output(indentationLevel, "if (");
-            _generateExpressionInline(statement->condition);
-            _output(0, ") ");
+            _output(outputFile, indentationLevel, "if (");
+            _generateExpressionInline(outputFile, statement->condition);
+            _output(outputFile, 0, ") ");
             if (statement->statementList != NULL && statement->statementList->type == COMPOUND_STATEMENT) {
-                _generateStatement(indentationLevel, statement->statementList);
+                _generateStatement(outputFile, indentationLevel, statement->statementList);
             } else {
-                _output(0, "{\n");
-                _generateStatementList(indentationLevel + 1, statement->statementList);
-                _output(indentationLevel, "}\n");
+                _output(outputFile, 0, "{\n");
+                _generateStatementList(outputFile, indentationLevel + 1, statement->statementList);
+                _output(outputFile, indentationLevel, "}\n");
             }
             /* Note: else handling requires AST extension / symbol table for disambiguation */
             break;
         case WHILE_STATEMENT:
-            _output(indentationLevel, "while (");
-            _generateExpressionInline(statement->condition);
-            _output(0, ") ");
+            _output(outputFile, indentationLevel, "while (");
+            _generateExpressionInline(outputFile, statement->condition);
+            _output(outputFile, 0, ") ");
             if (statement->statementList != NULL && statement->statementList->type == COMPOUND_STATEMENT) {
-                _generateStatement(indentationLevel, statement->statementList);
+                _generateStatement(outputFile, indentationLevel, statement->statementList);
             } else {
-                _output(0, "{\n");
-                _generateStatementList(indentationLevel + 1, statement->statementList);
-                _output(indentationLevel, "}\n");
+                _output(outputFile, 0, "{\n");
+                _generateStatementList(outputFile, indentationLevel + 1, statement->statementList);
+                _output(outputFile, indentationLevel, "}\n");
             }
             break;
         case DO_WHILE_STATEMENT:
-            _output(indentationLevel, "do {\n");
-            _generateStatementList(indentationLevel + 1, statement->statementList);
-            _output(indentationLevel, "} while (");
-            _generateExpressionInline(statement->condition);
-            _output(0, ");\n");
+            _output(outputFile, indentationLevel, "do {\n");
+            _generateStatementList(outputFile, indentationLevel + 1, statement->statementList);
+            _output(outputFile, indentationLevel, "} while (");
+            _generateExpressionInline(outputFile, statement->condition);
+            _output(outputFile, 0, ");\n");
             break;
         case FOR_STATEMENT:
-            _output(indentationLevel, "for (");
-            _generateForInitInline(statement->initialization);
-            _output(0, "; ");
-            if (statement->loopCondition != NULL) _generateExpressionInline(statement->loopCondition);
-            _output(0, "; ");
-            if (statement->postIteration != NULL) _generateExpressionInline(statement->postIteration);
-            _output(0, ") ");
+            _output(outputFile, indentationLevel, "for (");
+            _generateForInitInline(outputFile, statement->initialization);
+            _output(outputFile, 0, "; ");
+            if (statement->loopCondition != NULL) _generateExpressionInline(outputFile, statement->loopCondition);
+            _output(outputFile, 0, "; ");
+            if (statement->postIteration != NULL) _generateExpressionInline(outputFile, statement->postIteration);
+            _output(outputFile, 0, ") ");
             if (statement->statementList != NULL && statement->statementList->type == COMPOUND_STATEMENT) {
-                _generateStatement(indentationLevel, statement->statementList);
+                _generateStatement(outputFile, indentationLevel, statement->statementList);
             } else {
-                _output(0, "{\n");
-                _generateStatementList(indentationLevel + 1, statement->statementList);
-                _output(indentationLevel, "}\n");
+                _output(outputFile, 0, "{\n");
+                _generateStatementList(outputFile, indentationLevel + 1, statement->statementList);
+                _output(outputFile, indentationLevel, "}\n");
             }
             break;
         case EMPTY_STATEMENT:
-            _output(indentationLevel, ";\n");
+            _output(outputFile, indentationLevel, ";\n");
             break;
         default:
             logWarning(_logger, "Unknown statement type %d", statement->type);
-            _output(indentationLevel, "/* TODO: statement type %d */\n", statement->type);
+            _output(outputFile, indentationLevel, "/* TODO: statement type %d */\n", statement->type);
             break;
     }
 }
 
-static void _generatePrototypes(int indentationLevel, Program * program) {
-    BlockDeclaration * block = program->blockDeclaration;
-    while (block != NULL) {
-        if (block->type == CLASS_BLOCK) {
-            char * className = block->classDeclaration->identifier;
-            MemberDeclaration * member = block->classDeclaration->classBody->memberList;
-            while (member != NULL) {
-                if (member->type == METHOD_MEMBER || member->type == CONSTRUCTOR_MEMBER) {
-                    MethodDeclaration * method = member->methodDeclaration;
-                    int isConstructor = (member->type == CONSTRUCTOR_MEMBER);
-                    _emitFunctionSignature(indentationLevel, className, method, method->isStatic, isConstructor);
-                    _output(0, ";\n");
-                }
-                member = member->next;
+
+// <=========================================================== ADT ===========================================================>
+
+// <--------------------------------------------------------- source --------------------------------------------------------->
+
+static void _generateClassBody(FILE * outputFile, int indentationLevel, ClassDeclaration * classDeclaration) {
+    char * className = classDeclaration->identifier;
+    MemberDeclaration * member = classDeclaration->classBody->memberList;
+    while (member != NULL) {
+        if (member->type == METHOD_MEMBER || member->type == CONSTRUCTOR_MEMBER) {
+            MethodDeclaration * method = member->methodDeclaration;
+            int isConstructor = (member->type == CONSTRUCTOR_MEMBER);
+            _emitFunctionSignature(outputFile, indentationLevel, className, method, method->isStatic, isConstructor);
+            _output(outputFile, 0, " {\n");
+            if (isConstructor) {
+                _output(outputFile, indentationLevel + 1, "%s this = malloc(sizeof(struct " CDT_NAME_FORMAT "));\n", className, className);
             }
-        } else if (block->type == METHOD_BLOCK) {
-             MethodDeclaration * method = block->methodDeclaration;
-             _emitType(indentationLevel, method->returnType);
-             _output(0, " %s(", method->identifier);
-             Parameter * param = method->parameterList;
-             int first = 1;
-             while (param != NULL) {
-                if (!first) _output(0, ", ");
-                _emitType(0, param->typeSpecifier);
-                _output(0, " %s", param->identifier);
-                first = 0;
-                param = param->next;
-             }
-             _output(0, ");\n");
+            // Generate method body from its Statement list
+            if (method->statementList != NULL) {
+                _generateStatementList(outputFile, indentationLevel + 1, method->statementList);
+            } else {
+                _output(outputFile, indentationLevel + 1, "// empty body\n");
+            }
+            if (isConstructor) {
+                _output(outputFile, indentationLevel + 1, "return this;\n");
+            }
+            _output(outputFile, indentationLevel, "}\n\n");
         }
-        block = block->next;
+        member = member->next;
     }
-    _output(0, "\n");
 }
 
-static void _generateBodies(int indentationLevel, Program * program) {
-    BlockDeclaration * block = program->blockDeclaration;
-    while (block != NULL) {
-        if (block->type == CLASS_BLOCK) {
-            char * className = block->classDeclaration->identifier;
-            MemberDeclaration * member = block->classDeclaration->classBody->memberList;
-            while (member != NULL) {
-                if (member->type == METHOD_MEMBER || member->type == CONSTRUCTOR_MEMBER) {
-                    MethodDeclaration * method = member->methodDeclaration;
-                    int isConstructor = (member->type == CONSTRUCTOR_MEMBER);
-                    _emitFunctionSignature(indentationLevel, className, method, method->isStatic, isConstructor);
-                    _output(0, " {\n");
-                    if (isConstructor) {
-                        _output(indentationLevel + 1, "%s this = malloc(sizeof(struct " CDT_NAME_FORMAT "));\n", className, className);
-                    }
-                    // Generate method body from its Statement list
-                    if (method->statementList != NULL) {
-                        _generateStatementList(indentationLevel + 1, method->statementList);
-                    } else {
-                        _output(indentationLevel + 1, "// empty body\n");
-                    }
-                    if (isConstructor) {
-                        _output(indentationLevel + 1, "return this;\n");
-                    }
-                    _output(indentationLevel, "}\n\n");
+static void _generateStaticGlobals(FILE * sourceFile, int indentationLevel, ClassDeclaration * classDeclaration) {
+    char * className = classDeclaration->identifier;
+    MemberDeclaration * member = classDeclaration->classBody->memberList;
+    while (member != NULL) {
+        if (member->type == FIELD_MEMBER) {
+            FieldDeclaration * field = member->fieldDeclaration;
+            if (field->isStatic) {
+                _emitType(sourceFile, indentationLevel, field->typeSpecifier);
+                _output(sourceFile, 0, " %s_%s", className, field->identifier);
+                if (field->initializationExpression != NULL) {
+                    _output(sourceFile, 0, " = ");
+                    _generateExpressionInline(sourceFile, field->initializationExpression);
                 }
-                member = member->next;
+                _output(sourceFile, 0, ";\n");
             }
-        } else if (block->type == METHOD_BLOCK) {
-             MethodDeclaration * method = block->methodDeclaration;
-             _emitType(indentationLevel, method->returnType);
-             _output(0, " %s(", method->identifier);
-             Parameter * param = method->parameterList;
-             int first = 1;
-             while (param != NULL) {
-                if (!first) _output(0, ", ");
-                _emitType(0, param->typeSpecifier);
-                _output(0, " %s", param->identifier);
-                first = 0;
-                param = param->next;
-             }
-             _output(0, ") {\n");
-             if (method->statementList != NULL) {
-                 _generateStatementList(indentationLevel + 1, method->statementList);
-             } else {
-                 _output(indentationLevel + 1, "// empty body\n");
-             }
-             _output(indentationLevel, "}\n\n");
         }
+        member = member->next;
+    }
+    _output(sourceFile, 0, "\n");
+}
+
+static void _generateStructs(FILE * sourceFile, int indentationLevel, ClassDeclaration * classDeclaration) {
+    char * className = classDeclaration->identifier;
+    _output(sourceFile, indentationLevel, "struct " CDT_NAME_FORMAT " {\n", className);
+    
+    MemberDeclaration * member = classDeclaration->classBody->memberList;
+    while (member != NULL) {
+        if (member->type == FIELD_MEMBER) {
+            FieldDeclaration * field = member->fieldDeclaration;
+            if (!field->isStatic) {
+                _emitType(sourceFile, indentationLevel + 1, field->typeSpecifier);
+                _output(sourceFile, 0, " %s;\n", field->identifier);
+            }
+        }
+        member = member->next;
+    }
+    _output(sourceFile, indentationLevel, "};\n\n");
+}
+
+static void _generateHeaderIncludes(FILE * mainFile, FILE * sourceFile, int indentationLevel, char * headerFileName) {
+    char * headerInclude = concatenate(3, INCLUDE_PREFIX, headerFileName, "\"\n\n");
+    _output(mainFile, indentationLevel, headerInclude);
+    _output(sourceFile, indentationLevel, headerInclude);
+    free(headerInclude);
+}
+
+static void _generateADTSource(FILE * mainFile, char * headerFileName, ClassDeclaration * classDeclaration) {
+    FILE * sourceFile;
+    char * sourceFileName = concatenate(3, classDeclaration->identifier, ADT_NAME_SUFFIX, ".c");
+    sourceFile = fopen(sourceFileName, "w");
+
+    _generateHeaderIncludes(mainFile, sourceFile, 0, headerFileName);
+    _generateStructs(sourceFile, 0, classDeclaration);
+    _generateStaticGlobals(sourceFile, 0, classDeclaration);
+    _generateClassBody(sourceFile, 0, classDeclaration);
+
+    fclose(sourceFile);
+    free(sourceFileName);
+}
+
+// <-------------------------------------------------------------------------------------------------------------------------->
+
+// <--------------------------------------------------------- header --------------------------------------------------------->
+
+static void _generateTypedef(FILE * headerFile, int indentationLevel, ClassDeclaration * classDeclaration) {
+    char * name = classDeclaration->identifier;
+    _output(headerFile, indentationLevel, "typedef struct " CDT_NAME_FORMAT " * %s;\n\n", name, name);
+}
+
+static void _generateClassPrototypes(FILE * outputFile, int indentationLevel, ClassDeclaration * classDeclaration) {
+    char * className = classDeclaration->identifier;
+    MemberDeclaration * member = classDeclaration->classBody->memberList;
+    while (member != NULL) {
+        if (member->type == METHOD_MEMBER || member->type == CONSTRUCTOR_MEMBER) {
+            MethodDeclaration * method = member->methodDeclaration;
+            int isConstructor = (member->type == CONSTRUCTOR_MEMBER);
+            _emitFunctionSignature(outputFile, indentationLevel, className, method, method->isStatic, isConstructor);
+            _output(outputFile, 0, ";\n\n");
+        }
+        member = member->next;
+    }
+}
+
+static void _generateADTHeader(char ** headerFileName, ClassDeclaration * classDeclaration) {
+    FILE * headerFile;
+    *headerFileName = concatenate(3, classDeclaration->identifier, ADT_NAME_SUFFIX, ".h");
+    headerFile = fopen(*headerFileName, "w");
+
+    _generateTypedef(headerFile, 0, classDeclaration);
+    _generateClassPrototypes(headerFile, 0, classDeclaration);
+
+    fclose(headerFile);
+}
+
+// <-------------------------------------------------------------------------------------------------------------------------->
+
+static void _generateADT(FILE * mainFile, ClassDeclaration * classDeclaration) {
+    char * headerFileName;
+    _generateADTHeader(&headerFileName, classDeclaration);
+    _generateADTSource(mainFile, headerFileName, classDeclaration);
+    free(headerFileName);
+}
+
+// <===============================================================================================================================>
+
+
+// <=========================================================== METHODS ===========================================================>
+
+static void _generateMethodsBodies(FILE * mainFile, int indentationLevel, BlockDeclaration * block) {
+    while (block != NULL) {
+        MethodDeclaration * method = block->methodDeclaration;
+        _emitType(mainFile, indentationLevel, method->returnType);
+        _output(mainFile, 0, " %s(", method->identifier);
+        Parameter * param = method->parameterList;
+        int first = 1;
+        while (param != NULL) {
+            if (!first) _output(mainFile, 0, ", ");
+            _emitType(mainFile, 0, param->typeSpecifier);
+            _output(mainFile, 0, " %s", param->identifier);
+            first = 0;
+            param = param->next;
+        }
+        _output(mainFile, 0, ") {\n");
+        if (method->statementList != NULL) {
+            _generateStatementList(mainFile, indentationLevel + 1, method->statementList);
+        } else {
+            _output(mainFile, indentationLevel + 1, "// empty body\n");
+        }
+        _output(mainFile, indentationLevel, "}\n\n");
+
         block = block->next;
     }
 }
+
+static void _generateMethodsPrototypes(FILE * mainFile, int indentationLevel, BlockDeclaration * block) {
+    while(block != NULL) {
+        MethodDeclaration * method = block->methodDeclaration;
+        if(strcmp(method->identifier, "main") != 0) {
+            _emitType(mainFile, indentationLevel, method->returnType);
+            _output(mainFile, 0, " %s(", method->identifier);
+            Parameter * param = method->parameterList;
+            int first = 1;
+            while (param != NULL) {
+                if (!first) _output(mainFile, 0, ", ");
+                _emitType(mainFile, 0, param->typeSpecifier);
+                _output(mainFile, 0, " %s", param->identifier);
+                first = 0;
+                param = param->next;
+            }
+            _output(mainFile, 0, ");\n");
+        }
+
+        block = block->next;
+    }
+}
+
+static void _generateMethods(FILE * mainFile, BlockDeclaration * methodDeclaration) {
+    _generateMethodsPrototypes(mainFile, 0, methodDeclaration);
+    _generateMethodsBodies(mainFile, 0, methodDeclaration);
+}
+
+// <===============================================================================================================================>
+
+
+// <=========================================================== PROGRAM ===========================================================>
+
+static void _generateProgram(Program * program) {
+    FILE * mainFile = fopen(MAIN_FILE_NAME, "w");
+
+    BlockDeclaration * block = program->blockDeclaration, * aux, * methodDeclarations = NULL;
+    
+    while (block != NULL) {
+        if (block->type == CLASS_BLOCK) {
+            _generateADT(mainFile, block->classDeclaration);
+            block = block->next;
+        } else if(block->type == METHOD_BLOCK) {
+            aux = block;
+            block = block->next;
+            aux->next = methodDeclarations;
+            methodDeclarations = aux;
+        } else {
+            block = block->next;
+        }
+    }
+
+    _generateMethods(mainFile, methodDeclarations);
+
+    fclose(mainFile);
+}
+
+// <===============================================================================================================================>
+
 
 void executeGenerator(CompilerState * compilerState) {
     logDebugging(_logger, "Generating C code...");
     Program * program = compilerState->abstractSyntaxtTree;
-    
-    _generateTypedefs(0, program);
-    _generateStructs(0, program);
-    _generateStaticGlobals(0, program);
-    _generatePrototypes(0, program);
-    _generateBodies(0, program);
+
+    _generateProgram(program);
     
     logDebugging(_logger, "Generation done.");
 }
