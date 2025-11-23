@@ -136,7 +136,7 @@ static void _generateStaticGlobals(int indentationLevel, Program * program) {
 static void _emitFunctionSignature(int indentationLevel, char * className, MethodDeclaration * method, int isStatic, int isConstructor) {
     if (isConstructor) {
         if (method->returnType) _emitType(indentationLevel, method->returnType);
-        else _output(indentationLevel, "void");
+        else _output(indentationLevel, className);
         _output(0, " %s" CONSTRUCTOR_SUFFIX, className);
     } else {
         _emitType(indentationLevel, method->returnType);
