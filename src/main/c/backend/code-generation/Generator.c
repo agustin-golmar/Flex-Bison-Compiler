@@ -135,8 +135,7 @@ static void _generateStaticGlobals(int indentationLevel, Program * program) {
 
 static void _emitFunctionSignature(int indentationLevel, char * className, MethodDeclaration * method, int isStatic, int isConstructor) {
     if (isConstructor) {
-        if (method->returnType) _emitType(indentationLevel, method->returnType);
-        else _output(indentationLevel, className);
+        _output(indentationLevel, className);
         _output(0, " %s" CONSTRUCTOR_SUFFIX, className);
     } else {
         _emitType(indentationLevel, method->returnType);
@@ -277,7 +276,9 @@ static void _generateExpressionInline(Expression * expression) {
             break;
         case NEW_EXPRESSION:
             if (expression->identifier != NULL) {
-                _output(0, "malloc(sizeof(struct " CDT_NAME_FORMAT "))", expression->identifier);
+                _output(0, "%s" CONSTRUCTOR_SUFFIX "(", expression->identifier);
+                _generateArgumentListInline(expression->argumentList);
+                _output(0, ")");
             } else {
                 logWarning(_logger, "Unknown type in 'new' expression");
                 _output(0, "/* TODO: new (unknown type) */");
@@ -482,11 +483,17 @@ static void _generateBodies(int indentationLevel, Program * program) {
                     int isConstructor = (member->type == CONSTRUCTOR_MEMBER);
                     _emitFunctionSignature(indentationLevel, className, method, method->isStatic, isConstructor);
                     _output(0, " {\n");
+                    if (isConstructor) {
+                        _output(indentationLevel + 1, "%s this = malloc(sizeof(struct " CDT_NAME_FORMAT "));\n", className, className);
+                    }
                     // Generate method body from its Statement list
                     if (method->statementList != NULL) {
                         _generateStatementList(indentationLevel + 1, method->statementList);
                     } else {
                         _output(indentationLevel + 1, "// empty body\n");
+                    }
+                    if (isConstructor) {
+                        _output(indentationLevel + 1, "return this;\n");
                     }
                     _output(indentationLevel, "}\n\n");
                 }
