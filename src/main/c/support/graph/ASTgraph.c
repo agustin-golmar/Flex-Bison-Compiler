@@ -487,12 +487,17 @@ static void ASTChildren(ASTNode node, ASTNode children[], int *out_count) {
         case EMPTY_EXPRESSION:
             break;
 
-        case PRE_INCREMENT_EXPRESSION: case POST_INCREMENT_EXPRESSION:
-        case PRE_DECREMENT_EXPRESSION: case POST_DECREMENT_EXPRESSION:
+        case POST_INCREMENT_EXPRESSION:
+        case POST_DECREMENT_EXPRESSION:
             if (e->leftExpression) children[count++] = makeASTNode(AST_EXPRESSION, e->leftExpression);
             break;
-        case NEGATION: case LOGICAL_NOT_EXPRESSION:
-            if (e->factor) children[count++] = makeASTNode(AST_FACTOR, e->factor);
+
+        case PRE_INCREMENT_EXPRESSION: 
+        case PRE_DECREMENT_EXPRESSION: 
+        case NEGATION: 
+        case LOGICAL_NOT_EXPRESSION:
+          // see right expression
+            if (e->rightExpression) children[count++] = makeASTNode(AST_EXPRESSION, e->rightExpression);
             break;
 
         case FACTOR:
