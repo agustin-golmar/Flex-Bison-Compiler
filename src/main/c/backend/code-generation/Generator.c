@@ -253,8 +253,9 @@ static void _generateExpressionInline(Expression * expression) {
             break;
         case FUNCTION_CALL:
             if (expression->identifier != NULL) {
-                _output(0, "%s(", expression->identifier);
-                _generateArgumentListInline(expression->argumentList);
+                _generateExpressionInline(expression->precedingExpression);
+                _output(0, "(");
+                _generateArgumentListInline(expression->args);
                 _output(0, ")");
             } else {
                 // Could be indirect call; symbol table needed to resolve — leave TODO

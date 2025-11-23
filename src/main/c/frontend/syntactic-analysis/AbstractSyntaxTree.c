@@ -61,8 +61,8 @@ void destroyExpression(Expression * expression) {
 				destroyExpression(expression->rightExpression);
 				break;
 			case FUNCTION_CALL:
-				destroyExpression(expression->leftExpression);
-				destroyArgumentList(expression->argumentList);
+				destroyExpression(expression->precedingExpression);
+				destroyArgumentList(expression->args);
 				break;
 			case IDENTIFIER_EXPRESSION:
 				if (expression->identifier != NULL) {

@@ -152,6 +152,10 @@ struct Expression {
 				int integerValue;
 			};
 		};
+		struct {
+			Expression *precedingExpression;
+			ArgumentList *args;
+		};
 	};
 	ExpressionType type;
 };

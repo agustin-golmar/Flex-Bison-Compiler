@@ -766,8 +766,8 @@ Expression * MemberAccessSemanticAction(Expression * expression, char * identifi
 Expression * FunctionCallSemanticAction(Expression * expression, ArgumentList * argumentList) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Expression * functionCall = calloc(1, sizeof(Expression));
-	functionCall->leftExpression = expression;
-	functionCall->argumentList = argumentList;
+	functionCall->precedingExpression = expression;
+	functionCall->args = argumentList;
 	functionCall->type = FUNCTION_CALL;
 	return functionCall;
 }
