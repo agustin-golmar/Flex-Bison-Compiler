@@ -1,178 +1,205 @@
 #include "Generator.h"
+#include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
+#include "../../support/logging/Logger.h"
+#include <stdio.h>
+#include <stdarg.h>
 
-/* MODULE INTERNAL STATE */
+#define VOID_KEYWORD "void"
+#define CDT_NAME_FORMAT "%s_CDT"
+#define CONSTRUCTOR_SUFFIX "_constructor"
 
-const char _indentationCharacter = ' ';
-const char _indentationSize = 4;
 static Logger * _logger = NULL;
 
-/** Shutdown module's internal state. */
 void _shutdownGeneratorModule() {
-	if (_logger != NULL) {
-		logDebugging(_logger, "Destroying module: Generator...");
-		destroyLogger(_logger);
-		_logger = NULL;
-	}
+    if (_logger != NULL) {
+        destroyLogger(_logger);
+        _logger = NULL;
+    }
 }
 
 ModuleDestructor initializeGeneratorModule() {
-	_logger = createLogger("Generator");
-	return _shutdownGeneratorModule;
+    _logger = createLogger("Generator");
+    return _shutdownGeneratorModule;
 }
 
-/** PRIVATE FUNCTIONS */
-
-static char * _indentation(const unsigned int indentationLevel);
-static const char _expressionTypeToCharacter(const ExpressionType type);
-static void _generateConstant(const unsigned int indentationLevel, Constant * constant);
-static void _generateEpilogue(const int value);
-static void _generateExpression(const unsigned int indentationLevel, Expression * expression);
-static void _generateFactor(const unsigned int indentationLevel, Factor * factor);
-static void _generateProgram(Program * program);
-static void _generatePrologue(void);
-static void _output(const unsigned int indentationLevel, const char * const format, ...);
-
-/**
- * Converts and expression type to the proper character of the operation
- * involved, or returns '\0' if that's not possible.
- */
-static const char _expressionTypeToCharacter(const ExpressionType type) {
-	switch (type) {
-		case ADDITION: return '+';
-		case DIVISION: return '/';
-		case MULTIPLICATION: return '*';
-		case SUBTRACTION: return '-';
-		default:
-			logError(_logger, "The specified expression type cannot be converted into character: %d", type);
-			return '\0';
-	}
+static void _emitType(TypeSpecifier * type) {
+    if (type == NULL) return;
+    switch(type->type) {
+        case INT_TYPE: printf("int"); break;
+        case VOID_TYPE: printf(VOID_KEYWORD); break;
+        case CHAR_TYPE: printf("char"); break;
+        case STRING_TYPE: printf("char *"); break;
+        case IDENTIFIER_TYPE: printf("%s", type->identifier); break;
+        default: printf("unknown_type"); break;
+    }
 }
 
-/**
- * Generates the output of a constant.
- */
-static void _generateConstant(const unsigned int indentationLevel, Constant * constant) {
-	_output(indentationLevel, "%s", "[ $C$, circle, draw, black!20\n");
-	_output(1 + indentationLevel, "%s%d%s", "[ $", constant->value, "$, circle, draw ]\n");
-	_output(indentationLevel, "%s", "]\n");
+static void _generateTypedefs(Program * program) {
+    BlockDeclaration * block = program->blockDeclaration;
+    while (block != NULL) {
+        if (block->type == CLASS_BLOCK) {
+            char * name = block->classDeclaration->identifier;
+            printf("typedef struct " CDT_NAME_FORMAT " *%s;\n", name, name);
+        }
+        block = block->next;
+    }
+    printf("\n");
 }
 
-/**
- * Creates the epilogue of the generated output, that is, the final lines that
- * completes a valid Latex document.
- */
-static void _generateEpilogue(const int value) {
-	_output(0, "%s%d%s",
-		"            [ $", value, "$, circle, draw, blue ]\n"
-		"        ]\n"
-		"    \\end{forest}\n"
-		"\\end{document}\n\n"
-	);
+static void _generateStructs(Program * program) {
+    BlockDeclaration * block = program->blockDeclaration;
+    while (block != NULL) {
+        if (block->type == CLASS_BLOCK) {
+            char * className = block->classDeclaration->identifier;
+            printf("struct " CDT_NAME_FORMAT " {\n", className);
+            
+            MemberDeclaration * member = block->classDeclaration->classBody->memberList;
+            while (member != NULL) {
+                if (member->type == FIELD_MEMBER) {
+                    FieldDeclaration * field = member->fieldDeclaration;
+                    if (!field->isStatic) {
+                        printf("    ");
+                        _emitType(field->typeSpecifier);
+                        printf(" %s;\n", field->identifier);
+                    }
+                }
+                member = member->next;
+            }
+            printf("};\n\n");
+        }
+        block = block->next;
+    }
 }
 
-/**
- * Generates the output of an expression.
- */
-static void _generateExpression(const unsigned int indentationLevel, Expression * expression) {
-	_output(indentationLevel, "%s", "[ $E$, circle, draw, black!20\n");
-	switch (expression->type) {
-		case ADDITION:
-		case DIVISION:
-		case MULTIPLICATION:
-		case SUBTRACTION:
-			_generateExpression(1 + indentationLevel, expression->leftExpression);
-			_output(1 + indentationLevel, "%s%c%s", "[ $", _expressionTypeToCharacter(expression->type), "$, circle, draw, purple ]\n");
-			_generateExpression(1 + indentationLevel, expression->rightExpression);
-			break;
-		case FACTOR:
-			_generateFactor(1 + indentationLevel, expression->factor);
-			break;
-		default:
-			logError(_logger, "The specified expression type is unknown: %d", expression->type);
-			break;
-	}
-	_output(indentationLevel, "%s", "]\n");
+static void _generateStaticGlobals(Program * program) {
+    BlockDeclaration * block = program->blockDeclaration;
+    while (block != NULL) {
+        if (block->type == CLASS_BLOCK) {
+            char * className = block->classDeclaration->identifier;
+            MemberDeclaration * member = block->classDeclaration->classBody->memberList;
+            while (member != NULL) {
+                if (member->type == FIELD_MEMBER) {
+                    FieldDeclaration * field = member->fieldDeclaration;
+                    if (field->isStatic) {
+                        _emitType(field->typeSpecifier);
+                        printf(" %s_%s;\n", className, field->identifier);
+                    }
+                }
+                member = member->next;
+            }
+        }
+        block = block->next;
+    }
+    printf("\n");
 }
 
-/**
- * Generates the output of a factor.
- */
-static void _generateFactor(const unsigned int indentationLevel, Factor * factor) {
-	_output(indentationLevel, "%s", "[ $F$, circle, draw, black!20\n");
-	switch (factor->type) {
-		case CONSTANT:
-			_generateConstant(1 + indentationLevel, factor->constant);
-			break;
-		case EXPRESSION:
-			_output(1 + indentationLevel, "%s", "[ $($, circle, draw, purple ]\n");
-			_generateExpression(1 + indentationLevel, factor->expression);
-			_output(1 + indentationLevel, "%s", "[ $)$, circle, draw, purple ]\n");
-			break;
-		default:
-			logError(_logger, "The specified factor type is unknown: %d", factor->type);
-			break;
-	}
-	_output(indentationLevel, "%s", "]\n");
+static void _emitFunctionSignature(char * className, MethodDeclaration * method, int isStatic, int isConstructor) {
+    if (isConstructor) {
+        if (method->returnType) _emitType(method->returnType);
+        else printf(VOID_KEYWORD);
+        printf(" %s" CONSTRUCTOR_SUFFIX, className);
+    } else {
+        _emitType(method->returnType);
+        printf(" %s_%s", className, method->identifier);
+    }
+
+    printf("(");
+    int first = 1;
+    
+    if (!isStatic) {
+        printf("%s this", className);
+        first = 0;
+    }
+
+    Parameter * param = method->parameterList;
+    while (param != NULL) {
+        if (!first) printf(", ");
+        _emitType(param->typeSpecifier);
+        printf(" %s", param->identifier);
+        first = 0;
+        param = param->next;
+    }
+    printf(")");
 }
 
-/**
- * Generates the output of the program.
- */
-static void _generateProgram(Program * program) {
-	_generateExpression(3, program->blockDeclaration);
+static void _generatePrototypes(Program * program) {
+    BlockDeclaration * block = program->blockDeclaration;
+    while (block != NULL) {
+        if (block->type == CLASS_BLOCK) {
+            char * className = block->classDeclaration->identifier;
+            MemberDeclaration * member = block->classDeclaration->classBody->memberList;
+            while (member != NULL) {
+                if (member->type == METHOD_MEMBER || member->type == CONSTRUCTOR_MEMBER) {
+                    MethodDeclaration * method = member->methodDeclaration;
+                    int isConstructor = (member->type == CONSTRUCTOR_MEMBER);
+                    _emitFunctionSignature(className, method, method->isStatic, isConstructor);
+                    printf(";\n");
+                }
+                member = member->next;
+            }
+        } else if (block->type == METHOD_BLOCK) {
+             MethodDeclaration * method = block->methodDeclaration;
+             _emitType(method->returnType);
+             printf(" %s(", method->identifier);
+             Parameter * param = method->parameterList;
+             int first = 1;
+             while (param != NULL) {
+                if (!first) printf(", ");
+                _emitType(param->typeSpecifier);
+                printf(" %s", param->identifier);
+                first = 0;
+                param = param->next;
+             }
+             printf(");\n");
+        }
+        block = block->next;
+    }
+    printf("\n");
 }
 
-/**
- * Creates the prologue of the generated output, a Latex document that renders
- * a tree thanks to the Forest package.
- *
- * @see https://ctan.dcc.uchile.cl/graphics/pgf/contrib/forest/forest-doc.pdf
- */
-static void _generatePrologue(void) {
-	_output(0, "%s",
-		"\\documentclass{standalone}\n\n"
-		"\\usepackage[utf8]{inputenc}\n"
-		"\\usepackage[T1]{fontenc}\n"
-		"\\usepackage{amsmath}\n"
-		"\\usepackage{forest}\n"
-		"\\usepackage{microtype}\n\n"
-		"\\begin{document}\n"
-		"    \\centering\n"
-		"    \\begin{forest}\n"
-		"        [ \\text{$=$}, circle, draw, purple\n"
-	);
+static void _generateBodies(Program * program) {
+    BlockDeclaration * block = program->blockDeclaration;
+    while (block != NULL) {
+        if (block->type == CLASS_BLOCK) {
+            char * className = block->classDeclaration->identifier;
+            MemberDeclaration * member = block->classDeclaration->classBody->memberList;
+            while (member != NULL) {
+                if (member->type == METHOD_MEMBER || member->type == CONSTRUCTOR_MEMBER) {
+                    MethodDeclaration * method = member->methodDeclaration;
+                    int isConstructor = (member->type == CONSTRUCTOR_MEMBER);
+                    _emitFunctionSignature(className, method, method->isStatic, isConstructor);
+                    printf(" {\n    // TODO: Implementation\n}\n\n");
+                }
+                member = member->next;
+            }
+        } else if (block->type == METHOD_BLOCK) {
+             MethodDeclaration * method = block->methodDeclaration;
+             _emitType(method->returnType);
+             printf(" %s(", method->identifier);
+             Parameter * param = method->parameterList;
+             int first = 1;
+             while (param != NULL) {
+                if (!first) printf(", ");
+                _emitType(param->typeSpecifier);
+                printf(" %s", param->identifier);
+                first = 0;
+                param = param->next;
+             }
+             printf(") {\n    // TODO: Implementation\n}\n\n");
+        }
+        block = block->next;
+    }
 }
-
-/**
- * Generates an indentation string for the specified level.
- */
-static char * _indentation(const unsigned int level) {
-	return indentation(_indentationCharacter, level, _indentationSize);
-}
-
-/**
- * Outputs a formatted string to standard output. The "fflush" instruction
- * allows to see the output even close to a failure, because it drops the
- * buffering.
- */
-static void _output(const unsigned int indentationLevel, const char * const format, ...) {
-	va_list arguments;
-	va_start(arguments, format);
-	char * indentation = _indentation(indentationLevel);
-	char * effectiveFormat = concatenate(2, indentation, format);
-	vfprintf(stdout, effectiveFormat, arguments);
-	fflush(stdout);
-	free(effectiveFormat);
-	free(indentation);
-	va_end(arguments);
-}
-
-/** PUBLIC FUNCTIONS */
 
 void executeGenerator(CompilerState * compilerState) {
-	logDebugging(_logger, "Generating final output...");
-	_generatePrologue();
-	_generateProgram(compilerState->abstractSyntaxtTree);
-	_generateEpilogue(compilerState->value);
-	logDebugging(_logger, "Generation is done.");
+    logDebugging(_logger, "Generating C code...");
+    Program * program = compilerState->abstractSyntaxtTree;
+    
+    _generateTypedefs(program);
+    _generateStructs(program);
+    _generateStaticGlobals(program);
+    _generatePrototypes(program);
+    _generateBodies(program);
+    
+    logDebugging(_logger, "Generation done.");
 }

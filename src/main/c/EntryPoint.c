@@ -40,8 +40,7 @@ const int main(const int length, const char ** arguments) {
 		logDebugging(logger, "Computing expression value...");
 		ComputationResult computationResult = executeSemanticalAnalysis(&compilerState);
 		if (computationResult.succeeded) {
-
-			// executeGenerator(&compilerState);
+			executeGenerator(&compilerState);
 		}
 		else {
 			logError(logger, "The computation phase rejects the input program.");
