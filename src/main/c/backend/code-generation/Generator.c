@@ -122,7 +122,12 @@ static void _generateStaticGlobals(int indentationLevel, Program * program) {
                     FieldDeclaration * field = member->fieldDeclaration;
                     if (field->isStatic) {
                         _emitType(indentationLevel, field->typeSpecifier);
-                        _output(0, " %s_%s;\n", className, field->identifier);
+                        _output(0, " %s_%s", className, field->identifier);
+                        if (field->initializationExpression != NULL) {
+                            _output(0, " = ");
+                            _generateExpressionInline(field->initializationExpression);
+                        }
+                        _output(0, ";\n");
                     }
                 }
                 member = member->next;
