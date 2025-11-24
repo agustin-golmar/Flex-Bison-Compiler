@@ -5,17 +5,114 @@
 #include "../../../support/logging/Logger.h"
 #include "../../../support/type/ModuleDestructor.h"
 #include "../../../support/type/CompilerState.h"
+#include "../../../support/data-structures/HashMapADT.h"
+#include "../../../support/data-structures/stack/stack.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 /* MODULE INTERNAL STATE */
 
+/* -------------------------------------------------------------------------- */
+/* Result helpers                                                              */
+/* -------------------------------------------------------------------------- */
+
+static ComputationResult _invalidComputation() {
+  ComputationResult r = { .succeeded = false };
+  return r;
+}
+
+static ComputationResult _ok() {
+  ComputationResult r = { .succeeded = true };
+  return r;
+}
+
 static Logger * _logger = NULL;
-static CompilerState * _compilerState = NULL;
+static CompilerState * _cs = NULL;
+
+
+typedef struct SymbolTableValue {
+
+  TypeSpecifier * type; 
+  char * identifier;  
+  Expression * initialization;
+
+} SymbolTableValue;
+
+
+static int hash(void *str) {
+    char *string = *(char **)str; 
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *string++))
+        hash = ((hash << 5) + hash) + c;
+    return hash;
+}
+
+static bool stringEquals(void *a, void *b) {
+    char *str_a = *(char **)a; 
+    char *str_b = *(char **)b; 
+    return strcmp(str_a, str_b) == 0;
+}
+
+static int getNewScopeId() {
+  static int currentScopeId = 0;
+  return currentScopeId++;
+}
+
+static HashMapADT newHashMap() {
+  return hash_map_new(
+    sizeof(char*), 
+    sizeof(SymbolTableValue), 
+    &hash,
+    &stringEquals);
+}
+
+static Scope * pushNewScope() {
+  Scope * newScope = (Scope*)calloc(1, sizeof(Scope));
+  newScope->id = getNewScopeId();
+  newScope->symbols = newHashMap();
+  logDebugging(_logger, "Pushing scope with id %d onto the stack.", newScope->id);
+
+  _cs->currentScope = newScope;
+  pushStack(_cs->scopeStack, &_cs->currentScope);
+  return newScope;
+}
+
+static Scope * popScope() {
+  Scope * poppedScope;
+  if (isEmptyStack(_cs->scopeStack)) {
+    logDebugging(_logger, "Scope stack is empty, cannot pop scope.");
+    return NULL;
+  } 
+  popStack(_cs->scopeStack, &poppedScope);
+  logDebugging(_logger, "Popping scope id %d from the stack.", poppedScope->id);
+  return poppedScope;
+}
+
+void popAndDestroyScope() {
+  Scope *oldScope = popScope();
+  if (oldScope != NULL) {
+    hash_map_free(oldScope->symbols);
+    free(oldScope);
+  }
+}
+
+
 
 /** Shutdown module's internal state. */
 void _shutdownCplusSemanticAnalyzerModule() {
+
+  logDebugging(_logger, "Freeing symbol table and scopes...");
+  while (!isEmptyStack(_cs->scopeStack)) {
+    Scope *scope;
+    popStack(_cs->scopeStack, &scope);
+    hash_map_free(scope->symbols);
+    free(scope);
+  }
+  
+  freeStack(_cs->scopeStack);
+
 	if (_logger != NULL) {
 		logDebugging(_logger, "Destroying module: CplusSemanticAnalyzer...");
 		destroyLogger(_logger);
@@ -27,25 +124,6 @@ ModuleDestructor initializeCplusSemanticAnalyzerModule() {
 	_logger = createLogger("CplusSemanticAnalyzer");
 	return _shutdownCplusSemanticAnalyzerModule;
 }
-
-/* -------------------------------------------------------------------------- */
-/* Result helpers                                                              */
-/* -------------------------------------------------------------------------- */
-
-static ComputationResult _invalidComputation() {
-	ComputationResult r = { .succeeded = false };
-	return r;
-}
-
-static ComputationResult _ok() {
-	ComputationResult r = { .succeeded = true };
-	return r;
-}
-
-
-// NOTE: this is the main skeleton, but we still need to add
-// type checking
-// symbol table
 
 /* -------------------------------------------------------------------------- */
 /* Forward declarations                                                        */
@@ -71,19 +149,11 @@ ComputationResult computeParameterList(Parameter * params);
 ComputationResult executeSemanticalAnalysis(CompilerState * compilerState) {
 	logDebugging(_logger, "Executing Cplus semantic analyzer...");
 
-	if (compilerState == NULL) {
-		logError(_logger, "Null compiler state passed to semantic analyzer.");
-		return _invalidComputation();
-	}
+  _cs = compilerState;
+  _cs->scopeStack = createStack(sizeof(Scope*));
+  _cs->currentScope = pushNewScope();
 
-	_compilerState = compilerState;
-
-	if (_compilerState->abstractSyntaxtTree == NULL) {
-		logError(_logger, "CompilerState has no AST (abstractSyntaxtTree == NULL).");
-		return _invalidComputation();
-	}
-
-	Program *program = (Program *) _compilerState->abstractSyntaxtTree;
+	Program *program = (Program *) _cs->abstractSyntaxtTree;
 	return computeProgram(program);
 }
 
@@ -116,6 +186,9 @@ ComputationResult computeBlock(BlockDeclaration * blockDeclaration) {
 
 	BlockDeclaration *current = blockDeclaration;
 	while (current != NULL) {
+
+    pushNewScope();
+    
 		switch (current->type) {
 			case CLASS_BLOCK:
 				logDebugging(_logger, "Computing CLASS_BLOCK.");
@@ -134,8 +207,9 @@ ComputationResult computeBlock(BlockDeclaration * blockDeclaration) {
 				return _invalidComputation();
 		}
 		current = current->next;
-	}
 
+    popAndDestroyScope();
+	}
 	return _ok();
 }
 
@@ -198,7 +272,20 @@ ComputationResult computeMemberDeclaration(MemberDeclaration * member) {
 
 	switch (member->type) {
 		case FIELD_MEMBER:
-			logDebugging(_logger, "Member: FIELD_MEMBER");
+      // in this case, where are looking at a field declaration, for example public int a; 
+      char * key = member->fieldDeclaration->identifier; 
+      if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
+        return _invalidComputation();
+      }
+      logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+      
+      SymbolTableValue value = {
+        .type = member->fieldDeclaration->typeSpecifier,
+        .identifier = member->fieldDeclaration->identifier,
+        .initialization = member->fieldDeclaration->initializationExpression
+      };
+      
+      hash_map_put(_cs->currentScope->symbols, &key, &value);
 			return computeFieldDeclaration(member->fieldDeclaration);
 
 		case METHOD_MEMBER:
