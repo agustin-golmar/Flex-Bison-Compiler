@@ -13,6 +13,7 @@
 const char _indentationCharacter = ' ';
 const char _indentationSize = 4;
 static Logger * _logger = NULL;
+static char * instanceName = NULL;
 
 void _shutdownGeneratorModule() {
     if (_logger != NULL) {
@@ -34,12 +35,12 @@ static void _generateStructs(FILE * sourceFile, int indentationLevel, ClassDecla
 static void _generateStaticGlobals(FILE * sourceFile, int indentationLevel, ClassDeclaration * classDeclaration);
 static void _emitFunctionSignature(FILE * sourceFile, int indentationLevel, char * className, MethodDeclaration * method, int isStatic, int isConstructor);
 static const char * _expressionOperatorString(ExpressionType type);
-static void _generateExpressionInline(FILE * sourceFile, Expression * expression);
-static void _generateFactorInline(FILE * sourceFile, Factor * factor);
-static void _generateArgumentListInline(FILE * sourceFile, ArgumentList * args);
-static void _generateStatement(FILE * sourceFile, int indentationLevel, Statement * statement);
-static void _generateStatementList(FILE * sourceFile, int indentationLevel, Statement * statement);
-static void _generateForInitInline(FILE * sourceFile, Statement * init);
+static void _generateExpressionInline(FILE * sourceFile, Expression * expression, int isClass);
+static void _generateFactorInline(FILE * sourceFile, Factor * factor, int isClass);
+static void _generateArgumentListInline(FILE * sourceFile, ArgumentList * args, int isClass);
+static void _generateStatement(FILE * sourceFile, int indentationLevel, Statement * statement, int isClass);
+static void _generateStatementList(FILE * sourceFile, int indentationLevel, Statement * statement, int isClass);
+static void _generateForInitInline(FILE * sourceFile, Statement * init, int isClass);
 static void _generateClassPrototypes(FILE * outputFile, int indentationLevel, ClassDeclaration * classDeclaration);
 static void _generateMethodsPrototypes(FILE * outputFile, int indentationLevel, BlockDeclaration * block);
 static void _generateClassBody(FILE * outputFile, int indentationLevel, ClassDeclaration * classDeclaration);
@@ -135,7 +136,7 @@ static const char * _expressionOperatorString(ExpressionType type) {
     }
 }
 
-static void _generateFactorInline(FILE * outputFile, Factor * factor) {
+static void _generateFactorInline(FILE * outputFile, Factor * factor, int isClass) {
     if (factor == NULL) return;
     switch (factor->type) {
         case CONSTANT:
@@ -143,7 +144,7 @@ static void _generateFactorInline(FILE * outputFile, Factor * factor) {
             break;
         case EXPRESSION:
             _output(outputFile, 0, "(");
-            _generateExpressionInline(outputFile, factor->expression);
+            _generateExpressionInline(outputFile, factor->expression, isClass);
             _output(outputFile, 0, ")");
             break;
         default:
@@ -153,18 +154,18 @@ static void _generateFactorInline(FILE * outputFile, Factor * factor) {
     }
 }
 
-static void _generateArgumentListInline(FILE * outputFile, ArgumentList * args) {
+static void _generateArgumentListInline(FILE * outputFile, ArgumentList * args, int isClass) {
     ArgumentList * cur = args;
     int first = 1;
     while (cur != NULL) {
         if (!first) _output(outputFile, 0, ", ");
-        _generateExpressionInline(outputFile, cur->expression);
+        _generateExpressionInline(outputFile, cur->expression, isClass);
         first = 0;
         cur = cur->next;
     }
 }
 
-static void _generateExpressionInline(FILE * outputFile, Expression * expression) {
+static void _generateExpressionInline(FILE * outputFile, Expression * expression, int isClass) {
     if (expression == NULL) return;
     const char * op;
     switch (expression->type) {
@@ -181,34 +182,43 @@ static void _generateExpressionInline(FILE * outputFile, Expression * expression
         case LOGICAL_AND_EXPRESSION:
         case LOGICAL_OR_EXPRESSION:
             _output(outputFile, 0, "(");
-            _generateExpressionInline(outputFile, expression->leftExpression);
+            _generateExpressionInline(outputFile, expression->leftExpression, isClass);
             op = _expressionOperatorString(expression->type);
             if (op) _output(outputFile, 0, " %s ", op);
-            _generateExpressionInline(outputFile, expression->rightExpression);
+            _generateExpressionInline(outputFile, expression->rightExpression, isClass);
             _output(outputFile, 0, ")");
             break;
         case FACTOR:
-            _generateFactorInline(outputFile, expression->factor);
+            _generateFactorInline(outputFile, expression->factor, isClass);
             break;
         case ASSIGNMENT:
-            _generateExpressionInline(outputFile, expression->leftExpression);
+            _generateExpressionInline(outputFile, expression->leftExpression, isClass);
             _output(outputFile, 0, " = ");
-            _generateExpressionInline(outputFile, expression->rightExpression);
+            _generateExpressionInline(outputFile, expression->rightExpression, isClass);
             break;
         case MEMBER_ACCESS:
-            _generateExpressionInline(outputFile, expression->leftExpression);
-            _output(outputFile, 0, "->");
+            if (isClass) {
+                _generateExpressionInline(outputFile, expression->leftExpression, isClass);
+                _output(outputFile, 0, "->");
+            }
             if (expression->rightExpression != NULL && expression->rightExpression->type == IDENTIFIER_EXPRESSION) {
                 _output(outputFile, 0, "%s", expression->rightExpression->identifier);
+                instanceName = expression->leftExpression->identifier;
             } else {
-                _generateExpressionInline(outputFile, expression->rightExpression);
+                _generateExpressionInline(outputFile, expression->rightExpression, isClass);
             }
             break;
         case FUNCTION_CALL:
             if (expression->identifier != NULL) {
-                _generateExpressionInline(outputFile, expression->precedingExpression);
+                // TODO: add class identifier as function's prefix (need symbol table to resolve instanceName's type (class identifier))
+                _generateExpressionInline(outputFile, expression->precedingExpression, isClass);
                 _output(outputFile, 0, "(");
-                _generateArgumentListInline(outputFile, expression->args);
+                if (!isClass && instanceName != NULL) {
+                    char * format = expression->args->expression->type == EMPTY_EXPRESSION ? "%s" : "%s, ";
+                    _output(outputFile, 0, format, instanceName);
+                    instanceName = NULL;
+                }
+                _generateArgumentListInline(outputFile, expression->args, isClass);
                 _output(outputFile, 0, ")");
             } else {
                 // Could be indirect call; symbol table needed to resolve — leave TODO
@@ -231,7 +241,7 @@ static void _generateExpressionInline(FILE * outputFile, Expression * expression
         case NEW_EXPRESSION:
             if (expression->identifier != NULL) {
                 _output(outputFile, 0, "%s" CONSTRUCTOR_SUFFIX "(", expression->identifier);
-                _generateArgumentListInline(outputFile, expression->argumentList);
+                _generateArgumentListInline(outputFile, expression->argumentList, isClass);
                 _output(outputFile, 0, ")");
             } else {
                 logWarning(_logger, "Unknown type in 'new' expression");
@@ -240,27 +250,27 @@ static void _generateExpressionInline(FILE * outputFile, Expression * expression
             break;
         case PRE_INCREMENT_EXPRESSION:
             _output(outputFile, 0, "++");
-            _generateExpressionInline(outputFile, expression->leftExpression);
+            _generateExpressionInline(outputFile, expression->leftExpression, isClass);
             break;
         case POST_INCREMENT_EXPRESSION:
-            _generateExpressionInline(outputFile, expression->leftExpression);
+            _generateExpressionInline(outputFile, expression->leftExpression, isClass);
             _output(outputFile, 0, "++");
             break;
         case PRE_DECREMENT_EXPRESSION:
             _output(outputFile, 0, "--");
-            _generateExpressionInline(outputFile, expression->leftExpression);
+            _generateExpressionInline(outputFile, expression->leftExpression, isClass);
             break;
         case POST_DECREMENT_EXPRESSION:
-            _generateExpressionInline(outputFile, expression->leftExpression);
+            _generateExpressionInline(outputFile, expression->leftExpression, isClass);
             _output(outputFile, 0, "--");
             break;
         case LOGICAL_NOT_EXPRESSION:
             _output(outputFile, 0, "!");
-            _generateExpressionInline(outputFile, expression->leftExpression);
+            _generateExpressionInline(outputFile, expression->leftExpression, isClass);
             break;
         case NEGATION:
             _output(outputFile, 0, "-");
-            _generateExpressionInline(outputFile, expression->leftExpression);
+            _generateExpressionInline(outputFile, expression->leftExpression, isClass);
             break;
         case EMPTY_EXPRESSION:
             break;
@@ -271,15 +281,15 @@ static void _generateExpressionInline(FILE * outputFile, Expression * expression
     }
 }
 
-static void _generateStatementList(FILE * outputFile, int indentationLevel, Statement * statement) {
+static void _generateStatementList(FILE * outputFile, int indentationLevel, Statement * statement, int isClass) {
     Statement * cur = statement;
     while (cur != NULL) {
-        _generateStatement(outputFile, indentationLevel, cur);
+        _generateStatement(outputFile, indentationLevel, cur, isClass);
         cur = cur->next;
     }
 }
 
-static void _generateForInitInline(FILE * outputFile, Statement * init) {
+static void _generateForInitInline(FILE * outputFile, Statement * init, int isClass) {
     if (init == NULL) return;
     switch (init->type) {
         case DECLARATION_STATEMENT:
@@ -289,10 +299,10 @@ static void _generateForInitInline(FILE * outputFile, Statement * init) {
         case INITIALIZED_DECLARATION_STATEMENT:
             _emitType(outputFile, 0, init->typeSpecifier);
             _output(outputFile, 0, " %s = ", init->identifier);
-            _generateExpressionInline(outputFile, init->expression);
+            _generateExpressionInline(outputFile, init->expression, isClass);
             break;
         case EXPRESSION_STATEMENT:
-            _generateExpressionInline(outputFile, init->expression);
+            _generateExpressionInline(outputFile, init->expression, isClass);
             break;
         default:
             logWarning(_logger, "Unknown for-init statement type %d", init->type);
@@ -301,12 +311,12 @@ static void _generateForInitInline(FILE * outputFile, Statement * init) {
     }
 }
 
-static void _generateStatement(FILE * outputFile, int indentationLevel, Statement * statement) {
+static void _generateStatement(FILE * outputFile, int indentationLevel, Statement * statement, int isClass) {
     if (statement == NULL) return;
     switch (statement->type) {
         case EXPRESSION_STATEMENT:
             _output(outputFile, indentationLevel, "");
-            _generateExpressionInline(outputFile, statement->expression);
+            _generateExpressionInline(outputFile, statement->expression, isClass);
             _output(outputFile, 0, ";\n");
             break;
         case DECLARATION_STATEMENT:
@@ -316,12 +326,12 @@ static void _generateStatement(FILE * outputFile, int indentationLevel, Statemen
         case INITIALIZED_DECLARATION_STATEMENT:
             _emitType(outputFile, indentationLevel, statement->typeSpecifier);
             _output(outputFile, 0, " %s = ", statement->identifier);
-            _generateExpressionInline(outputFile, statement->expression);
+            _generateExpressionInline(outputFile, statement->expression, isClass);
             _output(outputFile, 0, ";\n");
             break;
         case RETURN_STATEMENT:
             _output(outputFile, indentationLevel, "return ");
-            _generateExpressionInline(outputFile, statement->expression);
+            _generateExpressionInline(outputFile, statement->expression, isClass);
             _output(outputFile, 0, ";\n");
             break;
         case RETURN_VOID_STATEMENT:
@@ -329,54 +339,54 @@ static void _generateStatement(FILE * outputFile, int indentationLevel, Statemen
             break;
         case COMPOUND_STATEMENT:
             _output(outputFile, indentationLevel, "{\n");
-            _generateStatementList(outputFile, indentationLevel + 1, statement->statementList);
+            _generateStatementList(outputFile, indentationLevel + 1, statement->statementList, isClass);
             _output(outputFile, indentationLevel, "}\n");
             break;
         case IF_STATEMENT:
             _output(outputFile, indentationLevel, "if (");
-            _generateExpressionInline(outputFile, statement->condition);
+            _generateExpressionInline(outputFile, statement->condition, isClass);
             _output(outputFile, 0, ") ");
             if (statement->statementList != NULL && statement->statementList->type == COMPOUND_STATEMENT) {
-                _generateStatement(outputFile, indentationLevel, statement->statementList);
+                _generateStatement(outputFile, indentationLevel, statement->statementList, isClass);
             } else {
                 _output(outputFile, 0, "{\n");
-                _generateStatementList(outputFile, indentationLevel + 1, statement->statementList);
+                _generateStatementList(outputFile, indentationLevel + 1, statement->statementList, isClass);
                 _output(outputFile, indentationLevel, "}\n");
             }
             /* Note: else handling requires AST extension / symbol table for disambiguation */
             break;
         case WHILE_STATEMENT:
             _output(outputFile, indentationLevel, "while (");
-            _generateExpressionInline(outputFile, statement->condition);
+            _generateExpressionInline(outputFile, statement->condition, isClass);
             _output(outputFile, 0, ") ");
             if (statement->statementList != NULL && statement->statementList->type == COMPOUND_STATEMENT) {
-                _generateStatement(outputFile, indentationLevel, statement->statementList);
+                _generateStatement(outputFile, indentationLevel, statement->statementList, isClass);
             } else {
                 _output(outputFile, 0, "{\n");
-                _generateStatementList(outputFile, indentationLevel + 1, statement->statementList);
+                _generateStatementList(outputFile, indentationLevel + 1, statement->statementList, isClass);
                 _output(outputFile, indentationLevel, "}\n");
             }
             break;
         case DO_WHILE_STATEMENT:
             _output(outputFile, indentationLevel, "do {\n");
-            _generateStatementList(outputFile, indentationLevel + 1, statement->statementList);
+            _generateStatementList(outputFile, indentationLevel + 1, statement->statementList, isClass);
             _output(outputFile, indentationLevel, "} while (");
-            _generateExpressionInline(outputFile, statement->condition);
+            _generateExpressionInline(outputFile, statement->condition, isClass);
             _output(outputFile, 0, ");\n");
             break;
         case FOR_STATEMENT:
             _output(outputFile, indentationLevel, "for (");
-            _generateForInitInline(outputFile, statement->initialization);
+            _generateForInitInline(outputFile, statement->initialization, isClass);
             _output(outputFile, 0, "; ");
-            if (statement->loopCondition != NULL) _generateExpressionInline(outputFile, statement->loopCondition);
+            if (statement->loopCondition != NULL) _generateExpressionInline(outputFile, statement->loopCondition, isClass);
             _output(outputFile, 0, "; ");
-            if (statement->postIteration != NULL) _generateExpressionInline(outputFile, statement->postIteration);
+            if (statement->postIteration != NULL) _generateExpressionInline(outputFile, statement->postIteration, isClass);
             _output(outputFile, 0, ") ");
             if (statement->statementList != NULL && statement->statementList->type == COMPOUND_STATEMENT) {
-                _generateStatement(outputFile, indentationLevel, statement->statementList);
+                _generateStatement(outputFile, indentationLevel, statement->statementList, isClass);
             } else {
                 _output(outputFile, 0, "{\n");
-                _generateStatementList(outputFile, indentationLevel + 1, statement->statementList);
+                _generateStatementList(outputFile, indentationLevel + 1, statement->statementList, isClass);
                 _output(outputFile, indentationLevel, "}\n");
             }
             break;
@@ -409,7 +419,7 @@ static void _generateClassBody(FILE * outputFile, int indentationLevel, ClassDec
             }
             // Generate method body from its Statement list
             if (method->statementList != NULL) {
-                _generateStatementList(outputFile, indentationLevel + 1, method->statementList);
+                _generateStatementList(outputFile, indentationLevel + 1, method->statementList, 1);
             } else {
                 _output(outputFile, indentationLevel + 1, "// empty body\n");
             }
@@ -433,7 +443,7 @@ static void _generateStaticGlobals(FILE * sourceFile, int indentationLevel, Clas
                 _output(sourceFile, 0, " %s_%s", className, field->identifier);
                 if (field->initializationExpression != NULL) {
                     _output(sourceFile, 0, " = ");
-                    _generateExpressionInline(sourceFile, field->initializationExpression);
+                    _generateExpressionInline(sourceFile, field->initializationExpression, 1);
                 }
                 _output(sourceFile, 0, ";\n");
             }
@@ -462,9 +472,10 @@ static void _generateStructs(FILE * sourceFile, int indentationLevel, ClassDecla
 }
 
 static void _generateHeaderIncludes(FILE * mainFile, FILE * sourceFile, int indentationLevel, char * headerFileName) {
-    char * headerInclude = concatenate(3, INCLUDE_PREFIX, headerFileName, "\"\n\n");
+    char * headerInclude = concatenate(3, INCLUDE_PREFIX, headerFileName, "\"\n");
     _output(mainFile, indentationLevel, headerInclude);
     _output(sourceFile, indentationLevel, headerInclude);
+    _output(sourceFile, 0, "\n");
     free(headerInclude);
 }
 
@@ -546,7 +557,7 @@ static void _generateMethodsBodies(FILE * mainFile, int indentationLevel, BlockD
         }
         _output(mainFile, 0, ") {\n");
         if (method->statementList != NULL) {
-            _generateStatementList(mainFile, indentationLevel + 1, method->statementList);
+            _generateStatementList(mainFile, indentationLevel + 1, method->statementList, 0);
         } else {
             _output(mainFile, indentationLevel + 1, "// empty body\n");
         }
@@ -576,6 +587,8 @@ static void _generateMethodsPrototypes(FILE * mainFile, int indentationLevel, Bl
 
         block = block->next;
     }
+
+    _output(mainFile, 0, "\n");
 }
 
 static void _generateMethods(FILE * mainFile, BlockDeclaration * methodDeclaration) {
@@ -606,6 +619,8 @@ static void _generateProgram(Program * program) {
             block = block->next;
         }
     }
+
+    _output(mainFile, 0, "\n");
 
     _generateMethods(mainFile, methodDeclarations);
 
