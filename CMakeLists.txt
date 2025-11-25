@@ -44,6 +44,8 @@ if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
 		src/main/c/support/configuration/Environment.c
 		src/main/c/support/language/String.c
 		src/main/c/support/logging/Logger.c
+    src/main/c/support/data-structures/stack/stack.c
+    src/main/c/support/data-structures/HashMapCDT.c
     	src/main/c/backend/domain-specific/cplus/CplusSemanticAnalyzer.c
 		src/main/c/support/graph/ASTgraph.c
 		# Add more *.c files if needed (otherwise, they won't be compiled).

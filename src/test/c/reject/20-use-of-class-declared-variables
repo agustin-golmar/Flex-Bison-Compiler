@@ -1,0 +1,21 @@
+class myClass {
+
+  public int a = 3;
+
+  private int a;
+
+  public int getter() {
+    
+    int a = 3;
+
+    int b;
+  
+    this.a = 4;
+    
+    b = 3;
+    
+    return 1;
+  }
+
+
+}

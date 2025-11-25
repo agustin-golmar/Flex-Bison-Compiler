@@ -1,4 +1,6 @@
 int main () {
+    int a;
+
     if (0) {
         this->a = a;
     } else if (1) {

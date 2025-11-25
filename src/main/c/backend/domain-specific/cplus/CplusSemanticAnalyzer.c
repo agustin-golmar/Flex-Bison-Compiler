@@ -5,17 +5,114 @@
 #include "../../../support/logging/Logger.h"
 #include "../../../support/type/ModuleDestructor.h"
 #include "../../../support/type/CompilerState.h"
+#include "../../../support/data-structures/HashMapADT.h"
+#include "../../../support/data-structures/stack/stack.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 /* MODULE INTERNAL STATE */
 
+/* -------------------------------------------------------------------------- */
+/* Result helpers                                                              */
+/* -------------------------------------------------------------------------- */
+
+static ComputationResult _invalidComputation() {
+  ComputationResult r = { .succeeded = false };
+  return r;
+}
+
+static ComputationResult _ok() {
+  ComputationResult r = { .succeeded = true };
+  return r;
+}
+
 static Logger * _logger = NULL;
-static CompilerState * _compilerState = NULL;
+static CompilerState * _cs = NULL;
+
+
+typedef struct SymbolTableValue {
+
+  TypeSpecifier * type; 
+  char * identifier;  
+  Expression * initialization;
+
+} SymbolTableValue;
+
+
+static int hash(void *str) {
+    char *string = *(char **)str; 
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *string++))
+        hash = ((hash << 5) + hash) + c;
+    return hash;
+}
+
+static bool stringEquals(void *a, void *b) {
+    char *str_a = *(char **)a; 
+    char *str_b = *(char **)b; 
+    return strcmp(str_a, str_b) == 0;
+}
+
+static int getNewScopeId() {
+  static int currentScopeId = 0;
+  return currentScopeId++;
+}
+
+static HashMapADT newHashMap() {
+  return hash_map_new(
+    sizeof(char*), 
+    sizeof(SymbolTableValue), 
+    &hash,
+    &stringEquals);
+}
+
+static Scope * pushNewScope() {
+  Scope * newScope = (Scope*)calloc(1, sizeof(Scope));
+  newScope->id = getNewScopeId();
+  newScope->symbols = newHashMap();
+  logDebugging(_logger, "Pushing scope with id %d onto the stack.", newScope->id);
+
+  _cs->currentScope = newScope;
+  pushStack(_cs->scopeStack, &_cs->currentScope);
+  return newScope;
+}
+
+static Scope * popScope() {
+  Scope * poppedScope;
+  if (isEmptyStack(_cs->scopeStack)) {
+    logDebugging(_logger, "Scope stack is empty, cannot pop scope.");
+    return NULL;
+  } 
+  popStack(_cs->scopeStack, &poppedScope);
+  logDebugging(_logger, "Popping scope id %d from the stack.", poppedScope->id);
+  return poppedScope;
+}
+
+void popAndDestroyScope() {
+  Scope *oldScope = popScope();
+  if (oldScope != NULL) {
+    hash_map_free(oldScope->symbols);
+    free(oldScope);
+  }
+}
+
+
 
 /** Shutdown module's internal state. */
 void _shutdownCplusSemanticAnalyzerModule() {
+
+  logDebugging(_logger, "Freeing symbol table and scopes...");
+  while (!isEmptyStack(_cs->scopeStack)) {
+    Scope *scope;
+    popStack(_cs->scopeStack, &scope);
+    hash_map_free(scope->symbols);
+    free(scope);
+  }
+  
+  freeStack(_cs->scopeStack);
+
 	if (_logger != NULL) {
 		logDebugging(_logger, "Destroying module: CplusSemanticAnalyzer...");
 		destroyLogger(_logger);
@@ -27,25 +124,6 @@ ModuleDestructor initializeCplusSemanticAnalyzerModule() {
 	_logger = createLogger("CplusSemanticAnalyzer");
 	return _shutdownCplusSemanticAnalyzerModule;
 }
-
-/* -------------------------------------------------------------------------- */
-/* Result helpers                                                              */
-/* -------------------------------------------------------------------------- */
-
-static ComputationResult _invalidComputation() {
-	ComputationResult r = { .succeeded = false };
-	return r;
-}
-
-static ComputationResult _ok() {
-	ComputationResult r = { .succeeded = true };
-	return r;
-}
-
-
-// NOTE: this is the main skeleton, but we still need to add
-// type checking
-// symbol table
 
 /* -------------------------------------------------------------------------- */
 /* Forward declarations                                                        */
@@ -71,19 +149,11 @@ ComputationResult computeParameterList(Parameter * params);
 ComputationResult executeSemanticalAnalysis(CompilerState * compilerState) {
 	logDebugging(_logger, "Executing Cplus semantic analyzer...");
 
-	if (compilerState == NULL) {
-		logError(_logger, "Null compiler state passed to semantic analyzer.");
-		return _invalidComputation();
-	}
+  _cs = compilerState;
+  _cs->scopeStack = createStack(sizeof(Scope*));
+  _cs->currentScope = pushNewScope();
 
-	_compilerState = compilerState;
-
-	if (_compilerState->abstractSyntaxtTree == NULL) {
-		logError(_logger, "CompilerState has no AST (abstractSyntaxtTree == NULL).");
-		return _invalidComputation();
-	}
-
-	Program *program = (Program *) _compilerState->abstractSyntaxtTree;
+	Program *program = (Program *) _cs->abstractSyntaxtTree;
 	return computeProgram(program);
 }
 
@@ -116,6 +186,9 @@ ComputationResult computeBlock(BlockDeclaration * blockDeclaration) {
 
 	BlockDeclaration *current = blockDeclaration;
 	while (current != NULL) {
+
+    pushNewScope();
+    
 		switch (current->type) {
 			case CLASS_BLOCK:
 				logDebugging(_logger, "Computing CLASS_BLOCK.");
@@ -134,8 +207,9 @@ ComputationResult computeBlock(BlockDeclaration * blockDeclaration) {
 				return _invalidComputation();
 		}
 		current = current->next;
-	}
 
+    popAndDestroyScope();
+	}
 	return _ok();
 }
 
@@ -250,6 +324,22 @@ ComputationResult computeFieldDeclaration(FieldDeclaration * field) {
 	if (field->isStatic) {
 		logDebugging(_logger, "Field is static.");
 	}
+  
+    // in this case, where are looking at a field declaration, for example public int a; 
+  char * key = field->identifier; 
+  if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
+    logError(_logger, "Duplicate symbol: %s", field->identifier);
+    return _invalidComputation();
+  }
+  logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+  
+  SymbolTableValue value = {
+    .type = field->typeSpecifier,
+    .identifier = field->identifier,
+    .initialization = field->initializationExpression
+  };
+  
+  hash_map_put(_cs->currentScope->symbols, &key, &value);
 
 	return _ok();
 }
@@ -260,6 +350,8 @@ ComputationResult computeFieldDeclaration(FieldDeclaration * field) {
 
 ComputationResult computeMethodDeclaration(MethodDeclaration * method) {
 	logDebugging(_logger, "Computing method declaration...");
+
+  pushNewScope();
 
 	if (method == NULL) {
 		logError(_logger, "computeMethodDeclaration: method is NULL.");
@@ -292,6 +384,7 @@ ComputationResult computeMethodDeclaration(MethodDeclaration * method) {
 
 	if (method->isStatic) logDebugging(_logger, "Method is static.");
 
+  popAndDestroyScope();
 	return _ok();
 }
 
@@ -313,6 +406,21 @@ ComputationResult computeParameterList(Parameter * params) {
 		if (p->identifier != NULL)
 			logDebugging(_logger, "Parameter identifier: %s", p->identifier);
 
+    
+  char * key = p->identifier; 
+  if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
+    logError(_logger, "Redefinition of parameter: %s", p->identifier);
+    return _invalidComputation();
+  }
+  logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+  
+  SymbolTableValue value = {
+    .type = p->typeSpecifier,
+    .identifier = p->identifier,
+    .initialization = NULL,
+  };
+  
+  hash_map_put(_cs->currentScope->symbols, &key, &value); 
 		p = p->next;
 	}
 
@@ -337,6 +445,7 @@ ComputationResult computeStatement(Statement * statement) {
 			return _ok();
 
 		case DECLARATION_STATEMENT:
+    case INITIALIZED_DECLARATION_STATEMENT:
 			logDebugging(_logger, "Statement: DECLARATION_STATEMENT");
 			// typeSpecifier, identifier, expression (may be null)
 			if (statement->typeSpecifier != NULL)
@@ -344,16 +453,22 @@ ComputationResult computeStatement(Statement * statement) {
 			if (statement->identifier != NULL)
 				logDebugging(_logger, "Declaration identifier: %s", statement->identifier);
 			// no initialization expression in plain declaration
-			return _ok();
+      
+      char * key = statement->identifier; 
+      if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
+        logError(_logger, "Duplicate symbol: %s", statement->identifier);
+        return _invalidComputation();
+      }
+      logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+      
+      SymbolTableValue value = {
+        .type = statement->typeSpecifier,
+        .identifier = statement->identifier,
+        .initialization = statement->expression
+      };
+      
+      hash_map_put(_cs->currentScope->symbols, &key, &value);
 
-		case INITIALIZED_DECLARATION_STATEMENT:
-			logDebugging(_logger, "Statement: INITIALIZED_DECLARATION_STATEMENT");
-			if (statement->typeSpecifier != NULL)
-				logDebugging(_logger, "Initialized declaration type: %d", statement->typeSpecifier->type);
-			if (statement->identifier != NULL)
-				logDebugging(_logger, "Initialized declaration identifier: %s", statement->identifier);
-			if (statement->expression != NULL)
-				return computeExpression(statement->expression);
 			return _ok();
 
 		case RETURN_STATEMENT:
@@ -379,7 +494,10 @@ ComputationResult computeStatement(Statement * statement) {
 			}
 
 		case IF_STATEMENT:
+
 			logDebugging(_logger, "Statement: IF_STATEMENT");
+      pushNewScope();
+
 			if (statement->condition != NULL) {
 				if (!computeExpression(statement->condition).succeeded)
 					return _invalidComputation();
@@ -392,6 +510,7 @@ ComputationResult computeStatement(Statement * statement) {
 					s = s->next;
 				}
 			}
+      popAndDestroyScope();
 			return _ok();
 
 		case IF_ELSE_STATEMENT:
@@ -419,7 +538,10 @@ ComputationResult computeStatement(Statement * statement) {
 			return _ok();
 
 		case FOR_STATEMENT:
+
 			logDebugging(_logger, "Statement: FOR_STATEMENT");
+      pushNewScope();
+
 			// initialization (Statement *), loopCondition (Expression*), postIteration (Expression*)
 			if (statement->initialization != NULL) {
 				if (!computeStatement(statement->initialization).succeeded)
@@ -441,6 +563,8 @@ ComputationResult computeStatement(Statement * statement) {
 					s = s->next;
 				}
 			}
+
+      popAndDestroyScope();
 			return _ok();
 
 		case WHILE_STATEMENT:
@@ -555,6 +679,36 @@ ComputationResult computeExpression(Expression *expression) {
       return _ok();
 
     case IDENTIFIER_EXPRESSION:
+    
+      //check on every scope if it exists
+      StackADT pusher = createStack(sizeof(Scope*));
+       
+      char * key = expression->identifier;
+      unsigned short found = 0;
+      while (!isEmptyStack(_cs->scopeStack) && !found) {
+        Scope * scope = (Scope*) popScope(); // pops from main _cs->scopeStack stack
+        HashMapADT symbols = scope->symbols;
+        if (hash_map_get(symbols, &key) != NULL) {
+          found = 1;  
+        }
+        pushStack(pusher, &scope);
+      }
+      
+      //restoring
+      while (!isEmptyStack(pusher)) {
+        Scope * scope;
+        popStack(pusher, &scope);
+        logDebugging(_logger, "Restoring scope id %d into the stack", scope->id);
+        pushStack(_cs->scopeStack, &scope);
+      }
+      
+      freeStack(pusher);
+      if (!found) {
+        logError(_logger, "Unidentified symbol: %s", key);
+        return _invalidComputation();
+      }
+      return _ok();
+
     case INTEGER_EXPRESSION:
     case THIS_EXPRESSION:
     case NEW_EXPRESSION:
