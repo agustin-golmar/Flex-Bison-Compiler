@@ -825,7 +825,11 @@ Expression * NewExpressionSemanticAction(char * identifier, ArgumentList * argum
 
 ArgumentList * EmptyArgumentListSemanticAction() {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	return NULL;
+	ArgumentList* argumentList = calloc(1, sizeof(ArgumentList));
+	argumentList->expression = calloc(1, sizeof(Expression));
+	argumentList->expression->type = EMPTY_EXPRESSION;
+	argumentList->next = NULL;
+	return argumentList;
 }
 
 ArgumentList * ArgumentsSemanticAction(ArgumentList * arguments) {
