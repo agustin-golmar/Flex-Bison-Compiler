@@ -272,20 +272,7 @@ ComputationResult computeMemberDeclaration(MemberDeclaration * member) {
 
 	switch (member->type) {
 		case FIELD_MEMBER:
-      // in this case, where are looking at a field declaration, for example public int a; 
-      char * key = member->fieldDeclaration->identifier; 
-      if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
-        return _invalidComputation();
-      }
-      logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
-      
-      SymbolTableValue value = {
-        .type = member->fieldDeclaration->typeSpecifier,
-        .identifier = member->fieldDeclaration->identifier,
-        .initialization = member->fieldDeclaration->initializationExpression
-      };
-      
-      hash_map_put(_cs->currentScope->symbols, &key, &value);
+			logDebugging(_logger, "Member: FIELD_MEMBER");
 			return computeFieldDeclaration(member->fieldDeclaration);
 
 		case METHOD_MEMBER:
@@ -337,6 +324,22 @@ ComputationResult computeFieldDeclaration(FieldDeclaration * field) {
 	if (field->isStatic) {
 		logDebugging(_logger, "Field is static.");
 	}
+  
+    // in this case, where are looking at a field declaration, for example public int a; 
+  char * key = field->identifier; 
+  if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
+    logError(_logger, "Duplicate symbol: %s", field->identifier);
+    return _invalidComputation();
+  }
+  logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+  
+  SymbolTableValue value = {
+    .type = field->typeSpecifier,
+    .identifier = field->identifier,
+    .initialization = field->initializationExpression
+  };
+  
+  hash_map_put(_cs->currentScope->symbols, &key, &value);
 
 	return _ok();
 }
