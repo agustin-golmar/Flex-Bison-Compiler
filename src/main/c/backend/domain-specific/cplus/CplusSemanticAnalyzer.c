@@ -427,6 +427,7 @@ ComputationResult computeStatement(Statement * statement) {
 			return _ok();
 
 		case DECLARATION_STATEMENT:
+    case INITIALIZED_DECLARATION_STATEMENT:
 			logDebugging(_logger, "Statement: DECLARATION_STATEMENT");
 			// typeSpecifier, identifier, expression (may be null)
 			if (statement->typeSpecifier != NULL)
@@ -434,16 +435,22 @@ ComputationResult computeStatement(Statement * statement) {
 			if (statement->identifier != NULL)
 				logDebugging(_logger, "Declaration identifier: %s", statement->identifier);
 			// no initialization expression in plain declaration
-			return _ok();
+      
+      char * key = statement->identifier; 
+      if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
+        logError(_logger, "Duplicate symbol: %s", statement->identifier);
+        return _invalidComputation();
+      }
+      logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+      
+      SymbolTableValue value = {
+        .type = statement->typeSpecifier,
+        .identifier = statement->identifier,
+        .initialization = statement->expression
+      };
+      
+      hash_map_put(_cs->currentScope->symbols, &key, &value);
 
-		case INITIALIZED_DECLARATION_STATEMENT:
-			logDebugging(_logger, "Statement: INITIALIZED_DECLARATION_STATEMENT");
-			if (statement->typeSpecifier != NULL)
-				logDebugging(_logger, "Initialized declaration type: %d", statement->typeSpecifier->type);
-			if (statement->identifier != NULL)
-				logDebugging(_logger, "Initialized declaration identifier: %s", statement->identifier);
-			if (statement->expression != NULL)
-				return computeExpression(statement->expression);
 			return _ok();
 
 		case RETURN_STATEMENT:
