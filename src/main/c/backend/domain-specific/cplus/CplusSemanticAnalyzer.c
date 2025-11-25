@@ -351,6 +351,8 @@ ComputationResult computeFieldDeclaration(FieldDeclaration * field) {
 ComputationResult computeMethodDeclaration(MethodDeclaration * method) {
 	logDebugging(_logger, "Computing method declaration...");
 
+  pushNewScope();
+
 	if (method == NULL) {
 		logError(_logger, "computeMethodDeclaration: method is NULL.");
 		return _invalidComputation();
@@ -382,6 +384,7 @@ ComputationResult computeMethodDeclaration(MethodDeclaration * method) {
 
 	if (method->isStatic) logDebugging(_logger, "Method is static.");
 
+  popAndDestroyScope();
 	return _ok();
 }
 
@@ -403,6 +406,21 @@ ComputationResult computeParameterList(Parameter * params) {
 		if (p->identifier != NULL)
 			logDebugging(_logger, "Parameter identifier: %s", p->identifier);
 
+    
+  char * key = p->identifier; 
+  if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
+    logError(_logger, "Redefinition of parameter: %s", p->identifier);
+    return _invalidComputation();
+  }
+  logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+  
+  SymbolTableValue value = {
+    .type = p->typeSpecifier,
+    .identifier = p->identifier,
+    .initialization = NULL,
+  };
+  
+  hash_map_put(_cs->currentScope->symbols, &key, &value); 
 		p = p->next;
 	}
 
@@ -476,7 +494,10 @@ ComputationResult computeStatement(Statement * statement) {
 			}
 
 		case IF_STATEMENT:
+
 			logDebugging(_logger, "Statement: IF_STATEMENT");
+      pushNewScope();
+
 			if (statement->condition != NULL) {
 				if (!computeExpression(statement->condition).succeeded)
 					return _invalidComputation();
@@ -489,6 +510,7 @@ ComputationResult computeStatement(Statement * statement) {
 					s = s->next;
 				}
 			}
+      popAndDestroyScope();
 			return _ok();
 
 		case IF_ELSE_STATEMENT:
@@ -516,7 +538,10 @@ ComputationResult computeStatement(Statement * statement) {
 			return _ok();
 
 		case FOR_STATEMENT:
+
 			logDebugging(_logger, "Statement: FOR_STATEMENT");
+      pushNewScope();
+
 			// initialization (Statement *), loopCondition (Expression*), postIteration (Expression*)
 			if (statement->initialization != NULL) {
 				if (!computeStatement(statement->initialization).succeeded)
@@ -538,6 +563,8 @@ ComputationResult computeStatement(Statement * statement) {
 					s = s->next;
 				}
 			}
+
+      popAndDestroyScope();
 			return _ok();
 
 		case WHILE_STATEMENT:
@@ -652,6 +679,36 @@ ComputationResult computeExpression(Expression *expression) {
       return _ok();
 
     case IDENTIFIER_EXPRESSION:
+    
+      //check on every scope if it exists
+      StackADT pusher = createStack(sizeof(Scope*));
+       
+      char * key = expression->identifier;
+      unsigned short found = 0;
+      while (!isEmptyStack(_cs->scopeStack) && !found) {
+        Scope * scope = (Scope*) popScope(); // pops from main _cs->scopeStack stack
+        HashMapADT symbols = scope->symbols;
+        if (hash_map_get(symbols, &key) != NULL) {
+          found = 1;  
+        }
+        pushStack(pusher, &scope);
+      }
+      
+      //restoring
+      while (!isEmptyStack(pusher)) {
+        Scope * scope;
+        popStack(pusher, &scope);
+        logDebugging(_logger, "Restoring scope id %d into the stack", scope->id);
+        pushStack(_cs->scopeStack, &scope);
+      }
+      
+      freeStack(pusher);
+      if (!found) {
+        logError(_logger, "Unidentified symbol: %s", key);
+        return _invalidComputation();
+      }
+      return _ok();
+
     case INTEGER_EXPRESSION:
     case THIS_EXPRESSION:
     case NEW_EXPRESSION:
