@@ -73,7 +73,7 @@ Statement * CompoundStatementSemanticAction(Statement * compoundStatement);
 Statement * CompoundStatementBodySemanticAction(Statement * statementList);
 Statement * IfStatementSemanticAction(Statement * ifStatement);
 Statement * IfStatementBodySemanticAction(Expression * expression, Statement * statement);
-Statement * IfElseStatementSemanticAction(Statement * ifStatement, Statement * elseStatement);
+Statement * IfElseStatementSemanticAction(Expression * expression, Statement * ifStatement, Statement * elseStatementList);
 Statement * ForStatementSemanticAction(Statement * forStatement);
 Statement * ForStatementBodySemanticAction(Statement * initialization, Expression * condition, Expression * increment, Statement * statement);
 Statement * WhileStatementSemanticAction(Statement * whileStatement);

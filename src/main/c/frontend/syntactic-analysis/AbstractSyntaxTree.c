@@ -239,6 +239,11 @@ void destroyStatement(Statement * statement) {
 				destroyExpression(statement->condition);
 				destroyStatement(statement->statementList);
 				break;
+			case IF_ELSE_STATEMENT:
+				destroyExpression(statement->condition);
+				destroyStatement(statement->statementList);
+				destroyStatement(statement->elseStatementList);
+				break;
 			case FOR_STATEMENT:
 				destroyStatement(statement->initialization);
 				destroyExpression(statement->loopCondition);

@@ -130,8 +130,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <memberDeclaration> member memberDeclaration memberList
 %type <methodDeclaration> methodDeclaration constructorDeclaration destructorDeclaration
 %type <fieldDeclaration> fieldDeclaration
-%type <statement> statement statementList structuralStatement compoundStatement declarationStatement expressionStatement returnStatement ifStatement forStatement whileStatement doWhileStatement
-%type <expression> expression assignmentExpression additiveExpression multiplicativeExpression unaryExpression postfixExpression primaryExpression
+%type <statement> statement statementList structuralStatement compoundStatement declarationOrEmpty declarationStatement expressionStatement returnStatement ifStatement forStatement whileStatement doWhileStatement
+%type <expression> expression expressionOrEmpty assignmentExpression additiveExpression multiplicativeExpression unaryExpression postfixExpression primaryExpression
 %type <typeSpecifier> typeSpecifier 
 %type <accessSpecifier> accessSpecifier
 %type <parameter> parameter parameterList parameters
@@ -143,6 +143,9 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  * @see https://en.cppreference.com/w/cpp/language/operator_precedence.html
  * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
  */
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
+
 %right ASSIGN
 %left ADD SUB
 %left MUL DIV
@@ -230,9 +233,9 @@ statementList: %empty											{ $$ = EmptyStatementListSemanticAction(); }
 	| statementList statement									{ $$ = StatementListSemanticAction($1, $2); }
 	;
 
-statement: structuralStatement									{ $$ = StructuralStatementSemanticAction($1); } 
-	| declarationStatement										{ $$ = DeclarationStatementSemanticAction($1); }
-	;
+statement: structuralStatement  { $$ = StructuralStatementSemanticAction($1); }
+  | declarationStatement		{ $$ = DeclarationStatementSemanticAction($1); }
+  ;
 
 structuralStatement:  expressionStatement						{ $$ = ExpressionStatementSemanticAction($1); }
 	| returnStatement											{ $$ = ReturnStatementSemanticAction($1); }
@@ -243,11 +246,13 @@ structuralStatement:  expressionStatement						{ $$ = ExpressionStatementSemanti
 	| doWhileStatement											{ $$ = DoWhileStatementSemanticAction($1); }
 ;
 
-ifStatement: IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement 	{ $$ = IfStatementBodySemanticAction($3, $5); }
-	| ifStatement ELSE statement							{ $$ = IfElseStatementSemanticAction($1, $3); }
-	;
+ifStatement: IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement %prec LOWER_THAN_ELSE
+        { $$ = IfStatementBodySemanticAction($3, $5); }
+    | IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS statement ELSE statement
+        { $$ = IfElseStatementSemanticAction($3, $5, $7); }
+    ;
 
-forStatement: FOR OPEN_PARENTHESIS declarationStatement[initialization] expression[condition] SEMICOLON expression[increment] CLOSE_PARENTHESIS structuralStatement[statement]
+forStatement: FOR OPEN_PARENTHESIS declarationOrEmpty[initialization] expressionOrEmpty[condition] SEMICOLON expressionOrEmpty[increment] CLOSE_PARENTHESIS structuralStatement[statement]
 		{ $$ = ForStatementBodySemanticAction($initialization, $condition, $increment, $statement); }
 	;
 
@@ -262,21 +267,26 @@ doWhileStatement: DO statement WHILE OPEN_PARENTHESIS expression CLOSE_PARENTHES
 compoundStatement: OPEN_BRACE statementList CLOSE_BRACE		{ $$ = CompoundStatementBodySemanticAction($2); }
 	;
 
-declarationStatement: SEMICOLON								{ $$ = EmptyDeclarationStatementSemanticAction(); } 
-	| typeSpecifier IDENTIFIER SEMICOLON		{ $$ = VariableDeclarationSemanticAction($1, $2); }
-	| typeSpecifier IDENTIFIER ASSIGN expression SEMICOLON		{ $$ = InitializedVariableDeclarationSemanticAction($1, $2, $4); }
-	;
+declarationOrEmpty: SEMICOLON		 					{ $$ = EmptyDeclarationStatementSemanticAction(); }
+	| declarationStatement								{ $$ = $1; }
 
-expressionStatement: expression SEMICOLON						{ $$ = ExpressionStatementBodySemanticAction($1); }
-	;
+declarationStatement: typeSpecifier IDENTIFIER SEMICOLON { $$ = VariableDeclarationSemanticAction($1, $2); }
+  | typeSpecifier IDENTIFIER ASSIGN expression SEMICOLON { $$ = InitializedVariableDeclarationSemanticAction($1, $2, $4); }
+  ;
 
-returnStatement: RETURN expression SEMICOLON					{ $$ = ReturnExpressionSemanticAction($2); }
-	| RETURN SEMICOLON											{ $$ = ReturnVoidSemanticAction(); }
-	;
+expressionStatement: expressionOrEmpty SEMICOLON            { $$ = ExpressionStatementBodySemanticAction($1); }
+    ;
 
-expression: %empty 											{ $$ = EmptyExpressionSemanticAction(); }
-	| assignmentExpression								{ $$ = AssignmentExpressionSemanticAction($1); }
-	;
+expressionOrEmpty: %empty                                   { $$ = EmptyExpressionSemanticAction(); }
+    | expression                                            { $$ = $1; }
+    ;
+
+expression: assignmentExpression                            { $$ = AssignmentExpressionSemanticAction($1); }
+    ;
+
+returnStatement: RETURN expression SEMICOLON                { $$ = ReturnExpressionSemanticAction($2); }
+    | RETURN SEMICOLON                                      { $$ = ReturnVoidSemanticAction(); }
+    ;
 
 assignmentExpression: additiveExpression						{ $$ = AdditiveExpressionSemanticAction($1); }
 	| unaryExpression ASSIGN assignmentExpression				{ $$ = AssignmentSemanticAction($1, $3); }
@@ -300,19 +310,21 @@ multiplicativeExpression: unaryExpression						{ $$ = UnaryExpressionSemanticAct
 	| multiplicativeExpression[left] DIV unaryExpression[right]		{ $$ = DivisionSemanticAction($left, $right); }
 	;
 
-unaryExpression: postfixExpression							{ $$ = PostfixExpressionSemanticAction($1); }
-	| SUB unaryExpression										{ $$ = NegationSemanticAction($2); }
-	| LOGICAL_NOT unaryExpression								{ $$ = LogicalNotSemanticAction($2); }
-	| UNARY_INCREMENT unaryExpression							{ $$ = PreIncrementSemanticAction($2); }
-	| UNARY_DECREMENT unaryExpression							{ $$ = PreDecrementSemanticAction($2); }
-	| unaryExpression UNARY_INCREMENT							{ $$ = PostIncrementSemanticAction($1); }
-	| unaryExpression UNARY_DECREMENT							{ $$ = PostDecrementSemanticAction($1); }
+unaryExpression: postfixExpression                          { $$ = PostfixExpressionSemanticAction($1); }
+    | SUB unaryExpression                                   { $$ = NegationSemanticAction($2); }
+    | LOGICAL_NOT unaryExpression                           { $$ = LogicalNotSemanticAction($2); }
+    | UNARY_INCREMENT unaryExpression                       { $$ = PreIncrementSemanticAction($2); }
+    | UNARY_DECREMENT unaryExpression                       { $$ = PreDecrementSemanticAction($2); }
+    ;
 
-postfixExpression: primaryExpression							{ $$ = PrimaryExpressionSemanticAction($1); }
-	| postfixExpression ARROW IDENTIFIER						{ $$ = MemberAccessSemanticAction($1, $3); }
-	| postfixExpression DOT IDENTIFIER							{ $$ = MemberAccessSemanticAction($1, $3); }
-	| postfixExpression OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS	{ $$ = FunctionCallSemanticAction($1, $3); }
-	;
+postfixExpression: primaryExpression                        { $$ = PrimaryExpressionSemanticAction($1); }
+    | postfixExpression ARROW IDENTIFIER                    { $$ = MemberAccessSemanticAction($1, $3); }
+    | postfixExpression DOT IDENTIFIER                      { $$ = MemberAccessSemanticAction($1, $3); }
+    | postfixExpression OPEN_PARENTHESIS argumentList CLOSE_PARENTHESIS
+                                                            { $$ = FunctionCallSemanticAction($1, $3); }
+    | postfixExpression UNARY_INCREMENT                     { $$ = PostIncrementSemanticAction($1); }
+    | postfixExpression UNARY_DECREMENT                     { $$ = PostDecrementSemanticAction($1); }
+    ;
 
 primaryExpression: IDENTIFIER									{ $$ = IdentifierExpressionSemanticAction($1); }
 	| INTEGER													{ $$ = IntegerExpressionSemanticAction($1); }

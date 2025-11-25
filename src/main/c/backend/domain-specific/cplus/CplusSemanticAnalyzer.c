@@ -394,6 +394,30 @@ ComputationResult computeStatement(Statement * statement) {
 			}
 			return _ok();
 
+		case IF_ELSE_STATEMENT:
+			logDebugging(_logger, "Statement: IF_ELSE_STATEMENT");
+			if (statement->condition != NULL) {
+				if (!computeExpression(statement->condition).succeeded)
+					return _invalidComputation();
+			}
+			if (statement->statementList != NULL) {
+				Statement *s = statement->statementList;
+				while (s != NULL) {
+					if (!computeStatement(s).succeeded)
+						return _invalidComputation();
+					s = s->next;
+				}
+			}
+			if(statement->elseStatementList != NULL) {
+				Statement *s = statement->elseStatementList;
+				while(s != NULL) {
+					if (!computeStatement(s).succeeded)
+						return _invalidComputation();
+					s = s->next;
+				}
+			}
+			return _ok();
+
 		case FOR_STATEMENT:
 			logDebugging(_logger, "Statement: FOR_STATEMENT");
 			// initialization (Statement *), loopCondition (Expression*), postIteration (Expression*)
