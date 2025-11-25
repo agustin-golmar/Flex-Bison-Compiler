@@ -440,10 +440,15 @@ Statement * IfStatementBodySemanticAction(Expression * expression, Statement * s
 	return ifStatement;
 }
 
-Statement * IfElseStatementSemanticAction(Statement * ifStatement, Statement * elseStatement) {
+Statement * IfElseStatementSemanticAction(Expression * expression, Statement * ifStatement, Statement * elseStatementList) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	ifStatement->next = elseStatement;
-	return ifStatement;
+	Statement * ifElseStatement = calloc(1, sizeof(Statement));
+	ifElseStatement->condition = expression;
+	ifElseStatement->statementList = ifStatement;
+	ifElseStatement->elseStatementList = elseStatementList;
+	ifElseStatement->type = IF_ELSE_STATEMENT;
+	ifElseStatement->next = NULL;
+	return ifElseStatement;
 }
 
 Statement * ForStatementSemanticAction(Statement * forStatement) {

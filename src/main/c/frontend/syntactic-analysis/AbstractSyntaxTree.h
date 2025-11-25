@@ -103,6 +103,7 @@ enum StatementType {
 	RETURN_VOID_STATEMENT,
 	COMPOUND_STATEMENT,
 	IF_STATEMENT,
+	IF_ELSE_STATEMENT,
 	FOR_STATEMENT,
 	WHILE_STATEMENT,
 	DO_WHILE_STATEMENT,
@@ -219,6 +220,7 @@ struct Statement {
 			union {
 				struct { // Conditional statements
 					Expression *condition;
+					Statement *elseStatementList;
 				};
 				struct { // Loop statements
 					Expression * loopCondition;
