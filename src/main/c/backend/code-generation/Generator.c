@@ -214,7 +214,7 @@ static void _generateExpressionInline(FILE * outputFile, Expression * expression
                 _generateExpressionInline(outputFile, expression->precedingExpression, isClass);
                 _output(outputFile, 0, "(");
                 if (!isClass && instanceName != NULL) {
-                    char * format = expression->args->expression->type == EMPTY_EXPRESSION ? "%s" : "%s, ";
+                    char * format = expression->args == NULL ? "%s" : "%s, ";
                     _output(outputFile, 0, format, instanceName);
                     instanceName = NULL;
                 }
