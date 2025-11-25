@@ -102,16 +102,17 @@ void popAndDestroyScope() {
 
 /** Shutdown module's internal state. */
 void _shutdownCplusSemanticAnalyzerModule() {
-
   logDebugging(_logger, "Freeing symbol table and scopes...");
-  while (!isEmptyStack(_cs->scopeStack)) {
-    Scope *scope;
-    popStack(_cs->scopeStack, &scope);
-    hash_map_free(scope->symbols);
-    free(scope);
-  }
   
-  freeStack(_cs->scopeStack);
+  if(_cs != NULL && _cs->scopeStack != NULL && _cs->currentScope != NULL){
+    while (!isEmptyStack(_cs->scopeStack)) {
+      Scope *scope;
+      popStack(_cs->scopeStack, &scope);
+      hash_map_free(scope->symbols);
+      free(scope);
+    }
+    freeStack(_cs->scopeStack);
+  }
 
 	if (_logger != NULL) {
 		logDebugging(_logger, "Destroying module: CplusSemanticAnalyzer...");
