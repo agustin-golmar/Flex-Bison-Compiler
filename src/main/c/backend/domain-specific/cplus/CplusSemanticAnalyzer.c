@@ -11,11 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* MODULE INTERNAL STATE */
-
-/* -------------------------------------------------------------------------- */
-/* Result helpers                                                              */
-/* -------------------------------------------------------------------------- */
+static Logger * _logger = NULL;
+static CompilerState * _cs = NULL;
 
 static ComputationResult _invalidComputation() {
   ComputationResult r = { .succeeded = false };
@@ -27,18 +24,11 @@ static ComputationResult _ok() {
   return r;
 }
 
-static Logger * _logger = NULL;
-static CompilerState * _cs = NULL;
-
-
 typedef struct SymbolTableValue {
-
   TypeSpecifier * type; 
   char * identifier;  
   Expression * initialization;
-
 } SymbolTableValue;
-
 
 static int hash(void *str) {
     char *string = *(char **)str; 
@@ -70,7 +60,6 @@ static HashMapADT newHashMap() {
 
 static Scope * pushNewScope() {
   Scope * newScope = (Scope*)calloc(1, sizeof(Scope));
-  newScope->id = getNewScopeId();
   newScope->symbols = newHashMap();
   logDebugging(_logger, "Pushing scope with id %d onto the stack.", newScope->id);
 
@@ -98,9 +87,6 @@ void popAndDestroyScope() {
   }
 }
 
-
-
-/** Shutdown module's internal state. */
 void _shutdownCplusSemanticAnalyzerModule() {
   logDebugging(_logger, "Freeing symbol table and scopes...");
   
@@ -126,10 +112,6 @@ ModuleDestructor initializeCplusSemanticAnalyzerModule() {
 	return _shutdownCplusSemanticAnalyzerModule;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Forward declarations                                                        */
-/* -------------------------------------------------------------------------- */
-
 ComputationResult computeProgram(Program * program);
 ComputationResult computeBlock(BlockDeclaration * blockDeclaration);
 ComputationResult computeClassDeclaration(ClassDeclaration * classDecl);
@@ -143,10 +125,6 @@ ComputationResult computeFactor(Factor * factor);
 ComputationResult computeArgumentList(ArgumentList * args);
 ComputationResult computeParameterList(Parameter * params);
 
-/* -------------------------------------------------------------------------- */
-/* Main function                                                              */
-/* -------------------------------------------------------------------------- */
-
 ComputationResult executeSemanticalAnalysis(CompilerState * compilerState) {
 	logDebugging(_logger, "Executing Cplus semantic analyzer...");
 
@@ -157,10 +135,6 @@ ComputationResult executeSemanticalAnalysis(CompilerState * compilerState) {
 	Program *program = (Program *) _cs->abstractSyntaxtTree;
 	return computeProgram(program);
 }
-
-/* -------------------------------------------------------------------------- */
-/* computeProgram                                                               */
-/* -------------------------------------------------------------------------- */
 
 ComputationResult computeProgram(Program * program) {
 	logDebugging(_logger, "Computing program...");
@@ -173,10 +147,6 @@ ComputationResult computeProgram(Program * program) {
 	return computeBlock(program->blockDeclaration);
 }
 
-/* -------------------------------------------------------------------------- */
-/* computeBlock                                                                 */
-/* -------------------------------------------------------------------------- */
-
 ComputationResult computeBlock(BlockDeclaration * blockDeclaration) {
 	logDebugging(_logger, "Computing block...");
 
@@ -185,38 +155,33 @@ ComputationResult computeBlock(BlockDeclaration * blockDeclaration) {
 		return _invalidComputation();
 	}
 
+	bool allSucceeded = true;
 	BlockDeclaration *current = blockDeclaration;
 	while (current != NULL) {
-
     pushNewScope();
     
 		switch (current->type) {
 			case CLASS_BLOCK:
 				logDebugging(_logger, "Computing CLASS_BLOCK.");
 				if (!computeClassDeclaration(current->classDeclaration).succeeded)
-					return _invalidComputation();
+					allSucceeded = false;
 				break;
 
 			case METHOD_BLOCK:
 				logDebugging(_logger, "Computing METHOD_BLOCK.");
 				if (!computeMethodDeclaration(current->methodDeclaration).succeeded)
-					return _invalidComputation();
+					allSucceeded = false;
 				break;
 
 			default:
 				logError(_logger, "computeBlock: unknown BlockType %d.", current->type);
-				return _invalidComputation();
+				allSucceeded = false;
 		}
 		current = current->next;
-
     popAndDestroyScope();
 	}
-	return _ok();
+	return allSucceeded ? _ok() : _invalidComputation();
 }
-
-/* -------------------------------------------------------------------------- */
-/* computeClassDeclaration                                                      */
-/* -------------------------------------------------------------------------- */
 
 ComputationResult computeClassDeclaration(ClassDeclaration * classDecl) {
 	logDebugging(_logger, "Computing class declaration...");
@@ -233,35 +198,26 @@ ComputationResult computeClassDeclaration(ClassDeclaration * classDecl) {
 
 	logDebugging(_logger, "Class identifier: %s", classDecl->identifier);
 
-	// Compute class body
 	return computeClassBody(classDecl->classBody);
 }
-
-/* -------------------------------------------------------------------------- */
-/* computeClassBody                                                             */
-/* -------------------------------------------------------------------------- */
 
 ComputationResult computeClassBody(ClassBody * body) {
 	logDebugging(_logger, "Computing class body...");
 
 	if (body == NULL) {
-		// It's valid (empty class body) depending on grammar; treat as ok.
 		return _ok();
 	}
 
+	bool allSucceeded = true;
 	MemberDeclaration *member = body->memberList;
 	while (member != NULL) {
 		if (!computeMemberDeclaration(member).succeeded)
-			return _invalidComputation();
+			allSucceeded = false;
 		member = member->next;
 	}
 
-	return _ok();
+	return allSucceeded ? _ok() : _invalidComputation();
 }
-
-/* -------------------------------------------------------------------------- */
-/* computeMemberDeclaration                                                     */
-/* -------------------------------------------------------------------------- */
 
 ComputationResult computeMemberDeclaration(MemberDeclaration * member) {
 	logDebugging(_logger, "Computing member declaration...");
@@ -294,10 +250,6 @@ ComputationResult computeMemberDeclaration(MemberDeclaration * member) {
 	}
 }
 
-/* -------------------------------------------------------------------------- */
-/* computeFieldDeclaration                                                      */
-/* -------------------------------------------------------------------------- */
-
 ComputationResult computeFieldDeclaration(FieldDeclaration * field) {
 	logDebugging(_logger, "Computing field declaration...");
 
@@ -317,37 +269,34 @@ ComputationResult computeFieldDeclaration(FieldDeclaration * field) {
 		logDebugging(_logger, "Field identifier: %s", field->identifier);
 	}
 
+	bool allSucceeded = true;
 	if (field->initializationExpression != NULL) {
 		if (!computeExpression(field->initializationExpression).succeeded)
-			return _invalidComputation();
+			allSucceeded = false;
 	}
 
 	if (field->isStatic) {
 		logDebugging(_logger, "Field is static.");
 	}
   
-    // in this case, where are looking at a field declaration, for example public int a; 
   char * key = field->identifier; 
   if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
     logError(_logger, "Duplicate symbol: %s", field->identifier);
-    return _invalidComputation();
+    allSucceeded = false;
+  } else {
+    logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+    
+    SymbolTableValue value = {
+      .type = field->typeSpecifier,
+      .identifier = field->identifier,
+      .initialization = field->initializationExpression
+    };
+    
+    hash_map_put(_cs->currentScope->symbols, &key, &value);
   }
-  logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
-  
-  SymbolTableValue value = {
-    .type = field->typeSpecifier,
-    .identifier = field->identifier,
-    .initialization = field->initializationExpression
-  };
-  
-  hash_map_put(_cs->currentScope->symbols, &key, &value);
 
-	return _ok();
+	return allSucceeded ? _ok() : _invalidComputation();
 }
-
-/* -------------------------------------------------------------------------- */
-/* computeMethodDeclaration                                                     */
-/* -------------------------------------------------------------------------- */
 
 ComputationResult computeMethodDeclaration(MethodDeclaration * method) {
 	logDebugging(_logger, "Computing method declaration...");
@@ -362,7 +311,6 @@ ComputationResult computeMethodDeclaration(MethodDeclaration * method) {
 	if (method->identifier != NULL)
 		logDebugging(_logger, "Method identifier: %s", method->identifier);
 
-	// Return type info
 	if (method->returnType != NULL) {
 		logDebugging(_logger, "Method return type: %d", method->returnType->type);
 		if (method->returnType->type == IDENTIFIER_TYPE && method->returnType->identifier != NULL) {
@@ -370,33 +318,29 @@ ComputationResult computeMethodDeclaration(MethodDeclaration * method) {
 		}
 	}
 
+	bool allSucceeded = true;
 	if (method->parameterList != NULL) {
 		if (!computeParameterList(method->parameterList).succeeded)
-			return _invalidComputation();
+			allSucceeded = false;
 	}
-
 
 	Statement *stmt = method->statementList;
 	while (stmt != NULL) {
 		if (!computeStatement(stmt).succeeded)
-			return _invalidComputation();
+			allSucceeded = false;
 		stmt = stmt->next;
 	}
 
 	if (method->isStatic) logDebugging(_logger, "Method is static.");
 
   popAndDestroyScope();
-	return _ok();
+	return allSucceeded ? _ok() : _invalidComputation();
 }
 
-/* -------------------------------------------------------------------------- */
-/* computeParameterList                                                         */
-/* -------------------------------------------------------------------------- */
-
 ComputationResult computeParameterList(Parameter * params) {
-
 	logDebugging(_logger, "Computing parameter list...");
 
+	bool allSucceeded = true;
 	Parameter *p = params;
 	while (p != NULL) {
 		if (p->typeSpecifier != NULL) {
@@ -407,30 +351,26 @@ ComputationResult computeParameterList(Parameter * params) {
 		if (p->identifier != NULL)
 			logDebugging(_logger, "Parameter identifier: %s", p->identifier);
 
-    
-  char * key = p->identifier; 
-  if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
-    logError(_logger, "Redefinition of parameter: %s", p->identifier);
-    return _invalidComputation();
-  }
-  logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
-  
-  SymbolTableValue value = {
-    .type = p->typeSpecifier,
-    .identifier = p->identifier,
-    .initialization = NULL,
-  };
-  
-  hash_map_put(_cs->currentScope->symbols, &key, &value); 
+    char * key = p->identifier; 
+    if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
+      logError(_logger, "Redefinition of parameter: %s", p->identifier);
+      allSucceeded = false;
+    } else {
+      logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+      
+      SymbolTableValue value = {
+        .type = p->typeSpecifier,
+        .identifier = p->identifier,
+        .initialization = NULL,
+      };
+      
+      hash_map_put(_cs->currentScope->symbols, &key, &value); 
+    }
 		p = p->next;
 	}
 
-	return _ok();
+	return allSucceeded ? _ok() : _invalidComputation();
 }
-
-/* -------------------------------------------------------------------------- */
-/* computeStatement                                                             */
-/* -------------------------------------------------------------------------- */
 
 ComputationResult computeStatement(Statement * statement) {
 	if (statement == NULL) {
@@ -438,49 +378,52 @@ ComputationResult computeStatement(Statement * statement) {
 		return _invalidComputation();
 	}
 
+	bool allSucceeded = true;
 	switch (statement->type) {
 		case EXPRESSION_STATEMENT:
 			logDebugging(_logger, "Statement: EXPRESSION_STATEMENT");
 			if (statement->expression != NULL)
-				return computeExpression(statement->expression);
-			return _ok();
+				if (!computeExpression(statement->expression).succeeded)
+					allSucceeded = false;
+			break;
 
 		case DECLARATION_STATEMENT:
     case INITIALIZED_DECLARATION_STATEMENT:
 			logDebugging(_logger, "Statement: DECLARATION_STATEMENT");
-			// typeSpecifier, identifier, expression (may be null)
 			if (statement->typeSpecifier != NULL)
 				logDebugging(_logger, "Declaration type: %d", statement->typeSpecifier->type);
 			if (statement->identifier != NULL)
 				logDebugging(_logger, "Declaration identifier: %s", statement->identifier);
-			// no initialization expression in plain declaration
       
-      char * key = statement->identifier; 
-      if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
-        logError(_logger, "Duplicate symbol: %s", statement->identifier);
-        return _invalidComputation();
+      {
+        char * key = statement->identifier; 
+        if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
+          logError(_logger, "Duplicate symbol: %s", statement->identifier);
+          allSucceeded = false;
+        } else {
+          logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+          
+          SymbolTableValue value = {
+            .type = statement->typeSpecifier,
+            .identifier = statement->identifier,
+            .initialization = statement->expression
+          };
+          
+          hash_map_put(_cs->currentScope->symbols, &key, &value);
+        }
       }
-      logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
-      
-      SymbolTableValue value = {
-        .type = statement->typeSpecifier,
-        .identifier = statement->identifier,
-        .initialization = statement->expression
-      };
-      
-      hash_map_put(_cs->currentScope->symbols, &key, &value);
-
-			return _ok();
+			break;
 
 		case RETURN_STATEMENT:
 			logDebugging(_logger, "Statement: RETURN_STATEMENT");
 			if (statement->expression != NULL)
-				return computeExpression(statement->expression);
-			return _ok();
+				if (!computeExpression(statement->expression).succeeded)
+					allSucceeded = false;
+			break;
 
 		case RETURN_VOID_STATEMENT:
 			logDebugging(_logger, "Statement: RETURN_VOID_STATEMENT");
-			return _ok();
+			break;
 
 		case COMPOUND_STATEMENT:
 			logDebugging(_logger, "Statement: COMPOUND_STATEMENT");
@@ -488,31 +431,30 @@ ComputationResult computeStatement(Statement * statement) {
 				Statement *s = statement->statementList;
 				while (s != NULL) {
 					if (!computeStatement(s).succeeded)
-						return _invalidComputation();
+						allSucceeded = false;
 					s = s->next;
 				}
-				return _ok();
 			}
+			break;
 
 		case IF_STATEMENT:
-
 			logDebugging(_logger, "Statement: IF_STATEMENT");
       pushNewScope();
 
 			if (statement->condition != NULL) {
 				if (!computeExpression(statement->condition).succeeded)
-					return _invalidComputation();
+					allSucceeded = false;
 			}
 			if (statement->statementList != NULL) {
 				Statement *s = statement->statementList;
 				while (s != NULL) {
 					if (!computeStatement(s).succeeded)
-						return _invalidComputation();
+						allSucceeded = false;
 					s = s->next;
 				}
 			}
       popAndDestroyScope();
-			return _ok();
+			break;
 
 		case IF_ELSE_STATEMENT:
 			logDebugging(_logger, "Statement: IF_ELSE_STATEMENT");
@@ -539,71 +481,65 @@ ComputationResult computeStatement(Statement * statement) {
 			return _ok();
 
 		case FOR_STATEMENT:
-
 			logDebugging(_logger, "Statement: FOR_STATEMENT");
       pushNewScope();
 
-			// initialization (Statement *), loopCondition (Expression*), postIteration (Expression*)
 			if (statement->initialization != NULL) {
 				if (!computeStatement(statement->initialization).succeeded)
-					return _invalidComputation();
+					allSucceeded = false;
 			}
 			if (statement->loopCondition != NULL) {
 				if (!computeExpression(statement->loopCondition).succeeded)
-					return _invalidComputation();
+					allSucceeded = false;
 			}
 			if (statement->postIteration != NULL) {
 				if (!computeExpression(statement->postIteration).succeeded)
-					return _invalidComputation();
+					allSucceeded = false;
 			}
 			if (statement->statementList != NULL) {
 				Statement *s = statement->statementList;
 				while (s != NULL) {
 					if (!computeStatement(s).succeeded)
-						return _invalidComputation();
+						allSucceeded = false;
 					s = s->next;
 				}
 			}
 
       popAndDestroyScope();
-			return _ok();
+			break;
 
 		case WHILE_STATEMENT:
 			logDebugging(_logger, "Statement: WHILE_STATEMENT");
 			if (statement->loopCondition != NULL)
-				return computeExpression(statement->loopCondition);
-			return _ok();
+				if (!computeExpression(statement->loopCondition).succeeded)
+					allSucceeded = false;
+			break;
 
 		case DO_WHILE_STATEMENT:
 			logDebugging(_logger, "Statement: DO_WHILE_STATEMENT");
-			// body first
 			if (statement->statementList != NULL) {
 				Statement *s = statement->statementList;
 				while (s != NULL) {
 					if (!computeStatement(s).succeeded)
-						return _invalidComputation();
+						allSucceeded = false;
 					s = s->next;
 				}
 			}
-			// then condition
 			if (statement->loopCondition != NULL)
-				return computeExpression(statement->loopCondition);
-			return _ok();
+				if (!computeExpression(statement->loopCondition).succeeded)
+					allSucceeded = false;
+			break;
 
 		case EMPTY_STATEMENT:
-			return _ok();
+			break;
 
 		default:
 			logError(_logger, "computeStatement: unknown StatementType %d.", statement->type);
-			return _invalidComputation();
+			allSucceeded = false;
 	}
+
+	return allSucceeded ? _ok() : _invalidComputation();
 }
-
-/* -------------------------------------------------------------------------- */
-/* computeExpression                                                            */
-
-    //NOTE: We still need to add type checking and a symbol table
-/* -------------------------------------------------------------------------- */
 
 ComputationResult computeExpression(Expression *expression) {
   if (expression == NULL)
@@ -611,9 +547,8 @@ ComputationResult computeExpression(Expression *expression) {
 
   logDebugging(_logger, "Computing expression of type %d...", expression->type);
 
+  bool allSucceeded = true;
   switch (expression->type) {
-
-    // Mathematical expressions
     case ADDITION:
     case SUBTRACTION:
     case MULTIPLICATION:
@@ -621,15 +556,16 @@ ComputationResult computeExpression(Expression *expression) {
       if (!expression->leftExpression || !expression->rightExpression)
           return _invalidComputation();
       if (!computeExpression(expression->leftExpression).succeeded)
-          return _invalidComputation();
+          allSucceeded = false;
       if (!computeExpression(expression->rightExpression).succeeded)
-          return _invalidComputation();
-      return _ok();
+          allSucceeded = false;
+      break;
 
     case FACTOR:
-      return computeFactor(expression->factor);
+      if (!computeFactor(expression->factor).succeeded)
+          allSucceeded = false;
+      break;
 
-    // Comparison and logical expressions
     case GREATER_THAN_EXPRESSION:
     case LOWER_THAN_EXPRESSION:
     case GREATER_OR_EQUAL_THAN_EXPRESSION:
@@ -640,101 +576,97 @@ ComputationResult computeExpression(Expression *expression) {
     case LOGICAL_OR_EXPRESSION:
       if (expression->leftExpression &&
           !computeExpression(expression->leftExpression).succeeded)
-          return _invalidComputation();
+          allSucceeded = false;
       if (expression->rightExpression &&
           !computeExpression(expression->rightExpression).succeeded)
-          return _invalidComputation();
-      return _ok();
+          allSucceeded = false;
+      break;
 
     case LOGICAL_NOT_EXPRESSION:
     case NEGATION:
-      // see right expression
       logDebugging(_logger, "NEGATION or LOGICAL_NOT_EXPRESSION, on the right there is a %d", expression->rightExpression ? expression->rightExpression->type : -1);
       if (!expression->rightExpression)
           return _invalidComputation();
-      return computeExpression(expression->rightExpression);
+      if (!computeExpression(expression->rightExpression).succeeded)
+          allSucceeded = false;
+      break;
 
     case ASSIGNMENT:
-      //log what's assigned
       logDebugging(_logger, "Assignment expression");
       if (!expression->leftExpression || !expression->rightExpression)
           return _invalidComputation();
       if (!computeExpression(expression->leftExpression).succeeded)
-          return _invalidComputation();
+          allSucceeded = false;
       if (!computeExpression(expression->rightExpression).succeeded)
-          return _invalidComputation();
-      return _ok();
+          allSucceeded = false;
+      break;
 
     case MEMBER_ACCESS:
-      // left is only 'this' keyword, right has the identifier which always should be type IDENTIFIER_EXPRESSION
       logDebugging(_logger, "Expression: MEMBER_ACCESS: accessing member %s", expression->rightExpression->identifier ? expression->rightExpression->identifier : "NULL");
       if (expression->rightExpression && !computeExpression(expression->rightExpression).succeeded)
-          return _invalidComputation();
-      return _ok();
+          allSucceeded = false;
+      break;
 
     case FUNCTION_CALL:
       logDebugging(_logger, "Expression: FUNCTION_CALL");
       if (expression->argumentList &&
           !computeArgumentList(expression->argumentList).succeeded)
-          return _invalidComputation();
-      return _ok();
+          allSucceeded = false;
+      break;
 
     case IDENTIFIER_EXPRESSION:
-    
-      //check on every scope if it exists
-      StackADT pusher = createStack(sizeof(Scope*));
-       
-      char * key = expression->identifier;
-      unsigned short found = 0;
-      while (!isEmptyStack(_cs->scopeStack) && !found) {
-        Scope * scope = (Scope*) popScope(); // pops from main _cs->scopeStack stack
-        HashMapADT symbols = scope->symbols;
-        if (hash_map_get(symbols, &key) != NULL) {
-          found = 1;  
+      {
+        StackADT pusher = createStack(sizeof(Scope*));
+         
+        char * key = expression->identifier;
+        unsigned short found = 0;
+        while (!isEmptyStack(_cs->scopeStack) && !found) {
+          Scope * scope = (Scope*) popScope();
+          HashMapADT symbols = scope->symbols;
+          if (hash_map_get(symbols, &key) != NULL) {
+            found = 1;  
+          }
+          pushStack(pusher, &scope);
         }
-        pushStack(pusher, &scope);
+        
+        while (!isEmptyStack(pusher)) {
+          Scope * scope;
+          popStack(pusher, &scope);
+          logDebugging(_logger, "Restoring scope id %d into the stack", scope->id);
+          pushStack(_cs->scopeStack, &scope);
+        }
+        
+        freeStack(pusher);
+        if (!found) {
+          logError(_logger, "Unidentified symbol: %s", key);
+          allSucceeded = false;
+        }
       }
-      
-      //restoring
-      while (!isEmptyStack(pusher)) {
-        Scope * scope;
-        popStack(pusher, &scope);
-        logDebugging(_logger, "Restoring scope id %d into the stack", scope->id);
-        pushStack(_cs->scopeStack, &scope);
-      }
-      
-      freeStack(pusher);
-      if (!found) {
-        logError(_logger, "Unidentified symbol: %s", key);
-        return _invalidComputation();
-      }
-      return _ok();
+      break;
 
     case INTEGER_EXPRESSION:
     case THIS_EXPRESSION:
     case NEW_EXPRESSION:
     case EMPTY_EXPRESSION:
     case STRING_LITERAL_EXPRESSION:
-      return _ok();
+      break;
 
     case POST_INCREMENT_EXPRESSION:
     case PRE_INCREMENT_EXPRESSION:
     case POST_DECREMENT_EXPRESSION:
     case PRE_DECREMENT_EXPRESSION:
       if (expression->leftExpression)
-          return computeExpression(expression->leftExpression);
-      return _ok();
+          if (!computeExpression(expression->leftExpression).succeeded)
+              allSucceeded = false;
+      break;
 
     default:
       logError(_logger, "computeExpression: unknown ExpressionType %d.", expression->type);
-      return _invalidComputation();
+      allSucceeded = false;
   }
+
+  return allSucceeded ? _ok() : _invalidComputation();
 }
-
-/* -------------------------------------------------------------------------- */
-/* computeFactor                                                                */
-/* -------------------------------------------------------------------------- */
-
 
 ComputationResult computeFactor(Factor * factor) {
 	if (factor == NULL) {
@@ -763,19 +695,15 @@ ComputationResult computeFactor(Factor * factor) {
 	}
 }
 
-/* -------------------------------------------------------------------------- */
-/* computeArgumentList                                                          */
-/* -------------------------------------------------------------------------- */
-
 ComputationResult computeArgumentList(ArgumentList * args) {
+	bool allSucceeded = true;
 	ArgumentList *a = args;
 	while (a != NULL) {
 		if (a->expression != NULL) {
 			if (!computeExpression(a->expression).succeeded)
-				return _invalidComputation();
+				allSucceeded = false;
 		}
 		a = a->next;
 	}
-	return _ok();
+	return allSucceeded ? _ok() : _invalidComputation();
 }
-
