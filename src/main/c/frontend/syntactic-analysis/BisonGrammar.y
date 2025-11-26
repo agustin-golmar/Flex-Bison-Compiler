@@ -69,6 +69,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %destructor { destroyParameter($$); } <parameter>
 %destructor { destroyArgumentList($$);} <argumentList>
 %destructor { destroyStringValue($$);} <string_literal>
+%destructor { destroyAccessSpecifier($$); } <accessSpecifier>
+%destructor { free($$); } <alphanum>
 
 /** Terminals. */
 %token <integer> INTEGER
