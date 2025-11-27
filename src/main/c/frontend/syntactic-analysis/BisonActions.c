@@ -222,7 +222,7 @@ FieldDeclaration * FieldDeclarationSemanticAction(TypeSpecifier * typeSpecifier,
 	FieldDeclaration * fieldDeclaration = calloc(1, sizeof(FieldDeclaration));
 	fieldDeclaration->typeSpecifier = typeSpecifier;
 	fieldDeclaration->identifier = identifier;
-	fieldDeclaration->isStatic = 0;
+	fieldDeclaration->isStatic = false;
 	return fieldDeclaration;
 }
 
@@ -232,7 +232,7 @@ FieldDeclaration * InitializedFieldDeclarationSemanticAction(TypeSpecifier * typ
 	fieldDeclaration->typeSpecifier = typeSpecifier;
 	fieldDeclaration->identifier = identifier;
 	fieldDeclaration->initializationExpression = expression;
-	fieldDeclaration->isStatic = 0;
+	fieldDeclaration->isStatic = false;
 	return fieldDeclaration;
 }
 
@@ -242,7 +242,7 @@ FieldDeclaration * InitializedStaticFieldDeclarationSemanticAction(TypeSpecifier
 	fieldDeclaration->typeSpecifier = typeSpecifier;
 	fieldDeclaration->identifier = identifier;
 	fieldDeclaration->initializationExpression = expression;
-	fieldDeclaration->isStatic = 1;
+	fieldDeclaration->isStatic = true;
 	return fieldDeclaration;
 }
 
@@ -251,7 +251,7 @@ FieldDeclaration * StaticFieldDeclarationSemanticAction(TypeSpecifier * typeSpec
 	FieldDeclaration * fieldDeclaration = calloc(1, sizeof(FieldDeclaration));
 	fieldDeclaration->typeSpecifier = typeSpecifier;
 	fieldDeclaration->identifier = identifier;
-	fieldDeclaration->isStatic = 1;
+	fieldDeclaration->isStatic = true;
 	return fieldDeclaration;
 }
 
@@ -262,7 +262,7 @@ MethodDeclaration * MethodDeclarationSemanticAction(TypeSpecifier * returnType, 
 	methodDeclaration->identifier = identifier;
 	methodDeclaration->parameterList = parameterList;
 	methodDeclaration->statementList = statementList;
-	methodDeclaration->isStatic = 0;
+	methodDeclaration->isStatic = false;
 	return methodDeclaration;
 }
 
@@ -273,7 +273,7 @@ MethodDeclaration * StaticMethodDeclarationSemanticAction(TypeSpecifier * return
 	methodDeclaration->identifier = identifier;
 	methodDeclaration->parameterList = parameterList;
 	methodDeclaration->statementList = statementList;
-	methodDeclaration->isStatic = 1;
+	methodDeclaration->isStatic = true;
 	return methodDeclaration;
 }
 
@@ -284,7 +284,7 @@ MethodDeclaration * ConstructorDeclarationSemanticAction(Parameter * parameterLi
 	methodDeclaration->identifier = NULL;
 	methodDeclaration->parameterList = parameterList;
 	methodDeclaration->statementList = statementList;
-	methodDeclaration->isStatic = 0;
+	methodDeclaration->isStatic = false;
 	return methodDeclaration;
 }
 
@@ -295,7 +295,7 @@ MethodDeclaration * DestructorDeclarationSemanticAction(Statement * statementLis
 	methodDeclaration->identifier = NULL;
 	methodDeclaration->parameterList = NULL;
 	methodDeclaration->statementList = statementList;
-	methodDeclaration->isStatic = 0;
+	methodDeclaration->isStatic = false;
 	return methodDeclaration;
 }
 

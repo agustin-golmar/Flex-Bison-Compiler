@@ -21,9 +21,11 @@ typedef struct {
 	void * abstractSyntaxtTree;
 
 	// TODO: Add a symbol table.
-  StackADT scopeStack; 
+	StackADT scopeStack; 
 
-  Scope * currentScope;
+	HashMapADT globalTable;
+
+	Scope * currentScope;
 
 	// TODO: Add an stack to handle nested scopes.
 	// TODO: Add more configuration.

@@ -93,8 +93,9 @@ void destroyExpression(Expression * expression) {
 				destroyExpression(expression->leftExpression);
 			case EMPTY_EXPRESSION:
 				// No dynamic memory to free
-
 				break;
+			default:
+				logError(_logger, "Free error: unknown expression type");
 		}
 		free(expression);
 	}
@@ -110,6 +111,8 @@ void destroyFactor(Factor * factor) {
 			case EXPRESSION:
 				destroyExpression(factor->expression);
 				break;
+			default:
+				logError(_logger, "Free error: unknown factor type");
 		}
 		free(factor);
 	}
@@ -122,6 +125,8 @@ void destroyProgram(Program * program) {
 			case BLOCK_PROGRAM:
 				destroyBlockDeclaration(program->blockDeclaration);
 				break;
+			default:
+				logError(_logger, "Free error: unknown program type");
 		}
 		free(program);
 	}
@@ -137,6 +142,9 @@ void destroyBlockDeclaration(BlockDeclaration * BlockDeclaration) {
 			case METHOD_BLOCK:
 				destroyMethodDeclaration(BlockDeclaration->methodDeclaration);
 				break;
+			default:
+				logError(_logger, "Free error: unknown block declaration type");
+
 		}
 		destroyBlockDeclaration(BlockDeclaration->next);
 		free(BlockDeclaration);
@@ -175,6 +183,8 @@ void destroyMemberDeclaration(MemberDeclaration * memberDeclaration) {
 			case DESTRUCTOR_MEMBER:
 				destroyMethodDeclaration(memberDeclaration->methodDeclaration);
 				break;
+			default:
+				logError(_logger, "Free error: unknown member declaration type");
 		}
 		destroyMemberDeclaration(memberDeclaration->next);
 		free(memberDeclaration);
@@ -261,6 +271,8 @@ void destroyStatement(Statement * statement) {
 			case EMPTY_STATEMENT:
 				// No dynamic memory to free
 				break;
+			default:
+				logError(_logger, "Free error: unknown statement type");
 		}
 		destroyStatement(statement->next);
 		free(statement);

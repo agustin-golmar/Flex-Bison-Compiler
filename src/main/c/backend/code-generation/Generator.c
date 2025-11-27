@@ -633,8 +633,9 @@ static void _generateProgram(Program * program) {
 void executeGenerator(CompilerState * compilerState) {
     logDebugging(_logger, "Generating C code...");
     Program * program = compilerState->abstractSyntaxtTree;
-
     _generateProgram(program);
+    
+    hash_map_free(compilerState->globalTable);
     
     logDebugging(_logger, "Generation done.");
 }

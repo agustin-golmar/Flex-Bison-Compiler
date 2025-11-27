@@ -20,11 +20,12 @@ ComputationResult executeSemanticalAnalysis(CompilerState * compilerState);
 
 ComputationResult computeProgram(Program * program);
 ComputationResult computeBlock(BlockDeclaration * blockDeclaration);
+ComputationResult computeFunctionBlock(MethodDeclaration * function);
 ComputationResult computeClassDeclaration(ClassDeclaration * classDecl);
-ComputationResult computeClassBody(ClassBody * body);
-ComputationResult computeMemberDeclaration(MemberDeclaration * member);
+ComputationResult computeClassBody(ClassBody * body, char * classIdentifier);
+ComputationResult computeMemberDeclaration(MemberDeclaration * member, char * classIdentifier);
 ComputationResult computeFieldDeclaration(FieldDeclaration * field);
-ComputationResult computeMethodDeclaration(MethodDeclaration * method);
+ComputationResult computeMethodDeclaration(MethodDeclaration * method, char * classIdentifier);
 ComputationResult computeStatement(Statement * statement);
 ComputationResult computeExpression(Expression * expression);
 ComputationResult computeFactor(Factor * factor);
