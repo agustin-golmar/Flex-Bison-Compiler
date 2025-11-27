@@ -20,13 +20,6 @@ typedef struct {
 	 */
 	void * abstractSyntaxtTree;
 
-	/**
-	 * The computed value of the entire program (only for the calculator). You
-	 * should change or remove this field, or a random child will die, and it
-	 * will be your fault.
-	 */
-	signed int value;
-
 	// TODO: Add a symbol table.
   StackADT scopeStack; 
 
