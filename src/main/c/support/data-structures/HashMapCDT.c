@@ -14,6 +14,7 @@ typedef struct {
 struct HashMapCDT {
     MapEntry** lookup;
     size_t lookup_length, lookup_size, size_of_key, size_of_value;
+    KeyReference keys;
     double load_factor;
     int (*hash_code)(void*);
     bool (*key_equals)(void*, void*);
@@ -25,7 +26,7 @@ struct HashMapCDT* hash_map_new(
     int (*hash_code)(void*),
     bool (*key_equals)(void*, void*)
 ) {
-    HashMapADT to_return = (struct HashMapCDT*) malloc(sizeof(struct HashMapCDT));
+    HashMapADT to_return = (struct HashMapCDT*) calloc(1, sizeof(struct HashMapCDT));
     to_return->load_factor = 0.75;
     to_return->lookup_size = 0;
     to_return->size_of_key = size_of_key;
@@ -116,6 +117,11 @@ static void create_entry(HashMapADT hash_map, void* key, void* value, size_t ind
     
     new_entry->deleted = false;
     hash_map->lookup[index] = new_entry;
+
+    KeyReference currentKey = hash_map->keys;    
+    while(currentKey != NULL) currentKey = currentKey->next;
+    currentKey = calloc(1, sizeof(struct KeyNode));
+    currentKey->key = &new_entry->key;
 }
 
 static void insert_into_logical_deleted_entry(HashMapADT hash_map, void* key, void* value, size_t index) {
@@ -123,6 +129,11 @@ static void insert_into_logical_deleted_entry(HashMapADT hash_map, void* key, vo
     memcpy(hash_map->lookup[index]->value, value, hash_map->size_of_value);
     
     hash_map->lookup[index]->deleted = false;
+
+    KeyReference currentKey = hash_map->keys;
+    while(currentKey != NULL) currentKey = currentKey->next;
+    currentKey = calloc(1, sizeof(struct KeyNode));
+    currentKey->key = &hash_map->lookup[index]->key;
 }
 
 void* hash_map_put(
@@ -165,8 +176,30 @@ void* hash_map_get(HashMapADT hash_map, void* key) {
     }
 }
 
+// I know... you are given write/read access with full controll over the ADT... not enough time/will to improve this
+KeyReference hash_map_get_keys(HashMapADT hash_map) {
+    return hash_map->keys;
+}
+
+static KeyReference remove_key_reference_rec(HashMapADT hash_map, size_t key_slot, KeyReference current_key, bool* found) {
+    if(current_key == NULL) {
+        return NULL;
+    }
+    if(hash_map->key_equals(current_key->key, hash_map->lookup[key_slot]->key)) {
+        *found = true;
+        KeyReference toReturn = current_key->next;
+        free(current_key);
+        return toReturn;
+    }
+    current_key = remove_key_reference_rec(hash_map, key_slot, current_key->next, found);
+    return current_key;
+}
+
 static void remove_entry(HashMapADT hash_map, size_t key_slot) {
-    hash_map->lookup[key_slot] != NULL && hash_map->lookup[key_slot]->deleted;
+    // Remove key from list
+    bool found = false;
+    hash_map->keys = remove_key_reference_rec(hash_map, key_slot, hash_map->keys, &found);
+
     // If no next element, physical delete
     if(hash_map->lookup[(key_slot + 1) % hash_map->lookup_length] == NULL) {
         free(hash_map->lookup[key_slot]->key);

@@ -12,11 +12,20 @@
 
 typedef struct HashMapCDT * HashMapADT;
 
+struct KeyNode{
+    void** key;
+    struct KeyNode* next;
+};
+
+typedef struct KeyNode* KeyReference;
+
 HashMapADT hash_map_new(size_t size_of_key, size_t size_of_value, int (*hash_code)(void*), bool (*key_equals) (void*, void*));
 
 void* hash_map_put(HashMapADT hash_map, void* key, void* value);
 
 void* hash_map_get(HashMapADT hash_map, void* key);
+
+KeyReference hash_map_get_keys(HashMapADT hash_map);
 
 bool hash_map_remove(HashMapADT hash_map, void* key);
 

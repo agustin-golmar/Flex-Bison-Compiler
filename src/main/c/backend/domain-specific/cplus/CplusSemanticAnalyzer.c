@@ -24,8 +24,15 @@ static ComputationResult _ok() {
   return r;
 }
 
+typedef enum {
+	FIELD,
+	FUNCTION,
+	CLASS
+} EntryType;
+
 typedef struct SymbolTableValue {
-	char * identifier;  
+	char * identifier;
+	EntryType entryType;
 	union {
 		struct {
 			TypeSpecifier * type; 
@@ -244,10 +251,11 @@ ComputationResult computeFunctionBlock(MethodDeclaration * function) {
 		logError(_logger, "Duplicate function: %s", function->identifier);
 		allSucceeded = false;
 	}
-	logDebugging(_logger, "Inserting new symbol global scope", _cs->currentScope->id);
+	logDebugging(_logger, "Inserting new symbol in global scope");
 
 	SymbolTableValue value = {
 		.type = function->returnType,
+		.entryType = FUNCTION,
 		.identifier = function->identifier,
 		.parameters = function->parameterList
 	};
@@ -282,6 +290,7 @@ ComputationResult computeClassDeclaration(ClassDeclaration * classDecl) {
 	logDebugging(_logger, "Inserting new class on global scope");
 
 	SymbolTableValue value = {
+		.entryType = CLASS,
 		.identifier = classDecl->identifier
 	};
 
@@ -383,6 +392,7 @@ ComputationResult computeFieldDeclaration(FieldDeclaration * field) {
 
 	SymbolTableValue value = {
 		.type = field->typeSpecifier,
+		.entryType = FIELD,
 		.identifier = field->identifier,
 		.initialization = field->initializationExpression
 	};
@@ -410,8 +420,6 @@ ComputationResult computeMethodDeclaration(MethodDeclaration * method, char * cl
 
 	if (method->identifier != NULL)
 		logDebugging(_logger, "Method identifier: %s", method->identifier);
-	else
-		logError(_logger, "computeMethodDeclaration: method has no identifier");
 
 	if (method->returnType != NULL) {
 		logDebugging(_logger, "Method return type: %d", method->returnType->type);
@@ -442,8 +450,8 @@ ComputationResult computeMethodDeclaration(MethodDeclaration * method, char * cl
 
 	SymbolTableValue* classEntry;
 
-	if ((classEntry = (SymbolTableValue*)hash_map_get(_cs->globalTable, &classIdentifier)) != NULL) {
-		logError(_logger, "Duplicate function: %s", method->identifier);
+	if ((classEntry = (SymbolTableValue*)hash_map_get(_cs->globalTable, &classIdentifier)) == NULL) {
+		logError(_logger, "computeMethodDeclaration: no class %s found", classIdentifier);
 		return _invalidComputation();
 	}
 	
@@ -497,6 +505,7 @@ ComputationResult computeParameterList(Parameter * params) {
       
       SymbolTableValue value = {
         .type = p->typeSpecifier,
+		.entryType = FIELD,
         .identifier = p->identifier,
         .initialization = NULL,
       };

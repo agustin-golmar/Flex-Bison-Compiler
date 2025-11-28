@@ -15,6 +15,32 @@ const char _indentationSize = 4;
 static Logger * _logger = NULL;
 static char * instanceName = NULL;
 
+typedef enum {
+	FIELD,
+	FUNCTION,
+	CLASS
+} EntryType;
+
+typedef struct SymbolTableValue {
+	char * identifier;
+	EntryType entryType;
+	union {
+		struct {
+			TypeSpecifier * type; 
+			union {
+				// Variable
+				Expression * initialization;
+				// Function
+				Parameter * parameters;
+			};
+		};
+		struct {
+			// Class
+			MemberDeclaration * methods;
+		};
+	};
+} SymbolTableValue;
+
 void _shutdownGeneratorModule() {
     if (_logger != NULL) {
         destroyLogger(_logger);
@@ -629,12 +655,30 @@ static void _generateProgram(Program * program) {
 
 // <===============================================================================================================================>
 
+static void free_methods(MemberDeclaration* methods) {
+    if(methods == NULL) {
+        return;
+    }
+    free_methods(methods->next);
+    free(methods);
+    return;
+}
 
 void executeGenerator(CompilerState * compilerState) {
     logDebugging(_logger, "Generating C code...");
     Program * program = compilerState->abstractSyntaxtTree;
     _generateProgram(program);
-    
+
+    KeyReference currentGlobalKey = hash_map_get_keys(compilerState->globalTable);
+    logDebugging(_logger, "LLEGUE HASTA ACA!");
+    while(currentGlobalKey != NULL) {
+        SymbolTableValue* currentGlobalEntry = (SymbolTableValue*)hash_map_get(compilerState->globalTable, currentGlobalKey->key);
+        logDebugging(_logger, "Current entry: %s", currentGlobalEntry->identifier);
+        if(currentGlobalEntry->entryType == CLASS) {
+            free_methods(currentGlobalEntry->methods); 
+        }
+        currentGlobalKey = currentGlobalKey->next;
+    }
     hash_map_free(compilerState->globalTable);
     
     logDebugging(_logger, "Generation done.");
