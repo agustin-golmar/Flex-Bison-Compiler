@@ -13,7 +13,7 @@
 typedef struct HashMapCDT * HashMapADT;
 
 struct KeyNode{
-    void** key;
+    void* key;
     struct KeyNode* next;
 };
 

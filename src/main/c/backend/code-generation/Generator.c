@@ -659,9 +659,9 @@ static void free_methods(MemberDeclaration* methods) {
     if(methods == NULL) {
         return;
     }
+    logDebugging(_logger, "Freeing %s method", methods->methodDeclaration->identifier);
     free_methods(methods->next);
     free(methods);
-    return;
 }
 
 void executeGenerator(CompilerState * compilerState) {
@@ -670,10 +670,8 @@ void executeGenerator(CompilerState * compilerState) {
     _generateProgram(program);
 
     KeyReference currentGlobalKey = hash_map_get_keys(compilerState->globalTable);
-    logDebugging(_logger, "LLEGUE HASTA ACA!");
     while(currentGlobalKey != NULL) {
         SymbolTableValue* currentGlobalEntry = (SymbolTableValue*)hash_map_get(compilerState->globalTable, currentGlobalKey->key);
-        logDebugging(_logger, "Current entry: %s", currentGlobalEntry->identifier);
         if(currentGlobalEntry->entryType == CLASS) {
             free_methods(currentGlobalEntry->methods); 
         }

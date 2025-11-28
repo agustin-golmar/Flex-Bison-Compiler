@@ -337,6 +337,10 @@ ComputationResult computeMemberDeclaration(MemberDeclaration * member, char * cl
 
 		case CONSTRUCTOR_MEMBER:
 			logDebugging(_logger, "Member: CONSTRUCTOR_MEMBER");
+			char * id = "constructor";
+			int length = 11 + 1;
+			member->methodDeclaration->identifier = malloc(sizeof(char) * length);
+			strcpy(member->methodDeclaration->identifier, id);
 			return computeMethodDeclaration(member->methodDeclaration, classIdentifier);
 
 		case DESTRUCTOR_MEMBER:
@@ -402,6 +406,23 @@ ComputationResult computeFieldDeclaration(FieldDeclaration * field) {
 	return allSucceeded ? _ok() : _invalidComputation();
 }
 
+static MemberDeclaration* add_method_to_class_rec(MemberDeclaration * method, MethodDeclaration * method_to_add, bool* duplicated, char * classIdentifier) {
+	logDebugging(_logger, "Loop for method %s", method_to_add->identifier);
+	if(method == NULL) {
+		method = (MemberDeclaration*)calloc(1, sizeof(MemberDeclaration));
+		logDebugging(_logger, "Adding method %s", method_to_add->identifier);
+		method->methodDeclaration = method_to_add;
+		return method;
+	}
+	if(strcmp(method->methodDeclaration->identifier, method_to_add->identifier) == 0) {
+		logError(_logger, "computeMethodDeclaration: method already defined inside class %s", classIdentifier);
+		*duplicated = true;
+		return method;
+	}
+	method->next = add_method_to_class_rec(method->next, method_to_add, duplicated, classIdentifier);
+	return method;
+}
+
 ComputationResult computeMethodDeclaration(MethodDeclaration * method, char * classIdentifier) {
 	logDebugging(_logger, "Computing method declaration...");
 
@@ -456,23 +477,9 @@ ComputationResult computeMethodDeclaration(MethodDeclaration * method, char * cl
 	}
 	
 	logDebugging(_logger, "Inserting new method on class %s scope", classIdentifier);
-
+	bool duplicated = false;
 	// We add the method to the class entry on the symbol table
-	MemberDeclaration* methods = classEntry->methods;
-	while(methods != NULL) {
-		if(strcmp(methods->methodDeclaration->identifier, method->identifier) == 0) {
-			allSucceeded = false;
-			logError(_logger, "computeMethodDeclaration: method already defined inside class %s", classIdentifier);
-		}
-		methods = methods->next;
-	}
-
-	if(allSucceeded == true) {
-		methods = (MemberDeclaration*)malloc(sizeof(MemberDeclaration));
-		methods->methodDeclaration = method;
-		methods->next = NULL;
-	}
-
+	classEntry->methods = add_method_to_class_rec(classEntry->methods, method, &duplicated, classIdentifier);
   	popAndDestroyScope();
 	return allSucceeded ? _ok() : _invalidComputation();
 }

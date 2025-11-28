@@ -106,6 +106,24 @@ static void update_value(
     memcpy(hash_map->lookup[key_slot]->value, value, hash_map->size_of_value);
 }
 
+static KeyReference add_key_rec(KeyReference currentKey, void** key) {
+    if(currentKey == NULL) {
+        currentKey = calloc(1, sizeof(struct KeyNode));
+        currentKey->key = *key;
+        return currentKey;
+    }
+    currentKey->next = add_key_rec(currentKey->next, key);
+    return currentKey;
+}
+
+static void free_keys_rec(KeyReference currentKey) {
+    if(currentKey == NULL)
+        return;
+    free_keys_rec(currentKey->next);
+    free(currentKey);
+    return;
+}
+
 static void create_entry(HashMapADT hash_map, void* key, void* value, size_t index) {
     MapEntry* new_entry = (MapEntry*)malloc(sizeof(MapEntry));
 
@@ -118,10 +136,7 @@ static void create_entry(HashMapADT hash_map, void* key, void* value, size_t ind
     new_entry->deleted = false;
     hash_map->lookup[index] = new_entry;
 
-    KeyReference currentKey = hash_map->keys;    
-    while(currentKey != NULL) currentKey = currentKey->next;
-    currentKey = calloc(1, sizeof(struct KeyNode));
-    currentKey->key = &new_entry->key;
+    hash_map->keys = add_key_rec(hash_map->keys, &(new_entry->key));
 }
 
 static void insert_into_logical_deleted_entry(HashMapADT hash_map, void* key, void* value, size_t index) {
@@ -176,7 +191,7 @@ void* hash_map_get(HashMapADT hash_map, void* key) {
     }
 }
 
-// I know... you are given write/read access with full controll over the ADT... not enough time/will to improve this
+// I know... this gives you total write/read access over the ADT... not enough time/will to improve this
 KeyReference hash_map_get_keys(HashMapADT hash_map) {
     return hash_map->keys;
 }
@@ -191,7 +206,7 @@ static KeyReference remove_key_reference_rec(HashMapADT hash_map, size_t key_slo
         free(current_key);
         return toReturn;
     }
-    current_key = remove_key_reference_rec(hash_map, key_slot, current_key->next, found);
+    current_key->next = remove_key_reference_rec(hash_map, key_slot, current_key->next, found);
     return current_key;
 }
 
@@ -232,6 +247,7 @@ bool hash_map_remove(HashMapADT hash_map, void* key) {
 }
 
 void hash_map_free(HashMapADT hash_map) {
+    free_keys_rec(hash_map->keys);
     for(int i = 0; i < hash_map->lookup_length; i++) {
         if(hash_map->lookup[i] != NULL) {
             free(hash_map->lookup[i]->key);
