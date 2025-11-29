@@ -15,6 +15,8 @@ const char _indentationSize = 4;
 static Logger * _logger = NULL;
 static char * instanceName = NULL;
 
+CompilerState * _cs;
+
 typedef enum {
 	FIELD,
 	FUNCTION,
@@ -236,10 +238,17 @@ static void _generateExpressionInline(FILE * outputFile, Expression * expression
             break;
         case FUNCTION_CALL:
             if (expression->identifier != NULL) {
-                // TODO: add class identifier as function's prefix (need symbol table to resolve instanceName's type (class identifier))
+                char * prefix;
+                if(expression->precedingExpression->leftExpression->typeSpeficier == NULL) {
+                    prefix = expression->precedingExpression->leftExpression->identifier;
+                } else {
+                    prefix = expression->precedingExpression->leftExpression->typeSpeficier->identifier;
+                }
+                _output(outputFile, 0, prefix);
+                _output(outputFile, 0, "_");
                 _generateExpressionInline(outputFile, expression->precedingExpression, isClass);
                 _output(outputFile, 0, "(");
-                if (!isClass && instanceName != NULL) {
+                if (!isClass && expression->precedingExpression->leftExpression->typeSpeficier != NULL && instanceName != NULL) {
                     char * format = expression->args == NULL ? "%s" : "%s, ";
                     _output(outputFile, 0, format, instanceName);
                     instanceName = NULL;
@@ -665,6 +674,7 @@ static void free_methods(MemberDeclaration* methods) {
 }
 
 void executeGenerator(CompilerState * compilerState) {
+    _cs = compilerState;
     logDebugging(_logger, "Generating C code...");
     Program * program = compilerState->abstractSyntaxtTree;
     _generateProgram(program);

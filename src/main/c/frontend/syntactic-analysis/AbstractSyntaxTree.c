@@ -68,6 +68,9 @@ void destroyExpression(Expression * expression) {
 				if (expression->identifier != NULL) {
 					free(expression->identifier);
 				}
+				if(expression->typeSpeficier != NULL) {
+					free(expression->typeSpeficier);
+				}
 				break;
 			case INTEGER_EXPRESSION:
 				break;

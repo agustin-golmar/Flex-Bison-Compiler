@@ -37,8 +37,11 @@ typedef struct SymbolTableValue {
 		struct {
 			TypeSpecifier * type; 
 			union {
-				// Variable
-				Expression * initialization;
+				struct {
+					// Variable
+					Expression * initialization;
+					bool isStatic;
+				};
 				// Function
 				Parameter * parameters;
 			};
@@ -397,6 +400,7 @@ ComputationResult computeFieldDeclaration(FieldDeclaration * field) {
 	SymbolTableValue value = {
 		.type = field->typeSpecifier,
 		.entryType = FIELD,
+		.isStatic = field->isStatic,
 		.identifier = field->identifier,
 		.initialization = field->initializationExpression
 	};
@@ -407,7 +411,6 @@ ComputationResult computeFieldDeclaration(FieldDeclaration * field) {
 }
 
 static MemberDeclaration* add_method_to_class_rec(MemberDeclaration * method, MethodDeclaration * method_to_add, bool* duplicated, char * classIdentifier) {
-	logDebugging(_logger, "Loop for method %s", method_to_add->identifier);
 	if(method == NULL) {
 		method = (MemberDeclaration*)calloc(1, sizeof(MemberDeclaration));
 		logDebugging(_logger, "Adding method %s", method_to_add->identifier);
@@ -541,30 +544,30 @@ ComputationResult computeStatement(Statement * statement) {
 			break;
 
 		case DECLARATION_STATEMENT:
-    case INITIALIZED_DECLARATION_STATEMENT:
+    	case INITIALIZED_DECLARATION_STATEMENT:
 			logDebugging(_logger, "Statement: DECLARATION_STATEMENT");
 			if (statement->typeSpecifier != NULL)
 				logDebugging(_logger, "Declaration type: %d", statement->typeSpecifier->type);
 			if (statement->identifier != NULL)
 				logDebugging(_logger, "Declaration identifier: %s", statement->identifier);
       
-      {
-        char * key = statement->identifier; 
-        if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
-          logError(_logger, "Duplicate symbol: %s", statement->identifier);
-          allSucceeded = false;
-        } else {
-          logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
-          
-          SymbolTableValue value = {
-            .type = statement->typeSpecifier,
-            .identifier = statement->identifier,
-            .initialization = statement->expression
-          };
-          
-          hash_map_put(_cs->currentScope->symbols, &key, &value);
-        }
-      }
+			{
+				char * key = statement->identifier; 
+				if (hash_map_get(_cs->currentScope->symbols, &key) != NULL) {
+					logError(_logger, "Duplicate symbol: %s", statement->identifier);
+					allSucceeded = false;
+				} else {
+				logDebugging(_logger, "Inserting new symbol on scope %d", _cs->currentScope->id);
+				
+				SymbolTableValue value = {
+					.type = statement->typeSpecifier,
+					.identifier = statement->identifier,
+					.initialization = statement->expression
+				};
+				
+				hash_map_put(_cs->currentScope->symbols, &key, &value);
+				}
+			}
 			break;
 
 		case RETURN_STATEMENT:
@@ -759,26 +762,99 @@ ComputationResult computeExpression(Expression *expression) {
       if (expression->rightExpression && !computeExpression(expression->rightExpression).succeeded)
           allSucceeded = false;
       break;
-
     case FUNCTION_CALL:
-      logDebugging(_logger, "Expression: FUNCTION_CALL");
-      if (expression->argumentList &&
-          !computeArgumentList(expression->argumentList).succeeded)
-          allSucceeded = false;
-      break;
-
-    case IDENTIFIER_EXPRESSION:
-      {
-        StackADT pusher = createStack(sizeof(Scope*));
+      	logDebugging(_logger, "Expression: FUNCTION_CALL");
+		if(expression->precedingExpression == NULL) {
+			SymbolTableValue * functionEntry = (SymbolTableValue*)hash_map_get(_cs->globalTable, expression->identifier);
+			if(functionEntry == NULL) {
+				logError(_logger, "computeExpression: no %s function defined", expression->identifier);
+				allSucceeded = false;
+			}
+		} else {
+			TypeSpecifier * variableType = NULL;
+			StackADT pusher = createStack(sizeof(Scope*));
          
+			char * key = expression->precedingExpression->leftExpression->identifier;
+			bool found1 = 0;
+			while (!isEmptyStack(_cs->scopeStack) && !found1) {
+				Scope * scope = (Scope*) popScope();
+				HashMapADT symbols = scope->symbols;
+
+				SymbolTableValue * fieldEntry;
+				if ((fieldEntry = hash_map_get(symbols, &key)) != NULL) {
+					variableType = fieldEntry->type;
+					found1 = 1;
+				}
+				pushStack(pusher, &scope);
+			}
+			
+			while (!isEmptyStack(pusher)) {
+				Scope * scope;
+				popStack(pusher, &scope);
+				logDebugging(_logger, "Restoring scope id %d into the stack", scope->id);
+				
+				pushStack(_cs->scopeStack, &scope);
+			}
+			
+			freeStack(pusher);
+			
+			SymbolTableValue * classEntry;
+			bool isStatic;
+			if(variableType == NULL) {
+				classEntry = (SymbolTableValue*)hash_map_get(_cs->globalTable, &expression->precedingExpression->leftExpression->identifier);
+			} else {
+				classEntry = (SymbolTableValue*)hash_map_get(_cs->globalTable, &(variableType->identifier));
+			}
+		
+			MemberDeclaration * methods = classEntry->methods;
+			bool found2 = false;
+			if(methods != NULL && expression->precedingExpression->leftExpression->typeSpeficier == NULL) {
+				TypeSpecifier * typeSpec = calloc(1, sizeof(TypeSpecifier));
+				typeSpec->type = IDENTIFIER_TYPE;
+				typeSpec->identifier = classEntry->identifier;
+				expression->precedingExpression->leftExpression->typeSpeficier = typeSpec;
+			}
+			while(methods != NULL && !found2) {
+				if(strcmp(expression->precedingExpression->rightExpression->identifier, methods->methodDeclaration->identifier) == 0) {
+					logDebugging(_logger, "Method %s found", methods->methodDeclaration->identifier);
+					isStatic = methods->methodDeclaration->isStatic;
+					found2 = 1;
+				}
+				methods = methods->next;
+			}
+			if (!found1 && !isStatic) {
+				logError(_logger, "Unidentified symbol: %s", key);
+				allSucceeded = false;
+			}
+
+			if(!found2) {
+				logError(_logger, "computeExpression: method %s not found", expression->precedingExpression->rightExpression->identifier);
+			}
+		}
+
+		if (expression->argumentList &&
+			!computeArgumentList(expression->argumentList).succeeded)
+			allSucceeded = false;
+		break;
+    case IDENTIFIER_EXPRESSION:
+		logDebugging(_logger, "Expression: IDENTIFIER_EXPRESSION for expression %s", expression->identifier);
+        StackADT pusher = createStack(sizeof(Scope*));
+        
         char * key = expression->identifier;
-        unsigned short found = 0;
+        bool found = 0;
         while (!isEmptyStack(_cs->scopeStack) && !found) {
           Scope * scope = (Scope*) popScope();
           HashMapADT symbols = scope->symbols;
-          if (hash_map_get(symbols, &key) != NULL) {
-            found = 1;  
+
+		  SymbolTableValue * fieldEntry;
+          if ((fieldEntry = hash_map_get(symbols, &key)) != NULL) {
+			TypeSpecifier * typeSpec = calloc(1, sizeof(TypeSpecifier));
+			typeSpec->type = IDENTIFIER_TYPE;
+			typeSpec->identifier = fieldEntry->identifier;
+			expression->typeSpeficier = typeSpec;
+            found = 1;
           }
+
           pushStack(pusher, &scope);
         }
         
@@ -786,6 +862,7 @@ ComputationResult computeExpression(Expression *expression) {
           Scope * scope;
           popStack(pusher, &scope);
           logDebugging(_logger, "Restoring scope id %d into the stack", scope->id);
+		  
           pushStack(_cs->scopeStack, &scope);
         }
         
@@ -794,7 +871,6 @@ ComputationResult computeExpression(Expression *expression) {
           logError(_logger, "Unidentified symbol: %s", key);
           allSucceeded = false;
         }
-      }
       break;
 
     case INTEGER_EXPRESSION:

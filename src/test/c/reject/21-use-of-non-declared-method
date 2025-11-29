@@ -1,0 +1,13 @@
+class myClass {
+    public int a;
+
+    public int getA() {
+        return a;
+    }
+}
+
+int main() {
+    myClass obj = new myClass();
+    obj->getB();
+    return obj;
+}

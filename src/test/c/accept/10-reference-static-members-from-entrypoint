@@ -13,5 +13,5 @@ class simpleCalculator {
 
 int main() {
     int result = simpleCalculator->sum(10, 20);
-    return simpleCalculator->sub(result, 5);
+    return result;
 }

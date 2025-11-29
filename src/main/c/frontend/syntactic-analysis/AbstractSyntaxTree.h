@@ -145,6 +145,7 @@ struct Expression {
 		struct {
 			char * identifier;
 			ArgumentList * argumentList;
+			TypeSpecifier * typeSpeficier;
 			union {
 				struct {
 					char * stringLiteralValue;
