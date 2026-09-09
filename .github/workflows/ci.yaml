@@ -10,9 +10,10 @@ jobs:
           persist-credentials: false
       - name: "Install"
         run: |
-          sudo apt-get update --yes
-          sudo apt-get install --yes \
+          sudo apt update --yes
+          sudo apt install --no-install-recommends --yes \
             bison \
+            build-essential \
             cmake \
             flex \
             gcc \
