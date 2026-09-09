@@ -1,5 +1,5 @@
 # @see https://docs.docker.com/compose/compose-file/
-name: "ar-edu-itba-atlyc"
+name: "ar-edu-itba-72-39"
 
 # @see https://docs.docker.com/reference/compose-file/extension/
 x-shared:
@@ -9,14 +9,12 @@ x-shared:
     LOGGING_LEVEL: "${LOGGING_LEVEL:-ALL}"
 
 networks:
-  ar-edu-itba-atlyc:
+  ar-edu-itba-72-39:
     attachable: true
     driver_opts:
       com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
     driver: "bridge"
-    enable_ipv4: true
-    enable_ipv6: false
-    name: "ar-edu-itba-atlyc"
+    name: "ar-edu-itba-72-39"
 
 services:
   compiler:
@@ -33,10 +31,9 @@ services:
     environment:
       <<: *environment
     networks:
-      ar-edu-itba-atlyc:
+      ar-edu-itba-72-39:
         aliases:
-          - "compiler.atlyc.itba.edu.ar"
-    pull_policy: "every_7d"
+          - "compiler.72-39.itba.edu.ar"
     user: "ubuntu:ubuntu"
     volumes:
       - ".:/home/ubuntu/Flex-Bison-Compiler"

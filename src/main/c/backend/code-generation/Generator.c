@@ -131,6 +131,8 @@ static void _generateProgram(Program * program) {
 static void _generatePrologue(void) {
 	_output(0, "%s",
 		"\\documentclass{standalone}\n\n"
+		"\\usepackage{silence}\n"
+		"\\WarningFilter{latex}{Command \\showhyphens has changed.}\n\n"
 		"\\usepackage[utf8]{inputenc}\n"
 		"\\usepackage[T1]{fontenc}\n"
 		"\\usepackage{amsmath}\n"

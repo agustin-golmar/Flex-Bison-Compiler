@@ -19,8 +19,6 @@
 *~
 
 # Application specific.
-/program
-/subexp
 BisonParser.c
 BisonParser.h
 FlexScanner.c

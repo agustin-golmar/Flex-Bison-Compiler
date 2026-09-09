@@ -1,6 +1,4 @@
-[![✗](https://img.shields.io/badge/Release-v2.0.0-ffb600.svg?style=for-the-badge)](https://github.com/agustin-golmar/Flex-Bison-Compiler/releases)
-
-[![✗](https://github.com/agustin-golmar/Flex-Bison-Compiler/actions/workflows/pipeline.yaml/badge.svg?branch=production)](https://github.com/agustin-golmar/Flex-Bison-Compiler/actions/workflows/pipeline.yaml)
+[![✗](https://github.com/Alpha-Theta-Gamma-Mu/Flex-Bison-Compiler/actions/workflows/ci.yaml/badge.svg?branch=development)](https://github.com/Alpha-Theta-Gamma-Mu/Flex-Bison-Compiler/actions/workflows/ci.yaml)
 
 # Flex-Bison-Compiler
 
@@ -14,7 +12,7 @@ A base compiler example, developed with Flex and Bison.
 
 ## Requirements
 
-* [Docker v28.3.2](https://www.docker.com/)
+* [Docker v29.7.2](https://www.docker.com/)
 
 ## Configuration
 

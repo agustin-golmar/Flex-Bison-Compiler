@@ -1,10 +1,11 @@
 # @see https://hub.docker.com/_/ubuntu
-FROM ubuntu:25.04 AS runner
+FROM ubuntu:26.04 AS runner
 
 # Installs dependencies.
-RUN apt-get update --yes \
-	&& apt-get install --yes \
+RUN apt update --yes \
+	&& apt install --no-install-recommends --yes \
 		bison \
+		build-essential \
 		cmake \
 		flex \
 		gcc \
